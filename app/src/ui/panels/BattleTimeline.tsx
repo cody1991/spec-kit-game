@@ -13,8 +13,15 @@ export function BattleTimeline() {
     return commander?.name || id;
   };
 
-  // 获取最新的 20 条事件（最新的在最上面）
-  const recentEvents = [...eventLog].slice(-20).reverse();
+  // 获取最新的 20 条事件（按时间戳排序，最新的在最上面）
+  const recentEvents = [...eventLog]
+    .sort((a, b) => {
+      const timeA = new Date(a.timestamp).getTime();
+      const timeB = new Date(b.timestamp).getTime();
+      // 降序：最新的在前
+      return timeB - timeA;
+    })
+    .slice(0, 20);
 
   return (
     <div className="battle-timeline">
