@@ -1,8 +1,8 @@
 /**
  * Map Renderer Contract
- * 
+ *
  * 定义地图渲染接口，包括国家多边形绘制、颜色填充、交互处理。
- * 
+ *
  * @module contracts/map-renderer
  */
 
@@ -14,7 +14,7 @@ import type { Country, TerritoryState, MapRenderState, CommanderColor } from './
 export interface IMapRenderer {
   /**
    * 初始化渲染器
-   * 
+   *
    * @param scene - Phaser Scene 实例
    * @param config - 渲染配置
    */
@@ -22,7 +22,7 @@ export interface IMapRenderer {
 
   /**
    * 渲染国家边界和填充
-   * 
+   *
    * @param countries - 要渲染的国家列表
    * @param territoryStates - 领土状态映射
    * @param colorMappings - 颜色映射
@@ -36,27 +36,20 @@ export interface IMapRenderer {
 
   /**
    * 更新单个国家的渲染
-   * 
+   *
    * @param countryId - 国家 ID
    * @param state - 新的领土状态
    * @param colorMapping - 颜色映射
    */
-  updateCountry(
-    countryId: string,
-    state: TerritoryState,
-    colorMapping: CommanderColor
-  ): void;
+  updateCountry(countryId: string, state: TerritoryState, colorMapping: CommanderColor): void;
 
   /**
    * 高亮国家（悬停或选中）
-   * 
+   *
    * @param countryId - 国家 ID，null 表示取消高亮
    * @param type - 高亮类型
    */
-  highlightCountry(
-    countryId: string | null,
-    type: 'hover' | 'select'
-  ): void;
+  highlightCountry(countryId: string | null, type: 'hover' | 'select'): void;
 
   /**
    * 清除所有渲染内容
@@ -175,7 +168,7 @@ export interface RenderStats {
 export interface IColorTransitionManager {
   /**
    * 开始颜色过渡
-   * 
+   *
    * @param countryId - 国家 ID
    * @param fromColor - 起始颜色
    * @param toColor - 目标颜色
@@ -289,7 +282,7 @@ export async function validateMapRenderer(
 ): Promise<void> {
   // 1. 测试初始化
   renderer.initialize(scene, {});
-  
+
   // 2. 测试渲染
   const mockCountries: Country[] = [
     {
@@ -298,38 +291,54 @@ export async function validateMapRenderer(
       nameEn: 'Test Country',
       geometry: {
         type: 'MultiPolygon',
-        coordinates: [[[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]]
+        coordinates: [
+          [
+            [
+              [0, 0],
+              [10, 0],
+              [10, 10],
+              [0, 10],
+              [0, 0],
+            ],
+          ],
+        ],
       },
       centroid: { x: 5, y: 5 },
       bbox: { minX: 0, minY: 0, maxX: 10, maxY: 10 },
       area: 100,
       neighbors: [],
-      gridCells: [0]
-    }
+      gridCells: [0],
+    },
   ];
 
   const mockStates = new Map<string, TerritoryState>([
-    ['TEST', {
-      countryId: 'TEST',
-      ownerId: 'test-commander',
-      troops: 1000,
-      resources: 500,
-      defense: 50,
-      updatedAt: Date.now(),
-      conqueredAt: Date.now(),
-      previousOwnerId: null,
-      transitionProgress: null,
-      isHighlighted: false
-    }]
+    [
+      'TEST',
+      {
+        countryId: 'TEST',
+        ownerId: 'test-commander',
+        troops: 1000,
+        resources: 500,
+        defense: 50,
+        updatedAt: Date.now(),
+        conqueredAt: Date.now(),
+        previousOwnerId: null,
+        transitionProgress: null,
+        isHighlighted: false,
+      },
+    ],
   ]);
 
   const mockColors = new Map<string, CommanderColor>([
-    ['test-commander', {
-      commanderId: 'test-commander',
-      primary: 0xFF0000,
-      secondary: 0x990000,
-      alpha: 0.7
-    }]
+    [
+      'test-commander',
+      {
+        commanderId: 'test-commander',
+        primary: 0xff0000,
+        secondary: 0x990000,
+        alpha: 0.7,
+      },
+    ],
   ]);
 
   const stats = renderer.render(mockCountries, mockStates, mockColors);

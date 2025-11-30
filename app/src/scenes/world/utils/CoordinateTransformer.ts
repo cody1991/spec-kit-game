@@ -1,6 +1,6 @@
 /**
  * Coordinate Transformer
- * 
+ *
  * Transforms geographic coordinates (lon/lat) to screen coordinates and vice versa.
  * Uses Mercator projection via d3-geo.
  */

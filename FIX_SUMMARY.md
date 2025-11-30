@@ -21,6 +21,7 @@
 **文件**: `package.json`
 
 **修改前**:
+
 ```json
 {
   "scripts": {
@@ -32,6 +33,7 @@
 ```
 
 **修改后**:
+
 ```json
 {
   "scripts": {
@@ -47,6 +49,7 @@
 **文件**: `app/vite.config.ts`
 
 配置保持正确：
+
 - `root: './'` - 相对于 app 目录
 - `publicDir: 'public'` - public 资源目录
 - 所有 alias 路径正确指向 `./src/`
@@ -54,11 +57,13 @@
 ### 3. 验证修复
 
 ✅ 运行健康检查：
+
 ```bash
 node scripts/check-app.js
 ```
 
 输出：
+
 ```
 ✅ 服务器响应: 200
 📋 页面检查:
@@ -78,6 +83,7 @@ pnpm dev
 ```
 
 **预期输出**:
+
 ```
   VITE v5.4.21  ready in 123 ms
 
@@ -101,6 +107,7 @@ pnpm build
 ```
 
 **结果**:
+
 ```
 ✓ 189 modules transformed.
 ✓ built in 3.95s
@@ -113,6 +120,7 @@ pnpm build
 **文件**: `scripts/check-app.js`
 
 快速验证应用状态：
+
 ```bash
 node scripts/check-app.js
 ```
@@ -122,6 +130,7 @@ node scripts/check-app.js
 **文件**: `TROUBLESHOOTING.md`
 
 包含：
+
 - 常见问题及解决方案
 - 调试技巧
 - 性能优化建议
@@ -132,6 +141,7 @@ node scripts/check-app.js
 **文件**: `START_HERE.md`
 
 提供：
+
 - 3 步启动流程
 - 功能验证清单
 - 游戏操作说明
@@ -141,19 +151,19 @@ node scripts/check-app.js
 
 ### 问题分析
 
-| 组件 | 问题 | 影响 |
-|------|------|------|
-| Vite 配置 | 工作目录不匹配 | 404 错误 |
-| 路径解析 | 无法找到 index.html | 页面无法加载 |
-| 资源加载 | 相对路径错误 | 脚本/样式失败 |
+| 组件      | 问题                | 影响          |
+| --------- | ------------------- | ------------- |
+| Vite 配置 | 工作目录不匹配      | 404 错误      |
+| 路径解析  | 无法找到 index.html | 页面无法加载  |
+| 资源加载  | 相对路径错误        | 脚本/样式失败 |
 
 ### 解决方案
 
-| 方案 | 实现 | 效果 |
-|------|------|------|
+| 方案         | 实现             | 效果        |
+| ------------ | ---------------- | ----------- |
 | 调整工作目录 | `cd app && vite` | ✅ 路径正确 |
-| 保持相对路径 | `root: './'` | ✅ 配置统一 |
-| 验证机制 | 健康检查脚本 | ✅ 快速诊断 |
+| 保持相对路径 | `root: './'`     | ✅ 配置统一 |
+| 验证机制     | 健康检查脚本     | ✅ 快速诊断 |
 
 ## 性能指标
 
@@ -170,6 +180,7 @@ node scripts/check-app.js
 ### 1. 环境配置
 
 创建 `.env` 文件（可选）：
+
 ```env
 VITE_PORT=5173
 VITE_DEV_MODE=true
@@ -178,6 +189,7 @@ VITE_DEV_MODE=true
 ### 2. Git 忽略
 
 确保 `.gitignore` 包含：
+
 ```
 node_modules/
 dist/
@@ -188,6 +200,7 @@ dist/
 ### 3. IDE 配置
 
 VSCode 用户可安装：
+
 - ESLint
 - Prettier
 - TypeScript Vue Plugin (Volar)

@@ -1,6 +1,6 @@
 /**
  * Graphics Object Pool
- * 
+ *
  * Reuses Phaser Graphics objects to avoid frequent creation/destruction
  * and reduce garbage collection pressure.
  */
@@ -74,7 +74,7 @@ export class GraphicsPool {
    */
   prewarm(count: number): void {
     const numToCreate = Math.min(count, this.maxSize) - this.pool.length;
-    
+
     for (let i = 0; i < numToCreate; i++) {
       const graphics = this.scene.add.graphics();
       graphics.setVisible(false);

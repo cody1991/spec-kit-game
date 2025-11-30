@@ -5,6 +5,9 @@ import { MapDataLoader } from './data/MapDataLoader';
 import { MapRenderer } from './rendering/MapRenderer';
 import { PerformanceMonitor } from './utils/PerformanceMonitor';
 import type { Country } from './types/mapTypes';
+import { createRegionCountryMap } from '@/config/regionMapping.config';
+import { MappingValidator } from '@/core/validation/mappingValidator';
+import { REGION_COUNTRY_MAPPINGS } from '@/config/regionMapping.config';
 
 export class WorldScene extends Phaser.Scene {
   private territoriesGroup!: Phaser.GameObjects.Group;
@@ -27,15 +30,12 @@ export class WorldScene extends Phaser.Scene {
 
     try {
       // Load map data with caching
-      this.countries = await this.mapDataLoader.loadMapData(
-        '/maps/world-countries.json',
-        {
-          enableCache: true,
-          cacheDuration: 7,
-          useWorker: false, // Disable for now, can enable later
-          timeout: 10000,
-        }
-      );
+      this.countries = await this.mapDataLoader.loadMapData('/maps/world-countries.json', {
+        enableCache: true,
+        cacheDuration: 7,
+        useWorker: false, // Disable for now, can enable later
+        timeout: 10000,
+      });
 
       // Store in Phaser registry for renderer access
       this.registry.set('countries', this.countries);
@@ -78,7 +78,7 @@ export class WorldScene extends Phaser.Scene {
 
   create(): void {
     console.log('🎬 WorldScene.create() called, countries loaded:', this.countries.length);
-    
+
     this.territoriesGroup = this.add.group();
     this.commandersGroup = this.add.group();
 
@@ -92,12 +92,12 @@ export class WorldScene extends Phaser.Scene {
     // Start camera at (0, 0) to show the center of the map
     camera.setScroll(0, 0);
     camera.setZoom(1);
-    
+
     console.log('📷 Camera initialized:', {
       bounds: camera.getBounds(),
       scroll: { x: camera.scrollX, y: camera.scrollY },
       zoom: camera.zoom,
-      viewport: { width: camera.width, height: camera.height }
+      viewport: { width: camera.width, height: camera.height },
     });
 
     // Initialize map renderer if countries loaded
@@ -158,46 +158,74 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /**
-   * Map real-world countries to commanders based on region proximity
+   * Map real-world countries to commanders based on region configuration
+   *
+   * This method performs the core mapping logic:
+   * 1. Loads region-to-country mappings from configuration
+   * 2. Validates mappings (dev mode only)
+   * 3. Creates territory states for each mapped country
+   * 4. Updates the global store with new states
+   *
+   * @performance
+   * - Target: < 50ms for 200 countries
+   * - Uses Map data structure for O(1) lookups
+   * - Includes performance.mark/measure instrumentation
+   *
+   * @sideEffects
+   * - Updates `useGameStore.territoryStates`
+   * - Logs mapping details to console
+   * - Triggers map re-render
+   *
+   * @see {@link createRegionCountryMap} for mapping configuration
+   * @see {@link MappingValidator} for validation logic
    */
   private mapCountriesToCommanders(): void {
+    performance.mark('mapping-start');
+
     const state = useGameStore.getState();
     const { commanders } = state;
 
     console.log('🔍 Starting country-to-commander mapping...');
-    console.log('   Commanders:', commanders.map(c => `${c.name} (${c.id}): ${c.controlledTerritories.join(', ')}`));
-    console.log('   Countries sample IDs:', this.countries.slice(0, 10).map(c => `${c.name}: ${c.id}`));
+    console.log(
+      '   Commanders:',
+      commanders.map((c) => `${c.name} (${c.id}): ${c.controlledTerritories.join(', ')}`)
+    );
 
-    // Region mapping from old territory IDs to country IDs
-    const regionCountryMap: Record<string, string[]> = {
-      'western-europe': ['250', '276', '380', '528', '56', '442'], // France, Germany, Italy, Netherlands, Belgium, Luxembourg
-      'eastern-europe': ['616', '643', '804'], // Poland, Russia (part), Ukraine
-      'russia': ['643'], // Russia
-      'middle-east': ['682', '760', '784', '792'], // Saudi Arabia, Syria, UAE, Turkey
-      'india': ['356'], // India
-      'china': ['156'], // China
-      'southeast-asia': ['704', '764', '360', '458'], // Vietnam, Thailand, Indonesia, Malaysia
-      'japan': ['392'], // Japan
-      'north-africa': ['818', '434', '012'], // Egypt, Libya, Algeria
-      'central-africa': ['178', '180', '408'], // Congo, DR Congo, Kenya
-      'south-africa': ['710'], // South Africa
-      'north-america': ['840', '124'], // USA, Canada
-      'central-america': ['484'], // Mexico
-      'south-america': ['076', '032'], // Brazil, Argentina
-      'australia': ['036'], // Australia
-    };
+    // Use new mapping configuration
+    const regionCountryMap = createRegionCountryMap();
+
+    // Validate mappings in development mode
+    if (process.env.NODE_ENV === 'development') {
+      const validator = new MappingValidator();
+      const validationResult = validator.validate(REGION_COUNTRY_MAPPINGS, this.countries);
+
+      if (!validationResult.valid) {
+        console.error('❌ Mapping validation failed:', validationResult.errors);
+      }
+
+      if (validationResult.warnings.length > 0) {
+        console.warn('⚠️  Mapping warnings:', validationResult.warnings);
+      }
+
+      console.log('   Validation summary:', validationResult.summary);
+    }
 
     // Create a map of which countries belong to which commander
     const countryOwnership = new Map<string, string>();
-    
+
     commanders.forEach((commander) => {
-      commander.controlledTerritories.forEach((territoryId) => {
-        // Get the list of countries for this old territory
-        const countryIds = regionCountryMap[territoryId] || [];
-        console.log(`   Mapping ${territoryId} -> [${countryIds.join(', ')}]`);
-        countryIds.forEach((countryId) => {
-          countryOwnership.set(countryId, commander.id);
-        });
+      commander.controlledTerritories.forEach((regionId) => {
+        // Get the list of countries for this region using new config
+        const countryIds = regionCountryMap.get(regionId);
+
+        if (countryIds) {
+          console.log(`   Mapping ${regionId} -> [${countryIds.join(', ')}]`);
+          countryIds.forEach((countryId) => {
+            countryOwnership.set(countryId, commander.id);
+          });
+        } else {
+          console.warn(`⚠️  Region "${regionId}" not found in mapping table`);
+        }
       });
     });
 
@@ -207,10 +235,11 @@ export class WorldScene extends Phaser.Scene {
     const territoryStates = new Map();
     this.countries.forEach((country) => {
       const ownerId = countryOwnership.get(country.id);
-      
+
       if (ownerId) {
         territoryStates.set(country.id, {
           countryId: country.id,
+          countryName: country.name, // NEW: Add country name for display
           ownerId,
           troops: 50,
           resources: 0,
@@ -226,20 +255,33 @@ export class WorldScene extends Phaser.Scene {
 
     // Update the store with country-based territory states
     state.setTerritoryStates(territoryStates);
-    
+
+    performance.mark('mapping-end');
+    performance.measure('mapping-duration', 'mapping-start', 'mapping-end');
+    const duration = performance.getEntriesByName('mapping-duration')[0]?.duration || 0;
+
     console.log(`🗺️  Mapped ${territoryStates.size} countries to ${commanders.length} commanders`);
-    
+    console.log(`⏱️  Mapping completed in ${duration.toFixed(2)}ms`);
+
     // Log mapping details
-    const mappedCommanderIds = new Set<string>();
-    territoryStates.forEach((ts) => mappedCommanderIds.add(ts.ownerId));
-    console.log(`   Commanders with territories: ${mappedCommanderIds.size}/${commanders.length}`);
-    
-    // Log sample mappings
-    const samples = Array.from(territoryStates.entries()).slice(0, 3);
-    console.log('   Sample mappings:', samples.map(([countryId, ts]) => {
-      const country = this.countries.find(c => c.id === countryId);
-      return `${country?.name || countryId} -> ${ts.ownerId}`;
-    }));
+    if (process.env.NODE_ENV === 'development') {
+      const mappedCommanderIds = new Set<string>();
+      territoryStates.forEach((ts) => mappedCommanderIds.add(ts.ownerId));
+      console.log(
+        `   Commanders with territories: ${mappedCommanderIds.size}/${commanders.length}`
+      );
+
+      // Log sample mappings with commander names
+      const samples = Array.from(territoryStates.entries()).slice(0, 3);
+      console.log(
+        '   Sample mappings:',
+        samples.map(([countryId, ts]) => {
+          const country = this.countries.find((c) => c.id === countryId);
+          const commander = commanders.find((c) => c.id === ts.ownerId);
+          return `${country?.name || countryId} -> ${commander?.name || ts.ownerId}`;
+        })
+      );
+    }
   }
 
   private renderWorld(): void {
@@ -257,11 +299,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mapRenderer && this.countries.length > 0 && territoryStates.size > 0) {
       this.performanceMonitor.startMeasure('mapRender');
 
-      const stats = this.mapRenderer.render(
-        this.countries,
-        territoryStates,
-        colorMappings
-      );
+      const stats = this.mapRenderer.render(this.countries, territoryStates, colorMappings);
 
       this.performanceMonitor.endMeasure('mapRender');
 
@@ -346,9 +384,7 @@ export class WorldScene extends Phaser.Scene {
   private renderCommander(commander: HistoricalCommander, territories: Territory[]): void {
     if (commander.controlledTerritories.length === 0) return;
 
-    const firstTerritory = territories.find(
-      (t) => t.id === commander.controlledTerritories[0]
-    );
+    const firstTerritory = territories.find((t) => t.id === commander.controlledTerritories[0]);
     if (!firstTerritory) return;
 
     const center = this.getPolygonCenter(firstTerritory.polygon);
@@ -401,7 +437,7 @@ export class WorldScene extends Phaser.Scene {
     // Update color transitions in map renderer
     if (this.mapRenderer) {
       const activeTransitions = this.mapRenderer.updateTransitions(delta);
-      
+
       // Disable animations if performance is poor
       const fps = this.performanceMonitor.getAverageFps();
       if (fps < 30 && this.mapRenderer) {
@@ -412,12 +448,12 @@ export class WorldScene extends Phaser.Scene {
 
     // Track territory state changes for map updates
     const state = useGameStore.getState();
-    
+
     // Update territory states from territory entities
     if (this.mapRenderer && this.countries.length > 0) {
       state.territories.forEach((territory) => {
         const existingState = state.territoryStates.get(territory.id);
-        
+
         // Check if territory owner changed
         if (existingState && existingState.ownerId !== territory.ownerId) {
           // Territory changed hands
@@ -431,19 +467,21 @@ export class WorldScene extends Phaser.Scene {
             conqueredAt: Date.now(),
             transitionProgress: 0, // Start color transition animation
           };
-          
+
           state.updateTerritoryState(territory.id, newState);
-          
+
           // Update the visual rendering
-          const colorMapping = territory.ownerId 
+          const colorMapping = territory.ownerId
             ? state.colorMappings.get(territory.ownerId)
             : null;
-            
+
           if (colorMapping) {
             this.mapRenderer.updateCountry(territory.id, newState, colorMapping);
           }
-          
-          console.log(`🎨 Territory ${territory.id} changed owner: ${existingState.ownerId} -> ${territory.ownerId}`);
+
+          console.log(
+            `🎨 Territory ${territory.id} changed owner: ${existingState.ownerId} -> ${territory.ownerId}`
+          );
         } else if (existingState) {
           // Update troops/defense without owner change
           state.updateTerritoryState(territory.id, {
@@ -465,7 +503,7 @@ export class WorldScene extends Phaser.Scene {
             transitionProgress: null,
             isHighlighted: false,
           };
-          
+
           state.setTerritoryStates(new Map(state.territoryStates).set(territory.id, newState));
         }
       });
@@ -532,10 +570,18 @@ class CameraController {
     });
 
     // 缩放
-    this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: unknown[], _deltaX: number, deltaY: number) => {
-      const zoomFactor = deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Phaser.Math.Clamp(camera.zoom * zoomFactor, 0.5, 2);
-      camera.setZoom(newZoom);
-    });
+    this.scene.input.on(
+      'wheel',
+      (
+        _pointer: Phaser.Input.Pointer,
+        _gameObjects: unknown[],
+        _deltaX: number,
+        deltaY: number
+      ) => {
+        const zoomFactor = deltaY > 0 ? 0.9 : 1.1;
+        const newZoom = Phaser.Math.Clamp(camera.zoom * zoomFactor, 0.5, 2);
+        camera.setZoom(newZoom);
+      }
+    );
   }
 }

@@ -195,8 +195,6 @@ export const useGameStore = create<GameState>((set) => ({
 
   updateMapRenderState: (updates) =>
     set((state) => ({
-      mapRenderState: state.mapRenderState
-        ? { ...state.mapRenderState, ...updates }
-        : null,
+      mapRenderState: state.mapRenderState ? { ...state.mapRenderState, ...updates } : null,
     })),
 }));

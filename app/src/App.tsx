@@ -57,7 +57,7 @@ export function App() {
     <div className="app-container">
       {!gameStarted && <StartScreen />}
       <div id="phaser-container" style={{ display: gameStarted ? 'block' : 'none' }} />
-      
+
       {gameStarted && (
         <>
           <CommanderPanel />

@@ -1,6 +1,6 @@
 /**
  * Spatial Grid (Grid-based Spatial Hashing)
- * 
+ *
  * Provides efficient spatial indexing for countries using a 16x8 grid.
  * Enables fast viewport culling and point-in-country queries.
  */
@@ -34,7 +34,7 @@ export class SpatialGrid {
    */
   addCountry(country: Country): void {
     const cellIds = this.getCellsForBBox(country.bbox);
-    
+
     cellIds.forEach((cellId) => {
       const cell = this.cells.get(cellId);
       if (cell) {
@@ -53,9 +53,15 @@ export class SpatialGrid {
     const cellIds: number[] = [];
 
     const startCol = Math.max(0, Math.floor((bbox.minX - this.worldBounds.minX) / this.cellWidth));
-    const endCol = Math.min(this.cols - 1, Math.floor((bbox.maxX - this.worldBounds.minX) / this.cellWidth));
+    const endCol = Math.min(
+      this.cols - 1,
+      Math.floor((bbox.maxX - this.worldBounds.minX) / this.cellWidth)
+    );
     const startRow = Math.max(0, Math.floor((bbox.minY - this.worldBounds.minY) / this.cellHeight));
-    const endRow = Math.min(this.rows - 1, Math.floor((bbox.maxY - this.worldBounds.minY) / this.cellHeight));
+    const endRow = Math.min(
+      this.rows - 1,
+      Math.floor((bbox.maxY - this.worldBounds.minY) / this.cellHeight)
+    );
 
     for (let row = startRow; row <= endRow; row++) {
       for (let col = startCol; col <= endCol; col++) {

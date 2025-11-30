@@ -32,7 +32,8 @@ node scripts/check-app.js
 
 **原因**: Vite 配置路径不正确
 
-**解决方案**: 
+**解决方案**:
+
 - ✅ 已修复：`package.json` 中的启动脚本现在使用 `cd app && vite`
 - 确保从项目根目录运行 `pnpm dev`
 
@@ -41,6 +42,7 @@ node scripts/check-app.js
 **症状**: 浏览器控制台显示 "Cannot find module '@/...'"
 
 **解决方案**:
+
 - 检查 `app/vite.config.ts` 中的 alias 配置
 - 确认文件路径正确
 - 尝试重启开发服务器
@@ -50,6 +52,7 @@ node scripts/check-app.js
 **症状**: "Port 5173 is already in use"
 
 **解决方案**:
+
 ```bash
 # 杀掉占用端口的进程
 pkill -f "vite"
@@ -63,6 +66,7 @@ pnpm dev -- --port 5174
 **症状**: 点击"开始征服"按钮后没有反应
 
 **检查清单**:
+
 1. 打开浏览器开发者工具（F12）查看控制台错误
 2. 确认所有依赖已安装：`pnpm install`
 3. 检查是否有 TypeScript 编译错误：`pnpm lint`
@@ -73,10 +77,12 @@ pnpm dev -- --port 5174
 **症状**: 游戏启动后只看到空白或 UI 面板
 
 **可能原因**:
+
 - Phaser 场景未正确加载
 - Canvas 渲染问题
 
 **解决方案**:
+
 1. 检查浏览器控制台是否有 Phaser 相关错误
 2. 确认 `scenes/boot/BootScene.ts` 和 `scenes/world/WorldScene.ts` 正确导入
 3. 尝试禁用浏览器扩展（特别是广告拦截器）
@@ -137,16 +143,16 @@ pnpm preview
 
 ```javascript
 // 访问全局游戏状态
-window.__GAME_STATE__ = require('./app/src/core/state/store').useGameStore.getState()
+window.__GAME_STATE__ = require('./app/src/core/state/store').useGameStore.getState();
 
 // 查看当前指挥官
-console.table(__GAME_STATE__.commanders)
+console.table(__GAME_STATE__.commanders);
 
 // 查看领土
-console.table(__GAME_STATE__.territories)
+console.table(__GAME_STATE__.territories);
 
 // 查看事件日志
-console.table(__GAME_STATE__.eventLog)
+console.table(__GAME_STATE__.eventLog);
 ```
 
 ### 重放特定种子
@@ -178,19 +184,21 @@ tail -f /tmp/vite-new.log
    - `specs/001-historic-conquest/quickstart.md` - 快速入门
 
 2. **检查环境**:
+
    ```bash
    node --version   # 应该是 v16+
    pnpm --version   # 应该是 v8+
    ```
 
 3. **完全重置**:
+
    ```bash
    # 清理所有构建产物
    rm -rf node_modules dist app/dist
-   
+
    # 重新安装
    pnpm install
-   
+
    # 重启
    pnpm dev
    ```

@@ -13,6 +13,7 @@
 ## Path Conventions
 
 Project uses single web application structure:
+
 - Source code: `app/src/`
 - Public assets: `app/public/`
 - Tests: `tests/`
@@ -23,13 +24,13 @@ Project uses single web application structure:
 
 **Purpose**: Project initialization and configuration setup
 
-- [ ] T001 Verify existing TypeScript project structure and dependencies per plan.md
-- [ ] T002 [P] Create `app/src/config/` directory for mapping configuration files
-- [ ] T003 [P] Create `app/src/core/validation/` directory for validation utilities
-- [ ] T004 [P] Create `tests/unit/config/` directory for config unit tests
-- [ ] T005 [P] Create `tests/unit/scenes/world/` directory for mapper unit tests
-- [ ] T006 [P] Create `tests/integration/` directory for integration tests
-- [ ] T007 [P] Create `tests/e2e/` directory for E2E tests (if not exists)
+- [x] T001 Verify existing TypeScript project structure and dependencies per plan.md
+- [x] T002 [P] Create `app/src/config/` directory for mapping configuration files
+- [x] T003 [P] Create `app/src/core/validation/` directory for validation utilities
+- [x] T004 [P] Create `tests/unit/config/` directory for config unit tests
+- [x] T005 [P] Create `tests/unit/scenes/world/` directory for mapper unit tests
+- [x] T006 [P] Create `tests/integration/` directory for integration tests
+- [x] T007 [P] Create `tests/e2e/` directory for E2E tests (if not exists)
 
 ---
 
@@ -39,14 +40,14 @@ Project uses single web application structure:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 Create region mapping configuration file in `app/src/config/regionMapping.config.ts` with all 15 region mappings (china, russia, western-europe, eastern-europe, middle-east, india, japan, southeast-asia, north-africa, central-africa, south-africa, north-america, central-america, south-america, australia)
-- [ ] T009 Define TypeScript interfaces (RegionMapping, CountryMappingResult, MappedCountry, MappingStats) in `app/src/config/regionMapping.config.ts`
-- [ ] T010 [P] Implement helper functions (getCountryIdsByRegion, createRegionCountryMap) in `app/src/config/regionMapping.config.ts`
-- [ ] T011 [P] Add TypeScript type extensions for HistoricalCommander in `app/src/core/types.ts` (add optional initialRegions field)
-- [ ] T012 [P] Add TypeScript type extensions for TerritoryState in `app/src/core/types.ts` (add optional countryName field)
-- [ ] T013 Create MappingValidator class in `app/src/core/validation/mappingValidator.ts` with validate() method
-- [ ] T014 Implement validation rules (structure, data validity, uniqueness, balance) in `app/src/core/validation/mappingValidator.ts`
-- [ ] T015 Define ValidationResult, ValidationError, ValidationWarning, ValidationSummary types in `app/src/core/validation/mappingValidator.ts`
+- [x] T008 Create region mapping configuration file in `app/src/config/regionMapping.config.ts` with all 15 region mappings (china, russia, western-europe, eastern-europe, middle-east, india, japan, southeast-asia, north-africa, central-africa, south-africa, north-america, central-america, south-america, australia)
+- [x] T009 Define TypeScript interfaces (RegionMapping, CountryMappingResult, MappedCountry, MappingStats) in `app/src/config/regionMapping.config.ts`
+- [x] T010 [P] Implement helper functions (getCountryIdsByRegion, createRegionCountryMap) in `app/src/config/regionMapping.config.ts`
+- [x] T011 [P] Add TypeScript type extensions for HistoricalCommander in `app/src/core/types.ts` (add optional initialRegions field)
+- [x] T012 [P] Add TypeScript type extensions for TerritoryState in `app/src/core/types.ts` (add optional countryName field)
+- [x] T013 Create MappingValidator class in `app/src/core/validation/mappingValidator.ts` with validate() method
+- [x] T014 Implement validation rules (structure, data validity, uniqueness, balance) in `app/src/core/validation/mappingValidator.ts`
+- [x] T015 Define ValidationResult, ValidationError, ValidationWarning, ValidationSummary types in `app/src/core/validation/mappingValidator.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -58,30 +59,32 @@ Project uses single web application structure:
 
 **Why Combined**: US1 和 US2 是同一功能的两个视角（用户视角和技术视角），必须一起实施才能验证
 
-**Independent Test**: 
+**Independent Test**:
+
 1. 启动游戏，查看秦始皇占领的区域是否在中国的实际地理位置（东亚）
 2. 点击中国区域，详情面板显示"中国"和"秦始皇"
 3. 查看拿破仑占领的区域是否在法国的实际地理位置（西欧）
 
 ### Implementation for User Story 1 & 2
 
-- [ ] T016 [P] [US1][US2] Create country mapper utility in `app/src/scenes/world/utils/countryMapper.ts` with mapRegionToCountries() function
-- [ ] T017 [P] [US1][US2] Implement mapCommandersToCountries() function in `app/src/scenes/world/utils/countryMapper.ts` that returns CountryMappingResult
-- [ ] T018 [US1][US2] Update WorldScene.mapCountriesToCommanders() method in `app/src/scenes/world/WorldScene.ts` to use new mapping config and countryMapper utility
-- [ ] T019 [US1][US2] Add import for createRegionCountryMap from regionMapping.config.ts in `app/src/scenes/world/WorldScene.ts`
-- [ ] T020 [US1][US2] Replace hardcoded regionCountryMap with createRegionCountryMap() call in WorldScene.mapCountriesToCommanders()
-- [ ] T021 [US1][US2] Update mapping logic to use regionCountryMap.get() for lookup and handle missing regions with warning logs
-- [ ] T022 [US1][US2] Update territoryStates creation to include countryName field from countries array in WorldScene.mapCountriesToCommanders()
-- [ ] T023 [US1][US2] Add validation call using MappingValidator in WorldScene.mapCountriesToCommanders() (development mode only)
-- [ ] T024 [US1][US2] Add detailed mapping logs (region → country IDs, sample mappings) in WorldScene.mapCountriesToCommanders()
-- [ ] T025 [US1][US2] Add performance measurement using performance.mark/measure around mapping logic in WorldScene.mapCountriesToCommanders()
-- [ ] T026 [P] [US1][US2] Update CountryDetailPanel.tsx in `app/src/ui/panels/CountryDetailPanel.tsx` to display country.name from territoryState.countryName
-- [ ] T027 [P] [US1][US2] Update CommanderPanel.tsx in `app/src/ui/panels/CommanderPanel.tsx` to display real country names instead of region IDs
+- [x] T016 [P] [US1][US2] Create country mapper utility in `app/src/scenes/world/utils/countryMapper.ts` with mapRegionToCountries() function
+- [x] T017 [P] [US1][US2] Implement mapCommandersToCountries() function in `app/src/scenes/world/utils/countryMapper.ts` that returns CountryMappingResult
+- [x] T018 [US1][US2] Update WorldScene.mapCountriesToCommanders() method in `app/src/scenes/world/WorldScene.ts` to use new mapping config and countryMapper utility
+- [x] T019 [US1][US2] Add import for createRegionCountryMap from regionMapping.config.ts in `app/src/scenes/world/WorldScene.ts`
+- [x] T020 [US1][US2] Replace hardcoded regionCountryMap with createRegionCountryMap() call in WorldScene.mapCountriesToCommanders()
+- [x] T021 [US1][US2] Update mapping logic to use regionCountryMap.get() for lookup and handle missing regions with warning logs
+- [x] T022 [US1][US2] Update territoryStates creation to include countryName field from countries array in WorldScene.mapCountriesToCommanders()
+- [x] T023 [US1][US2] Add validation call using MappingValidator in WorldScene.mapCountriesToCommanders() (development mode only)
+- [x] T024 [US1][US2] Add detailed mapping logs (region → country IDs, sample mappings) in WorldScene.mapCountriesToCommanders()
+- [x] T025 [US1][US2] Add performance measurement using performance.mark/measure around mapping logic in WorldScene.mapCountriesToCommanders()
+- [x] T026 [P] [US1][US2] Update CountryDetailPanel.tsx in `app/src/ui/panels/CountryDetailPanel.tsx` to display country.name from territoryState.countryName
+- [x] T027 [P] [US1][US2] Update CommanderPanel.tsx in `app/src/ui/panels/CommanderPanel.tsx` to display real country names instead of region IDs
 - [ ] T028 [US1][US2] Verify hover tooltip displays country.name correctly (check existing WorldScene mouse event handlers)
-- [ ] T029 [US1][US2] Run ESLint and Prettier on all modified files (`npm run lint:fix && npm run format`)
+- [x] T029 [US1][US2] Run ESLint and Prettier on all modified files (`npm run lint:fix && npm run format`)
 - [ ] T030 [US1][US2] Add JSDoc comments to all public functions in regionMapping.config.ts and countryMapper.ts
 
 **Constitution Compliance**:
+
 - [ ] T031 [US1][US2] Code Quality: Review mapping configuration structure, ensure file < 200 lines and complexity < 15
 - [ ] T032 [US1][US2] Observability: Verify all required logs (startup, mapping details, errors, performance) are present in WorldScene
 - [ ] T033 [US1][US2] Performance: Verify mapping logic completes in < 50ms using performance metrics logs
@@ -148,6 +151,7 @@ Project uses single web application structure:
 - [ ] T068 [US3] Configure CI to run all tests on PR (update GitHub Actions or CI config if needed)
 
 **Constitution Compliance**:
+
 - [ ] T069 [US3] Testing Evidence: Verify test pyramid is complete (unit > integration > E2E)
 - [ ] T070 [US3] Testing Evidence: Verify all tests are tagged with correct user story labels
 - [ ] T071 [US3] Testing Evidence: Verify tests fail correctly when mapping is broken (test the tests)
@@ -160,7 +164,8 @@ Project uses single web application structure:
 
 **Goal**: 增强开发者体验，提供清晰的调试日志和可选的可视化调试模式
 
-**Independent Test**: 
+**Independent Test**:
+
 1. 打开浏览器控制台，查看是否有清晰的映射日志
 2. 添加 URL 参数 `?debug=true`，验证地图上叠加显示国家 ID 和名称
 
@@ -181,6 +186,7 @@ Project uses single web application structure:
 - [ ] T084 [US4] Add toggle button in DevHud to enable/disable debug overlay
 
 **Constitution Compliance**:
+
 - [ ] T085 [US4] Observability: Verify all log levels (INFO, WARN, ERROR, DEBUG) are used correctly
 - [ ] T086 [US4] Observability: Verify logs include all required context (region ID, country ID, commander name)
 - [ ] T087 [US4] User Experience: Verify debug mode does not impact normal gameplay (performance overhead < 10ms)
@@ -245,18 +251,21 @@ Phase 6 (Polish) ← Requires all phases
 ### Within Each User Story
 
 **Phase 3 (US1/US2)**:
+
 1. Foundation setup (T016-T017) - Create mapper utility
 2. Core implementation (T018-T025) - Update WorldScene
 3. UI updates (T026-T028) - Update panels and tooltips
 4. Quality checks (T029-T033) - Lint, docs, validation
 
 **Phase 4 (US3)**:
+
 1. Unit tests (T034-T051) - Can all run in parallel [P]
 2. Integration tests (T052-T056) - Can all run in parallel [P]
 3. E2E tests (T057-T063) - Can all run in parallel [P]
 4. Coverage validation (T064-T071) - Sequential verification
 
 **Phase 5 (US4)**:
+
 1. Logging enhancements (T072-T078) - Can all run in parallel [P]
 2. Debug overlay (T079-T084) - Sequential (depends on debug mode detection)
 3. Documentation (T088-T090) - Can all run in parallel [P]
@@ -265,11 +274,13 @@ Phase 6 (Polish) ← Requires all phases
 ### Parallel Opportunities
 
 #### Phase 1 (Setup) - All parallel:
+
 ```bash
 T002, T003, T004, T005, T006, T007 - Create directories
 ```
 
 #### Phase 2 (Foundational) - Partial parallel:
+
 ```bash
 # Parallel group 1:
 T010, T011, T012, T013, T014, T015 - After T008/T009 complete
@@ -279,6 +290,7 @@ T008 → T009 (define types first) → (T010-T015 in parallel)
 ```
 
 #### Phase 3 (US1/US2) - Partial parallel:
+
 ```bash
 # Parallel group 1:
 T016, T017, T026, T027 - Different files
@@ -289,6 +301,7 @@ T029-T033 - Quality checks after implementation
 ```
 
 #### Phase 4 (US3) - High parallelism:
+
 ```bash
 # All unit tests in parallel:
 T034-T051 - Different test files
@@ -304,6 +317,7 @@ T064-T071
 ```
 
 #### Phase 5 (US4) - High parallelism:
+
 ```bash
 # Parallel group 1:
 T072-T078, T088-T090 - Logging + docs
@@ -370,14 +384,17 @@ Each phase adds value without breaking previous work.
 With 2-3 developers:
 
 **Day 1 (Together)**:
+
 - All: Complete Setup + Foundational (Phases 1-2)
 
 **Day 2 (Parallel)**:
+
 - Developer A: Phase 3 (US1/US2 implementation) - 3 hours
 - Developer B: Wait for Phase 3, then start Phase 4 (US3 unit tests) - 2 hours
 - Developer C: Wait for Phase 3, then start Phase 5 (US4 logging) - 2 hours
 
 **Day 3 (Parallel)**:
+
 - Developer A: Help with test fixes and code review
 - Developer B: Complete Phase 4 (integration + E2E tests) - 2 hours
 - Developer C: Complete Phase 5 (debug overlay) - 2 hours
@@ -390,6 +407,7 @@ With 2-3 developers:
 **Total Tasks**: 104 tasks
 
 ### Task Count by Phase:
+
 - Phase 1 (Setup): 7 tasks
 - Phase 2 (Foundational): 8 tasks (CRITICAL - blocks all stories)
 - Phase 3 (US1 & US2): 18 tasks (MVP)
@@ -398,12 +416,14 @@ With 2-3 developers:
 - Phase 6 (Polish): 14 tasks
 
 ### Task Count by User Story:
+
 - US1 & US2 (P1): 18 tasks (Combined - MVP)
 - US3 (P2): 38 tasks (Testing & validation)
 - US4 (P3): 19 tasks (Debugging & observability)
 - Infrastructure: 29 tasks (Setup + Foundational + Polish)
 
 ### Parallel Opportunities:
+
 - Phase 1: 6 parallel tasks (T002-T007)
 - Phase 2: 6 parallel tasks (T010-T015)
 - Phase 3: 4 parallel tasks (T016, T017, T026, T027)
@@ -414,13 +434,16 @@ With 2-3 developers:
 **Total Parallelizable Tasks**: 66 out of 104 (63%)
 
 ### MVP Scope:
+
 **Phase 1-3 only** (33 tasks, 4-6 hours):
+
 - Setup infrastructure
 - Foundational mapping configuration
 - Core US1/US2 implementation
 - Result: Working feature with correct country-map alignment
 
 ### Format Validation:
+
 ✓ All 104 tasks follow checklist format: `- [ ] [ID] [P?] [Story?] Description with file path`
 ✓ All user story tasks properly tagged: [US1], [US2], [US3], [US4]
 ✓ All parallelizable tasks marked with [P]

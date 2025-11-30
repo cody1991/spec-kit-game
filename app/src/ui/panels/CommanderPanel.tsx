@@ -4,11 +4,25 @@ import './CommanderPanel.css';
 export function CommanderPanel() {
   const selectedCommanderId = useGameStore((state) => state.selectedCommanderId);
   const commanders = useGameStore((state) => state.commanders);
+  const territoryStates = useGameStore((state) => state.territoryStates);
   const selectCommander = useGameStore((state) => state.selectCommander);
 
   const commander = commanders.find((c) => c.id === selectedCommanderId);
 
   if (!commander) return null;
+
+  // Get controlled territories with country names
+  const controlledCountries = Array.from(territoryStates.entries())
+    .filter(([_, state]) => state.ownerId === commander.id)
+    .map(([countryId, state]) => ({
+      id: countryId,
+      name: state.countryName || countryId,
+    }))
+    .slice(0, 5); // Show first 5 countries
+
+  const totalTerritories = Array.from(territoryStates.values()).filter(
+    (state) => state.ownerId === commander.id
+  ).length;
 
   return (
     <div className="commander-panel">
@@ -77,9 +91,26 @@ export function CommanderPanel() {
           </div>
           <div className="info-item">
             <span className="info-label">领土数</span>
-            <span className="info-value">{commander.controlledTerritories.length}</span>
+            <span className="info-value">{totalTerritories}</span>
           </div>
         </div>
+
+        {/* Show controlled countries */}
+        {controlledCountries.length > 0 && (
+          <div className="territories-section">
+            <h4>控制的国家</h4>
+            <div className="territory-list">
+              {controlledCountries.map((country) => (
+                <span key={country.id} className="territory-tag">
+                  {country.name}
+                </span>
+              ))}
+              {totalTerritories > 5 && (
+                <span className="territory-tag more">+{totalTerritories - 5} 更多</span>
+              )}
+            </div>
+          </div>
+        )}
 
         {commander.alliances.length > 0 && (
           <div className="alliances-section">
@@ -87,7 +118,11 @@ export function CommanderPanel() {
             <div className="alliance-list">
               {commander.alliances.map((allyId) => {
                 const ally = commanders.find((c) => c.id === allyId);
-                return <span key={allyId} className="ally-tag">{ally?.name || allyId}</span>;
+                return (
+                  <span key={allyId} className="ally-tag">
+                    {ally?.name || allyId}
+                  </span>
+                );
               })}
             </div>
           </div>

@@ -45,12 +45,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0x0066CC, // French Blue
-      secondary: 0x003D7A,
+      primary: 0x0066cc, // French Blue
+      secondary: 0x003d7a,
       alpha: 0.7,
       pattern: 'stripes',
       label: '拿',
-      glowColor: 0x0088FF,
+      glowColor: 0x0088ff,
       pulseSpeed: 1000,
     },
   },
@@ -70,12 +70,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0xCC0000, // Chinese Red
-      secondary: 0x7A0000,
+      primary: 0xcc0000, // Chinese Red
+      secondary: 0x7a0000,
       alpha: 0.7,
       pattern: 'dots',
       label: '秦',
-      glowColor: 0xFF0000,
+      glowColor: 0xff0000,
       pulseSpeed: 1000,
     },
   },
@@ -95,12 +95,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0xFFCC00, // Egyptian Gold
-      secondary: 0xB8860B,
+      primary: 0xffcc00, // Egyptian Gold
+      secondary: 0xb8860b,
       alpha: 0.7,
       pattern: 'waves',
       label: '克',
-      glowColor: 0xFFDD00,
+      glowColor: 0xffdd00,
       pulseSpeed: 1000,
     },
   },
@@ -121,11 +121,11 @@ export const commandersPool: CommanderTemplate[] = [
     ],
     colorMapping: {
       primary: 0x008800, // Steppe Green
-      secondary: 0x004D00,
+      secondary: 0x004d00,
       alpha: 0.7,
       pattern: 'triangles',
       label: '成',
-      glowColor: 0x00AA00,
+      glowColor: 0x00aa00,
       pulseSpeed: 1000,
     },
   },
@@ -145,12 +145,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0x9933FF, // Royal Purple
-      secondary: 0x5B1F99,
+      primary: 0x9933ff, // Royal Purple
+      secondary: 0x5b1f99,
       alpha: 0.7,
       pattern: 'grid',
       label: '亚',
-      glowColor: 0xAA44FF,
+      glowColor: 0xaa44ff,
       pulseSpeed: 1000,
     },
   },
@@ -170,12 +170,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0xFF6600, // Roman Orange
-      secondary: 0xB84700,
+      primary: 0xff6600, // Roman Orange
+      secondary: 0xb84700,
       alpha: 0.7,
       pattern: 'circles',
       label: '凯',
-      glowColor: 0xFF7700,
+      glowColor: 0xff7700,
       pulseSpeed: 1000,
     },
   },
@@ -195,12 +195,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0xFFFFFF, // Holy White
-      secondary: 0xCCCCCC,
+      primary: 0xffffff, // Holy White
+      secondary: 0xcccccc,
       alpha: 0.7,
       pattern: 'crosses',
       label: '贞',
-      glowColor: 0xFFFFFF,
+      glowColor: 0xffffff,
       pulseSpeed: 1000,
     },
   },
@@ -220,12 +220,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0x00AAAA, // Liberation Teal
+      primary: 0x00aaaa, // Liberation Teal
       secondary: 0x006666,
       alpha: 0.7,
       pattern: 'stars',
       label: '玻',
-      glowColor: 0x00CCCC,
+      glowColor: 0x00cccc,
       pulseSpeed: 1000,
     },
   },
@@ -246,7 +246,7 @@ export const commandersPool: CommanderTemplate[] = [
     ],
     colorMapping: {
       primary: 0x663300, // Hun Brown
-      secondary: 0x3D1F00,
+      secondary: 0x3d1f00,
       alpha: 0.7,
       pattern: 'crosses',
       label: '阿',
@@ -270,12 +270,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0x00AA88, // Arabic Cyan
+      primary: 0x00aa88, // Arabic Cyan
       secondary: 0x006655,
       alpha: 0.7,
       pattern: 'diamonds',
       label: '萨',
-      glowColor: 0x00CC99,
+      glowColor: 0x00cc99,
       pulseSpeed: 1000,
     },
   },
@@ -295,12 +295,12 @@ export const commandersPool: CommanderTemplate[] = [
       },
     ],
     colorMapping: {
-      primary: 0xFF0066, // Imperial Rose
-      secondary: 0x99003D,
+      primary: 0xff0066, // Imperial Rose
+      secondary: 0x99003d,
       alpha: 0.7,
       pattern: 'hexagons',
       label: '武',
-      glowColor: 0xFF0077,
+      glowColor: 0xff0077,
       pulseSpeed: 1000,
     },
   },

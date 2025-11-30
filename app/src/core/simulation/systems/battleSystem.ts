@@ -106,7 +106,9 @@ export class BattleSystem implements System {
         },
       });
 
-      console.log(`📍 Territory Update: ${territory.name} conquered by ${attacker.name} from ${defender.name}`);
+      console.log(
+        `📍 Territory Update: ${territory.name} conquered by ${attacker.name} from ${defender.name}`
+      );
 
       store.updateCommander(attacker.id, {
         controlledTerritories: [...attacker.controlledTerritories, territory.id],

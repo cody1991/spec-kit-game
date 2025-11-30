@@ -3,6 +3,7 @@
 ## 📋 项目概览
 
 已完成一个全功能的历史人物世界征服策略模拟游戏，包含：
+
 - 交互式世界地图
 - 10+ 历史人物随机生成
 - 实时策略模拟系统
@@ -12,6 +13,7 @@
 ## ✅ 完成的任务 (32/32)
 
 ### Phase 1: Setup (5/5) ✅
+
 - [x] T001: 初始化 pnpm 项目并安装依赖
 - [x] T002: 搭建目录结构和入口文件
 - [x] T003: 配置 Vite + React + Phaser
@@ -19,6 +21,7 @@
 - [x] T005: 配置 ESLint/Prettier/测试和 CI
 
 ### Phase 2: Foundational (6/6) ✅
+
 - [x] T006: 实现地图和指挥官数据预处理
 - [x] T007: 创建全局 Zustand 状态管理
 - [x] T008: 构建 Tick 调度器和系统接口
@@ -27,6 +30,7 @@
 - [x] T011: 生成 API 客户端（接口预留）
 
 ### Phase 3: User Story 1 (6/6) ✅
+
 - [x] T012: 编写随机生成器单测
 - [x] T013: 实现初始世界生成器
 - [x] T014: 构建地图加载和 Phaser 渲染
@@ -35,6 +39,7 @@
 - [x] T017: 实现 US1 E2E 测试
 
 ### Phase 4: User Story 2 (5/5) ✅
+
 - [x] T018: 编写时间线聚合器单测
 - [x] T019: 实现地图交互控制
 - [x] T020: 构建指挥官和领土面板
@@ -42,6 +47,7 @@
 - [x] T023: 实现 US2 E2E 测试
 
 ### Phase 5: User Story 3 (4/4) ✅
+
 - [x] T024: 编写胜利检测器单测
 - [x] T025: 开发胜利检测服务
 - [x] T026: 创建胜利面板和统计 UI
@@ -49,6 +55,7 @@
 - [x] T028: 实现 US3 E2E 测试
 
 ### Phase 6: Polish (4/4) ✅
+
 - [x] T029: 添加性能监控工具
 - [x] T030: 运行可达性测试
 - [x] T031: 更新文档和仪表板
@@ -86,16 +93,19 @@
 ## 📊 质量指标
 
 ### 代码质量 ✅
+
 - ESLint: 0 errors, 0 warnings
 - TypeScript: Strict mode
 - Complexity: ≤15 per function
 
 ### 测试覆盖 ✅
+
 - 单元测试: 6 passed
 - E2E 测试: 已实现框架
 - 目标覆盖率: 90% (基础已达成)
 
 ### 性能 ✅
+
 - 构建时间: ~4s
 - Bundle 大小:
   - Phaser: 1.5MB (339KB gzip)
@@ -107,6 +117,7 @@
 ## 🎮 功能特性
 
 ### 已实现
+
 - ✅ 10+ 历史人物随机生成
 - ✅ 15 个世界区域地图
 - ✅ 实时战斗模拟
@@ -122,6 +133,7 @@
 - ✅ 地图拖拽和缩放
 
 ### 预留接口（未实装）
+
 - IndexedDB 持久化
 - API 客户端
 - Service Worker 离线缓存
@@ -131,12 +143,14 @@
 ## 🚀 部署就绪
 
 ### 构建输出
+
 ```bash
 pnpm build
 # 输出到 dist/
 ```
 
 ### 启动命令
+
 ```bash
 # 开发
 pnpm dev
@@ -152,16 +166,19 @@ pnpm test:e2e
 ## 📈 性能验证
 
 ### 开发模式
+
 - ✅ 服务器启动: ~120ms
 - ✅ 首屏加载: <2s
 - ✅ HMR 刷新: <100ms
 
 ### 生产模式
+
 - ✅ 构建时间: ~4s
 - ✅ 代码分割: Phaser/React 独立 chunk
 - ✅ Source maps: 已生成
 
 ### 运行时
+
 - ✅ FPS: 稳定 60
 - ✅ Tick 间隔: 2000ms
 - ✅ 内存占用: <100MB
@@ -170,6 +187,7 @@ pnpm test:e2e
 ## 🔧 配置文件
 
 ### 主要配置
+
 - `package.json`: 项目元信息和脚本
 - `tsconfig.json`: TypeScript 配置
 - `vitest.config.ts`: 测试配置
@@ -179,6 +197,7 @@ pnpm test:e2e
 - `app/vite.config.ts`: 构建配置
 
 ### CI/CD
+
 - `.github/workflows/ci.yml`: 完整的 CI 流程
   - Lint
   - Type check
@@ -189,6 +208,7 @@ pnpm test:e2e
 ## 📚 文档
 
 ### 已创建
+
 - `README.md`: 项目总览
 - `specs/001-historic-conquest/quickstart.md`: 快速开始指南
 - `specs/001-historic-conquest/spec.md`: 功能规格

@@ -105,10 +105,18 @@
   transition: width 0.3s ease;
 }
 
-.stat-fill.attack { background: #ff6b6b; }
-.stat-fill.defense { background: #4ecdc4; }
-.stat-fill.mobility { background: #ffd700; }
-.stat-fill.leadership { background: #a29bfe; }
+.stat-fill.attack {
+  background: #ff6b6b;
+}
+.stat-fill.defense {
+  background: #4ecdc4;
+}
+.stat-fill.mobility {
+  background: #ffd700;
+}
+.stat-fill.leadership {
+  background: #a29bfe;
+}
 
 .stat-row > span:last-child {
   width: 30px;

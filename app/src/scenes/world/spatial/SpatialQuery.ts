@@ -1,10 +1,10 @@
 /**
  * Spatial Query System
- * 
+ *
  * Accelerates geographic queries using spatial grid indexing.
  * Reduces search complexity from O(n) to O(k) where k is the
  * number of items in the queried cells.
- * 
+ *
  * @module spatial/SpatialQuery
  */
 
@@ -18,7 +18,7 @@ import { bboxIntersects } from '../utils/geoUtils';
 export interface ISpatialQuery {
   /**
    * Find countries at a specific point
-   * 
+   *
    * @param point - Point in screen coordinates
    * @returns Array of candidate country IDs
    */
@@ -26,7 +26,7 @@ export interface ISpatialQuery {
 
   /**
    * Find countries in a bounding box
-   * 
+   *
    * @param bbox - Bounding box in screen coordinates
    * @returns Array of country IDs
    */
@@ -34,7 +34,7 @@ export interface ISpatialQuery {
 
   /**
    * Find countries in viewport
-   * 
+   *
    * @param viewport - Camera viewport bbox
    * @returns Array of country IDs
    */
@@ -42,7 +42,7 @@ export interface ISpatialQuery {
 
   /**
    * Get neighbors of a country
-   * 
+   *
    * @param countryId - Country ID
    * @returns Array of neighboring country IDs
    */
@@ -50,7 +50,7 @@ export interface ISpatialQuery {
 
   /**
    * Update spatial index (call when countries change)
-   * 
+   *
    * @param countries - Array of countries
    */
   updateIndex(countries: Country[]): void;
@@ -76,7 +76,7 @@ export class SpatialQuery implements ISpatialQuery {
   findCountriesAtPoint(point: Point): string[] {
     // Get grid cell for point
     const cellId = this.spatialGrid.getCellId(point.x, point.y);
-    
+
     if (cellId === null) {
       return [];
     }
@@ -88,21 +88,21 @@ export class SpatialQuery implements ISpatialQuery {
   findCountriesInBbox(bbox: BoundingBox): string[] {
     // Find all cells that intersect the bbox
     const cells = this.spatialGrid.getCellsInBbox(bbox);
-    
+
     // Collect unique country IDs from all cells
     const countryIds = new Set<string>();
-    
+
     for (const cellId of cells) {
       const countries = this.spatialGrid.getCountriesInCell(cellId);
-      countries.forEach(id => countryIds.add(id));
+      countries.forEach((id) => countryIds.add(id));
     }
 
     // Filter by precise bbox intersection
     const result: string[] = [];
-    
+
     for (const countryId of countryIds) {
       const countryBbox = this.countryBboxCache.get(countryId);
-      
+
       if (countryBbox && bboxIntersects(countryBbox, bbox)) {
         result.push(countryId);
       }
@@ -124,10 +124,10 @@ export class SpatialQuery implements ISpatialQuery {
     this.clear();
 
     // Index each country
-    countries.forEach(country => {
+    countries.forEach((country) => {
       // Cache bbox
       this.countryBboxCache.set(country.id, country.bbox);
-      
+
       // Cache neighbors
       this.countryNeighborsCache.set(country.id, country.neighbors);
 
@@ -135,7 +135,9 @@ export class SpatialQuery implements ISpatialQuery {
       this.spatialGrid.addCountry(country.id, country.bbox);
     });
 
-    console.log(`📍 Spatial index updated: ${countries.length} countries in ${this.spatialGrid.getCellCount()} cells`);
+    console.log(
+      `📍 Spatial index updated: ${countries.length} countries in ${this.spatialGrid.getCellCount()} cells`
+    );
   }
 
   clear(): void {

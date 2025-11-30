@@ -1,6 +1,6 @@
 /**
  * Map Data Cache (IndexedDB)
- * 
+ *
  * Caches map data in IndexedDB to speed up subsequent loads.
  * Cache entries expire after 7 days by default.
  */
@@ -47,8 +47,8 @@ export class MapDataCache {
     if (!this.db) return false;
 
     try {
-      const entry = await this.db.get(this.storeName, key) as CacheEntry | undefined;
-      
+      const entry = (await this.db.get(this.storeName, key)) as CacheEntry | undefined;
+
       if (!entry) return false;
 
       // Check if expired
@@ -71,7 +71,7 @@ export class MapDataCache {
     if (!this.db) return null;
 
     try {
-      const entry = await this.db.get(this.storeName, key) as CacheEntry | undefined;
+      const entry = (await this.db.get(this.storeName, key)) as CacheEntry | undefined;
 
       if (!entry) return null;
 
@@ -81,8 +81,10 @@ export class MapDataCache {
         return null;
       }
 
-      console.log(`✅ Map data loaded from cache (age: ${Math.round((Date.now() - entry.cachedAt) / 1000 / 60)} minutes)`);
-      
+      console.log(
+        `✅ Map data loaded from cache (age: ${Math.round((Date.now() - entry.cachedAt) / 1000 / 60)} minutes)`
+      );
+
       return entry.countries;
     } catch (error) {
       console.warn('Cache read failed:', error);
@@ -93,11 +95,7 @@ export class MapDataCache {
   /**
    * Store data in cache
    */
-  async set(
-    key: string,
-    data: Country[],
-    expiresAt?: number
-  ): Promise<void> {
+  async set(key: string, data: Country[], expiresAt?: number): Promise<void> {
     if (!this.db) return;
 
     try {
@@ -111,7 +109,9 @@ export class MapDataCache {
       };
 
       await this.db.put(this.storeName, entry);
-      console.log(`✅ Map data cached (expires in ${Math.round((entry.expiresAt - now) / 1000 / 60 / 60)} hours)`);
+      console.log(
+        `✅ Map data cached (expires in ${Math.round((entry.expiresAt - now) / 1000 / 60 / 60)} hours)`
+      );
     } catch (error) {
       console.warn('Cache write failed:', error);
     }
@@ -155,9 +155,9 @@ export class MapDataCache {
     try {
       const allKeys = await this.db.getAllKeys(this.storeName);
       const totalEntries = allKeys.length;
-      
+
       // Estimate size (rough approximation)
-      const entries = await this.db.getAll(this.storeName) as CacheEntry[];
+      const entries = (await this.db.getAll(this.storeName)) as CacheEntry[];
       const totalSize = entries.reduce((sum, entry) => {
         return sum + JSON.stringify(entry.countries).length;
       }, 0);

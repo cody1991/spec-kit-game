@@ -1,8 +1,8 @@
 /**
  * Shared Type Definitions
- * 
+ *
  * 定义所有契约共享的核心类型。
- * 
+ *
  * @module contracts/types
  */
 
@@ -33,7 +33,7 @@ export interface BoundingBox {
  */
 export interface MultiPolygon {
   type: 'MultiPolygon';
-  coordinates: number[][][][];  // [polygon][ring][point][lon|lat]
+  coordinates: number[][][][]; // [polygon][ring][point][lon|lat]
 }
 
 // ============================================================================
@@ -45,24 +45,24 @@ export interface MultiPolygon {
  */
 export interface Country {
   // 唯一标识
-  id: string;                    // ISO 3166-1 alpha-3 代码
-  
+  id: string; // ISO 3166-1 alpha-3 代码
+
   // 显示信息
-  name: string;                  // 本地化名称
-  nameEn: string;                // 英文名称
-  
+  name: string; // 本地化名称
+  nameEn: string; // 英文名称
+
   // 地理数据
-  geometry: MultiPolygon;        // 边界坐标
-  centroid: Point;               // 中心点
-  bbox: BoundingBox;             // 边界框
-  area: number;                  // 面积（km²）
-  
+  geometry: MultiPolygon; // 边界坐标
+  centroid: Point; // 中心点
+  bbox: BoundingBox; // 边界框
+  area: number; // 面积（km²）
+
   // 拓扑关系
-  neighbors: string[];           // 相邻国家 ID
-  
+  neighbors: string[]; // 相邻国家 ID
+
   // 渲染优化
   simplifiedGeometry?: MultiPolygon; // 简化版本
-  gridCells: number[];           // 所属网格单元
+  gridCells: number[]; // 所属网格单元
 }
 
 /**
@@ -70,22 +70,22 @@ export interface Country {
  */
 export interface TerritoryState {
   // 关联
-  countryId: string;             // Country.id 外键
-  ownerId: string | null;        // Commander.id 或 null
-  
+  countryId: string; // Country.id 外键
+  ownerId: string | null; // Commander.id 或 null
+
   // 游戏数据
-  troops: number;                // 驻军数量
-  resources: number;             // 资源储备
-  defense: number;               // 防御力 (0-100)
-  
+  troops: number; // 驻军数量
+  resources: number; // 资源储备
+  defense: number; // 防御力 (0-100)
+
   // 状态追踪
-  updatedAt: number;             // 最后更新时间戳（ms）
-  conqueredAt: number | null;    // 占领时间戳
+  updatedAt: number; // 最后更新时间戳（ms）
+  conqueredAt: number | null; // 占领时间戳
   previousOwnerId: string | null; // 前任占领者
-  
+
   // 渲染状态
   transitionProgress: number | null; // 颜色过渡进度 (0-1)
-  isHighlighted: boolean;        // 是否高亮
+  isHighlighted: boolean; // 是否高亮
 }
 
 /**
@@ -93,20 +93,20 @@ export interface TerritoryState {
  */
 export interface CommanderColor {
   // 关联
-  commanderId: string;           // Commander.id 外键
-  
+  commanderId: string; // Commander.id 外键
+
   // 颜色方案
-  primary: number;               // 主要颜色（0xRRGGBB）
-  secondary: number;             // 次要颜色
-  alpha: number;                 // 透明度 (0-1)
-  
+  primary: number; // 主要颜色（0xRRGGBB）
+  secondary: number; // 次要颜色
+  alpha: number; // 透明度 (0-1)
+
   // 可访问性
-  pattern?: string;              // 纹理图案名称
-  label?: string;                // 单字符标签
-  
+  pattern?: string; // 纹理图案名称
+  label?: string; // 单字符标签
+
   // 动画
-  glowColor?: number;            // 发光颜色
-  pulseSpeed?: number;           // 脉冲速度（ms）
+  glowColor?: number; // 发光颜色
+  pulseSpeed?: number; // 脉冲速度（ms）
 }
 
 /**
@@ -114,24 +114,24 @@ export interface CommanderColor {
  */
 export interface MapRenderState {
   // 视口
-  cameraViewport: BoundingBox;   // 摄像机可见区域
-  zoom: number;                  // 缩放级别 (0.5-5.0)
-  
+  cameraViewport: BoundingBox; // 摄像机可见区域
+  zoom: number; // 缩放级别 (0.5-5.0)
+
   // LOD 系统
-  lodLevel: 0 | 1 | 2;           // 细节级别
-  
+  lodLevel: 0 | 1 | 2; // 细节级别
+
   // 可见性
-  visibleCountryIds: string[];   // 可见国家 ID
-  gridCellsInView: number[];     // 可见网格单元
-  
+  visibleCountryIds: string[]; // 可见国家 ID
+  gridCellsInView: number[]; // 可见网格单元
+
   // 交互
-  hoveredCountryId: string | null;   // 悬停国家
-  selectedCountryId: string | null;  // 选中国家
-  
+  hoveredCountryId: string | null; // 悬停国家
+  selectedCountryId: string | null; // 选中国家
+
   // 性能
-  lastFrameTime: number;         // 上一帧渲染时间（ms）
-  averageFps: number;            // 平均帧率
-  enableAnimation: boolean;      // 是否启用动画
+  lastFrameTime: number; // 上一帧渲染时间（ms）
+  averageFps: number; // 平均帧率
+  enableAnimation: boolean; // 是否启用动画
 }
 
 // ============================================================================
@@ -145,7 +145,7 @@ export interface MapLoadedEvent {
   type: 'map:loaded';
   payload: {
     countries: Country[];
-    loadTime: number;             // 加载耗时（ms）
+    loadTime: number; // 加载耗时（ms）
     source: 'network' | 'cache'; // 数据来源
   };
 }
@@ -170,8 +170,8 @@ export interface MapInteractionEvent {
   type: 'map:hover' | 'map:click' | 'map:select';
   payload: {
     countryId: string | null;
-    position: Point;              // 屏幕坐标
-    geoPosition: Point;           // 地理坐标
+    position: Point; // 屏幕坐标
+    geoPosition: Point; // 地理坐标
   };
 }
 
@@ -205,10 +205,10 @@ export type MapEvent =
  * 空间网格索引
  */
 export interface SpatialGrid {
-  cols: number;                  // 列数
-  rows: number;                  // 行数
-  cellWidth: number;             // 单元格宽度
-  cellHeight: number;            // 单元格高度
+  cols: number; // 列数
+  rows: number; // 行数
+  cellWidth: number; // 单元格宽度
+  cellHeight: number; // 单元格高度
   cells: Map<number, Set<string>>; // cellId -> countryIds
 }
 
@@ -217,10 +217,10 @@ export interface SpatialGrid {
  */
 export interface ColorLerpState {
   countryId: string;
-  fromColor: number;             // 起始颜色
-  toColor: number;               // 目标颜色
-  startTime: number;             // 开始时间戳
-  duration: number;              // 持续时间（ms）
+  fromColor: number; // 起始颜色
+  toColor: number; // 目标颜色
+  startTime: number; // 开始时间戳
+  duration: number; // 持续时间（ms）
   easing: 'linear' | 'easeInOut'; // 缓动函数
 }
 
@@ -228,18 +228,18 @@ export interface ColorLerpState {
  * LOD 级别定义
  */
 export enum LODLevel {
-  FULL = 0,                      // 完整 193 国家（zoom > 2x）
-  SIMPLIFIED = 1,                // 简化 193 国家（0.5x < zoom ≤ 2x）
-  REGIONS = 2                    // 50 区域（zoom ≤ 0.5x）
+  FULL = 0, // 完整 193 国家（zoom > 2x）
+  SIMPLIFIED = 1, // 简化 193 国家（0.5x < zoom ≤ 2x）
+  REGIONS = 2, // 50 区域（zoom ≤ 0.5x）
 }
 
 /**
  * 性能分级
  */
 export enum PerformanceTier {
-  HIGH = 'high',                 // FPS > 55
-  MEDIUM = 'medium',             // FPS 45-55
-  LOW = 'low'                    // FPS < 45
+  HIGH = 'high', // FPS > 55
+  MEDIUM = 'medium', // FPS 45-55
+  LOW = 'low', // FPS < 45
 }
 
 // ============================================================================
@@ -303,7 +303,7 @@ export const MAP_CONSTANTS = {
   GRID: {
     COLS: 16,
     ROWS: 8,
-    TOTAL_CELLS: 128
+    TOTAL_CELLS: 128,
   },
 
   /**
@@ -312,15 +312,15 @@ export const MAP_CONSTANTS = {
   ZOOM: {
     MIN: 0.5,
     MAX: 5.0,
-    DEFAULT: 1.0
+    DEFAULT: 1.0,
   },
 
   /**
    * LOD 切换阈值
    */
   LOD_THRESHOLDS: {
-    FULL: 2.0,        // zoom > 2.0 使用完整地图
-    SIMPLIFIED: 0.5   // zoom > 0.5 使用简化地图
+    FULL: 2.0, // zoom > 2.0 使用完整地图
+    SIMPLIFIED: 0.5, // zoom > 0.5 使用简化地图
   },
 
   /**
@@ -330,7 +330,7 @@ export const MAP_CONSTANTS = {
     TARGET_FPS: 60,
     MIN_FPS: 30,
     HIGH_TIER_THRESHOLD: 55,
-    MEDIUM_TIER_THRESHOLD: 45
+    MEDIUM_TIER_THRESHOLD: 45,
   },
 
   /**
@@ -341,15 +341,15 @@ export const MAP_CONSTANTS = {
     DEFAULT_BORDER_COLOR: 0x333333,
     DEFAULT_FILL_ALPHA: 0.7,
     HIGHLIGHT_BORDER_WIDTH: 3,
-    HIGHLIGHT_GLOW_COLOR: 0xFFFFFF
+    HIGHLIGHT_GLOW_COLOR: 0xffffff,
   },
 
   /**
    * 动画配置
    */
   ANIMATION: {
-    TRANSITION_DURATION: 500,     // ms
-    FADE_DURATION: 300,           // ms
-    PULSE_SPEED: 1000             // ms
-  }
+    TRANSITION_DURATION: 500, // ms
+    FADE_DURATION: 300, // ms
+    PULSE_SPEED: 1000, // ms
+  },
 } as const;

@@ -15,10 +15,7 @@
 ### 签名
 
 ```typescript
-function validateMappings(
-  mappings: RegionMapping[],
-  countries: Country[]
-): ValidationResult
+function validateMappings(mappings: RegionMapping[], countries: Country[]): ValidationResult;
 ```
 
 ### 前置条件 (Preconditions)
@@ -43,21 +40,34 @@ function validateMappings(
 
 **错误类型**: `MISSING_REGION`
 
-**触发条件**: 
+**触发条件**:
+
 - 必需的 region ID 在 `mappings` 中不存在
 
 **必需的 Region IDs**:
+
 ```typescript
 const REQUIRED_REGION_IDS = [
-  'china', 'russia', 'india', 'japan',
-  'western-europe', 'eastern-europe',
-  'middle-east', 'north-africa', 'central-africa', 'south-africa',
-  'north-america', 'central-america', 'south-america',
-  'australia', 'southeast-asia'
+  'china',
+  'russia',
+  'india',
+  'japan',
+  'western-europe',
+  'eastern-europe',
+  'middle-east',
+  'north-africa',
+  'central-africa',
+  'south-africa',
+  'north-america',
+  'central-america',
+  'south-america',
+  'australia',
+  'southeast-asia',
 ];
 ```
 
 **示例**:
+
 ```typescript
 // Input: mappings 缺少 'china'
 validateMappings([
@@ -81,10 +91,12 @@ validateMappings([
 
 **错误类型**: `INVALID_COUNTRY_ID`
 
-**触发条件**: 
+**触发条件**:
+
 - `mapping.countryIds` 中的某个 ID 不存在于 `countries` 数组中
 
 **示例**:
+
 ```typescript
 // Input: country ID '999' 不存在于 countries 中
 validateMappings([
@@ -108,10 +120,12 @@ validateMappings([
 
 **错误类型**: `DUPLICATE_COUNTRY`
 
-**触发条件**: 
+**触发条件**:
+
 - 同一个 `countryId` 出现在多个 `RegionMapping` 中
 
 **示例**:
+
 ```typescript
 // Input: country ID '643' 同时出现在 'russia' 和 'eastern-europe'
 validateMappings([
@@ -135,10 +149,12 @@ validateMappings([
 
 **错误类型**: `EMPTY_MAPPING`
 
-**触发条件**: 
+**触发条件**:
+
 - `mapping.countryIds` 为空数组
 
 **示例**:
+
 ```typescript
 // Input: 'china' 的 countryIds 为空
 validateMappings([
@@ -161,12 +177,14 @@ validateMappings([
 
 **警告类型**: `LARGE_REGION` / `SMALL_REGION` / `IMBALANCED_DISTRIBUTION`
 
-**触发条件**: 
+**触发条件**:
+
 - `LARGE_REGION`: `countryIds.length > 7`
 - `SMALL_REGION`: `countryIds.length = 1` 且该 region 不是预期的单国 region（如 'china', 'india'）
 - `IMBALANCED_DISTRIBUTION`: 最大 region 的国家数 > 最小 region 的国家数 × 5
 
 **示例**:
+
 ```typescript
 // Input: 'western-europe' 包含 10 个国家（过多）
 validateMappings([
@@ -206,10 +224,7 @@ validateMappings([
 ### 签名
 
 ```typescript
-function mapRegionToCountries(
-  regionId: string,
-  mappings: RegionMapping[]
-): string[]
+function mapRegionToCountries(regionId: string, mappings: RegionMapping[]): string[];
 ```
 
 ### 前置条件 (Preconditions)
@@ -226,11 +241,10 @@ function mapRegionToCountries(
 ### 行为规范 (Behavior Specification)
 
 **场景 1: 正常映射**
+
 ```typescript
 // Given
-const mappings = [
-  { id: 'china', name: '中国', countryIds: ['156'] }
-];
+const mappings = [{ id: 'china', name: '中国', countryIds: ['156'] }];
 
 // When
 const result = mapRegionToCountries('china', mappings);
@@ -240,11 +254,10 @@ expect(result).toEqual(['156']);
 ```
 
 **场景 2: Region 不存在**
+
 ```typescript
 // Given
-const mappings = [
-  { id: 'china', name: '中国', countryIds: ['156'] }
-];
+const mappings = [{ id: 'china', name: '中国', countryIds: ['156'] }];
 
 // When
 const result = mapRegionToCountries('invalid-region', mappings);
@@ -255,11 +268,10 @@ expect(result).toEqual([]);
 ```
 
 **场景 3: 多国 Region**
+
 ```typescript
 // Given
-const mappings = [
-  { id: 'western-europe', name: '西欧', countryIds: ['250', '276', '380'] }
-];
+const mappings = [{ id: 'western-europe', name: '西欧', countryIds: ['250', '276', '380'] }];
 
 // When
 const result = mapRegionToCountries('western-europe', mappings);
@@ -284,7 +296,7 @@ function mapCommandersToCountries(
   commanders: HistoricalCommander[],
   mappings: RegionMapping[],
   countries: Country[]
-): CountryMappingResult
+): CountryMappingResult;
 ```
 
 ### 前置条件 (Preconditions)
@@ -305,6 +317,7 @@ function mapCommandersToCountries(
 ### 行为规范 (Behavior Specification)
 
 **场景 1: 单指挥官单国**
+
 ```typescript
 // Given
 const commanders = [
@@ -330,15 +343,16 @@ expect(result.stats.successfulMappings).toBe(1);
 ```
 
 **场景 2: 多指挥官多国**
+
 ```typescript
 // Given
 const commanders = [
   { id: 'qin', name: '秦始皇', controlledTerritories: ['china'] },
-  { id: 'napoleon', name: '拿破仑', controlledTerritories: ['western-europe'] }
+  { id: 'napoleon', name: '拿破仑', controlledTerritories: ['western-europe'] },
 ];
 const mappings = [
   { id: 'china', countryIds: ['156'] },
-  { id: 'western-europe', countryIds: ['250', '276'] }
+  { id: 'western-europe', countryIds: ['250', '276'] },
 ];
 
 // When
@@ -352,13 +366,12 @@ expect(result.mappedCountries.get('276')?.ownerId).toBe('napoleon');
 ```
 
 **场景 3: 部分映射失败**
+
 ```typescript
 // Given
-const commanders = [
-  { id: 'qin', controlledTerritories: ['china', 'invalid-region'] }
-];
+const commanders = [{ id: 'qin', controlledTerritories: ['china', 'invalid-region'] }];
 const mappings = [
-  { id: 'china', countryIds: ['156'] }
+  { id: 'china', countryIds: ['156'] },
   // 缺少 'invalid-region'
 ];
 
@@ -419,9 +432,9 @@ expect(result.stats.failedMappings).toBe(1);
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2025-11-30 | Initial contract definition |
+| Version | Date       | Changes                     |
+| ------- | ---------- | --------------------------- |
+| 1.0.0   | 2025-11-30 | Initial contract definition |
 
 ---
 

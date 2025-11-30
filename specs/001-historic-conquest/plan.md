@@ -23,10 +23,10 @@ Single-player实时策略浏览器游戏：在交互式世界地图上随机生�
 
 ## Constitution Check
 
-1. **代码质量门禁**：启用 ESLint（typescript-eslint + sonarjs）与 Prettier，CI 级联格式/静态分析；核心模块遵循分层（渲染/模拟/数据）并记录在 Architecture ADR；Phaser Scene 与模拟系统复杂度>15 必须拆分且伴随文档/序列图；PR 模板要求列出风险与文档链接。  
-2. **测试门禁**：采用测试金字塔——Vitest 单测（随机生成器、战斗计算、存档恢复）、Phaser Headless 合同测试（Tick 完整性）、Playwright E2E（User Story 1-3）、Web Vitals 合规测试；覆盖率门槛 90%，CI 中任何测试失败即阻塞合并并附控制台录像。  
-3. **体验门禁**：规划两类玩家（策略爱好者、休闲观战者）旅程；地图交互提供键鼠/触控/键盘三套入口并做 WCAG 对比度校验；战报侧栏提供「回放」与「可读性」快速测试脚本；失败路径（长时间僵持、网络中断、存档损坏）在 UX 流程中明确并配合提示。  
-4. **性能门禁**：Tick 预算 16ms、渲染预算 16ms，使用 Dev HUD 记录 FPS、Tick 用时、战斗队列长度；引入第三方数据（GeoJSON、人物包）前先离线压缩与按需加载；提供自动「决战事件」与降级策略（关闭粒子效果、降低刷新率）以应对资源紧张。  
+1. **代码质量门禁**：启用 ESLint（typescript-eslint + sonarjs）与 Prettier，CI 级联格式/静态分析；核心模块遵循分层（渲染/模拟/数据）并记录在 Architecture ADR；Phaser Scene 与模拟系统复杂度>15 必须拆分且伴随文档/序列图；PR 模板要求列出风险与文档链接。
+2. **测试门禁**：采用测试金字塔——Vitest 单测（随机生成器、战斗计算、存档恢复）、Phaser Headless 合同测试（Tick 完整性）、Playwright E2E（User Story 1-3）、Web Vitals 合规测试；覆盖率门槛 90%，CI 中任何测试失败即阻塞合并并附控制台录像。
+3. **体验门禁**：规划两类玩家（策略爱好者、休闲观战者）旅程；地图交互提供键鼠/触控/键盘三套入口并做 WCAG 对比度校验；战报侧栏提供「回放」与「可读性」快速测试脚本；失败路径（长时间僵持、网络中断、存档损坏）在 UX 流程中明确并配合提示。
+4. **性能门禁**：Tick 预算 16ms、渲染预算 16ms，使用 Dev HUD 记录 FPS、Tick 用时、战斗队列长度；引入第三方数据（GeoJSON、人物包）前先离线压缩与按需加载；提供自动「决战事件」与降级策略（关闭粒子效果、降低刷新率）以应对资源紧张。
 5. **可观测性门禁**：在开发与生产构建植入自定义 telemetry 集合（console.info + optional OTLP exporter），收集战局开始/结束、僵持检测、性能指标；以 `app/telemetry/dashboard.md` 维护仪表；发布后 24h/7d 回顾脚本依赖 Playwright + Lighthouse 报告与 Web Vitals 导出。
 
 ## Project Structure

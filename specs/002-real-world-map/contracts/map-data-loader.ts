@@ -1,8 +1,8 @@
 /**
  * Map Data Loader Contract
- * 
+ *
  * 定义地图数据加载接口，包括 TopoJSON/GeoJSON 解析、坐标转换、空间索引构建。
- * 
+ *
  * @module contracts/map-data-loader
  */
 
@@ -14,54 +14,43 @@ import type { Country, BoundingBox, Point, MultiPolygon } from './types';
 export interface IMapDataLoader {
   /**
    * 加载地图数据（主入口）
-   * 
+   *
    * @param dataUrl - TopoJSON/GeoJSON 文件 URL
    * @param options - 加载选项
    * @returns Promise<加载的国家列表>
    * @throws {MapDataLoadError} 数据加载或解析失败
-   * 
+   *
    * @example
    * const loader = new MapDataLoader();
    * const countries = await loader.loadMapData('/maps/world-countries.json');
    */
-  loadMapData(
-    dataUrl: string,
-    options?: LoadOptions
-  ): Promise<Country[]>;
+  loadMapData(dataUrl: string, options?: LoadOptions): Promise<Country[]>;
 
   /**
    * 解析 TopoJSON 数据
-   * 
+   *
    * @param topoData - TopoJSON 对象
    * @param objectName - TopoJSON 中的对象名称（如 "countries"）
    * @returns GeoJSON FeatureCollection
    */
-  parseTopoJSON(
-    topoData: any,
-    objectName: string
-  ): GeoJSON.FeatureCollection;
+  parseTopoJSON(topoData: any, objectName: string): GeoJSON.FeatureCollection;
 
   /**
    * 转换 GeoJSON Feature 为 Country 实体
-   * 
+   *
    * @param feature - GeoJSON Feature
    * @param options - 转换选项
    * @returns Country 对象
    */
-  featureToCountry(
-    feature: GeoJSON.Feature,
-    options?: ConversionOptions
-  ): Country;
+  featureToCountry(feature: GeoJSON.Feature, options?: ConversionOptions): Country;
 
   /**
    * 批量处理国家列表（计算邻接关系、网格分配）
-   * 
+   *
    * @param countries - Country 列表
    * @returns 处理后的 Country 列表（包含 neighbors 和 gridCells）
    */
-  postProcessCountries(
-    countries: Country[]
-  ): Country[];
+  postProcessCountries(countries: Country[]): Country[];
 }
 
 /**
@@ -141,7 +130,7 @@ export type LoadProgressCallback = (progress: LoadProgress) => void;
 
 export interface LoadProgress {
   stage: 'fetching' | 'parsing' | 'processing' | 'caching';
-  progress: number;  // 0-100
+  progress: number; // 0-100
   message?: string;
 }
 
@@ -192,7 +181,7 @@ export interface ICoordinateTransformer {
 
 /**
  * 合约验证
- * 
+ *
  * 使用示例：
  * const loader = new MapDataLoader();
  * await validateMapDataLoader(loader);

@@ -1,6 +1,6 @@
 /**
  * Map Renderer
- * 
+ *
  * Renders countries on the Phaser canvas using Graphics API.
  * Supports viewport culling, LOD, and performance optimization.
  */
@@ -60,8 +60,13 @@ export class MapRenderer {
 
       // Initialize coordinate transformer with game dimensions
       const camera = scene.cameras.main;
-      console.log('📐 Initializing CoordinateTransformer with dimensions:', camera.width, 'x', camera.height);
-      
+      console.log(
+        '📐 Initializing CoordinateTransformer with dimensions:',
+        camera.width,
+        'x',
+        camera.height
+      );
+
       this.transformer = new CoordinateTransformer(camera.width, camera.height);
       console.log('✅ CoordinateTransformer created');
 
@@ -78,20 +83,20 @@ export class MapRenderer {
       }
 
       console.log('✅ MapRenderer initialized with dimensions:', camera.width, 'x', camera.height);
-      
+
       // Test coordinate transformation
       const testPoints = [
-        [0, 0],      // Prime meridian, equator
-        [-100, 40],  // North America
-        [105, 35],   // China
+        [0, 0], // Prime meridian, equator
+        [-100, 40], // North America
+        [105, 35], // China
       ];
-      
+
       console.log('📍 Test coordinate transformations:');
       testPoints.forEach(([lon, lat]) => {
         const screen = this.transformer.geoToScreen(lon, lat);
         console.log(`  [${lon}, ${lat}] -> [${Math.round(screen.x)}, ${Math.round(screen.y)}]`);
       });
-      
+
       // Draw a test rectangle to verify rendering works
       console.log('🎨 Drawing test rectangle...');
       const graphics = this.scene.add.graphics();
@@ -100,7 +105,6 @@ export class MapRenderer {
       graphics.lineStyle(3, 0xffff00, 1);
       graphics.strokeRect(400, 200, 200, 100);
       console.log('✅ Test rectangle drawn at [400, 200]');
-      
     } catch (error) {
       console.error('❌ Error during MapRenderer initialization:', error);
       throw error;
@@ -134,12 +138,12 @@ export class MapRenderer {
     let culledCount = 0;
     let renderedWithOwner = 0;
     let renderedWithoutOwner = 0;
-    
+
     countries.forEach((country) => {
       // Transform bbox to screen coordinates for culling
       const topLeft = this.transformer.geoToScreen(country.bbox.minX, country.bbox.maxY);
       const bottomRight = this.transformer.geoToScreen(country.bbox.maxX, country.bbox.minY);
-      
+
       const screenBbox = {
         minX: topLeft.x,
         minY: topLeft.y,
@@ -154,13 +158,11 @@ export class MapRenderer {
       }
 
       const state = territoryStates.get(country.id);
-      const colorMapping = state?.ownerId
-        ? colorMappings.get(state.ownerId)
-        : null;
+      const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) : null;
 
       this.renderCountry(country, state, colorMapping);
       this.stats.countriesRendered++;
-      
+
       if (state?.ownerId && colorMapping) {
         renderedWithOwner++;
       } else {
@@ -176,14 +178,18 @@ export class MapRenderer {
         viewport,
         territoryStatesSize: territoryStates.size,
         colorMappingsSize: colorMappings.size,
-        sampleCountry: countries[0] ? {
-          id: countries[0].id,
-          name: countries[0].name,
-          bbox: countries[0].bbox,
-        } : 'none',
+        sampleCountry: countries[0]
+          ? {
+              id: countries[0].id,
+              name: countries[0].name,
+              bbox: countries[0].bbox,
+            }
+          : 'none',
       });
     } else if (this.stats.countriesRendered > 0) {
-      console.log(`🎨 Rendered ${this.stats.countriesRendered} countries (${renderedWithOwner} with owner, ${renderedWithoutOwner} without)`);
+      console.log(
+        `🎨 Rendered ${this.stats.countriesRendered} countries (${renderedWithOwner} with owner, ${renderedWithoutOwner} without)`
+      );
     }
 
     this.stats.renderTime = performance.now() - startTime;
@@ -238,7 +244,7 @@ export class MapRenderer {
   ): void {
     // Check if there's an active transition for this country
     let fillColor = colorMapping.primary;
-    
+
     if (this.config.enableTransition) {
       const transitionColor = this.transitionManager.getCurrentColor(country.id);
       if (transitionColor !== null) {
@@ -273,7 +279,7 @@ export class MapRenderer {
         ring.forEach(([lon, lat], index) => {
           // Transform geographic coordinates to screen coordinates
           const point = this.transformer.geoToScreen(lon, lat);
-          
+
           if (index === 0) {
             graphics.moveTo(point.x, point.y);
           } else {
@@ -312,7 +318,7 @@ export class MapRenderer {
         ring.forEach(([lon, lat], index) => {
           // Transform geographic coordinates to screen coordinates
           const point = this.transformer.geoToScreen(lon, lat);
-          
+
           if (index === 0) {
             graphics.moveTo(point.x, point.y);
           } else {
@@ -329,22 +335,15 @@ export class MapRenderer {
   /**
    * Apply highlight effect
    */
-  private applyHighlight(
-    graphics: Phaser.GameObjects.Graphics,
-    country: Country
-  ): void {
+  private applyHighlight(graphics: Phaser.GameObjects.Graphics, country: Country): void {
     // Add glow effect using lineStyle
-    graphics.lineStyle(
-      this.config.highlightBorderWidth,
-      this.config.highlightGlowColor,
-      0.5
-    );
+    graphics.lineStyle(this.config.highlightBorderWidth, this.config.highlightGlowColor, 0.5);
 
     country.geometry.coordinates.forEach((polygon) => {
       polygon[0].forEach(([lon, lat], index) => {
         // Transform geographic coordinates to screen coordinates
         const point = this.transformer.geoToScreen(lon, lat);
-        
+
         if (index === 0) {
           graphics.moveTo(point.x, point.y);
         } else {
@@ -359,11 +358,7 @@ export class MapRenderer {
   /**
    * Update a single country's rendering
    */
-  updateCountry(
-    countryId: string,
-    state: TerritoryState,
-    colorMapping: CommanderColor
-  ): void {
+  updateCountry(countryId: string, state: TerritoryState, colorMapping: CommanderColor): void {
     // Re-render this country
     const countries = this.scene.registry.get('countries') as Country[] | undefined;
     const country = countries?.find((c) => c.id === countryId);
@@ -458,7 +453,7 @@ export class MapRenderer {
 
   /**
    * Update transitions (called every frame)
-   * 
+   *
    * @param deltaTime - Time since last frame (ms)
    * @returns Number of active transitions
    */
@@ -473,7 +468,7 @@ export class MapRenderer {
 
   /**
    * Trigger color transition for territory change
-   * 
+   *
    * @param countryId - Country ID
    * @param newColor - New commander color
    */
@@ -498,7 +493,7 @@ export class MapRenderer {
 
   /**
    * Fade territories to neutral on commander elimination
-   * 
+   *
    * @param countryIds - Array of country IDs to fade
    * @param neutralColor - Neutral color (default gray)
    */
@@ -507,7 +502,7 @@ export class MapRenderer {
       return;
     }
 
-    countryIds.forEach(countryId => {
+    countryIds.forEach((countryId) => {
       const prevColor = this.previousColors.get(countryId);
       if (prevColor !== undefined) {
         // Use longer duration for elimination effect

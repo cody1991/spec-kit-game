@@ -18,15 +18,16 @@
 
 **字段**:
 
-| 字段名 | 类型 | 必填 | 说明 | 验证规则 |
-|--------|------|------|------|----------|
-| `id` | `string` | ✓ | 旧的区域 ID（如 'china', 'western-europe'） | 必须是预定义的 15 个区域之一 |
-| `name` | `string` | ✓ | 区域的显示名称（中文） | 非空字符串，长度 2-20 |
-| `nameEn` | `string` |  | 区域的英文名称 | 可选，非空时长度 2-50 |
-| `countryIds` | `string[]` | ✓ | ISO 3166-1 numeric codes 列表 | 数组长度 >= 1，每个元素必须是 3 位数字字符串 |
-| `description` | `string` |  | 地理范围的详细说明 | 可选，长度 0-200 |
+| 字段名        | 类型       | 必填 | 说明                                        | 验证规则                                     |
+| ------------- | ---------- | ---- | ------------------------------------------- | -------------------------------------------- |
+| `id`          | `string`   | ✓    | 旧的区域 ID（如 'china', 'western-europe'） | 必须是预定义的 15 个区域之一                 |
+| `name`        | `string`   | ✓    | 区域的显示名称（中文）                      | 非空字符串，长度 2-20                        |
+| `nameEn`      | `string`   |      | 区域的英文名称                              | 可选，非空时长度 2-50                        |
+| `countryIds`  | `string[]` | ✓    | ISO 3166-1 numeric codes 列表               | 数组长度 >= 1，每个元素必须是 3 位数字字符串 |
+| `description` | `string`   |      | 地理范围的详细说明                          | 可选，长度 0-200                             |
 
 **TypeScript 定义**:
+
 ```typescript
 export interface RegionMapping {
   id: string;
@@ -38,6 +39,7 @@ export interface RegionMapping {
 ```
 
 **示例**:
+
 ```typescript
 {
   id: 'china',
@@ -57,12 +59,14 @@ export interface RegionMapping {
 ```
 
 **验证规则**:
+
 1. `id` 必须唯一（不能重复）
 2. `countryIds` 中的每个 ID 必须存在于地图数据中
 3. 同一个 `countryId` 不能出现在多个 `RegionMapping` 中
 4. `countryIds` 数组不能为空
 
 **关系**:
+
 - **一对多**: 一个 `RegionMapping` 可以包含多个国家
 - **关联**: `countryIds` 关联到地图数据中的 `Country.id`
 
@@ -74,15 +78,16 @@ export interface RegionMapping {
 
 **字段**:
 
-| 字段名 | 类型 | 必填 | 说明 |
-|--------|------|------|------|
-| `mappedCountries` | `Map<string, MappedCountry>` | ✓ | 成功映射的国家（key: countryId, value: MappedCountry） |
-| `unmappedRegions` | `string[]` | ✓ | 未能映射的 region IDs（配置缺失或错误） |
-| `invalidCountryIds` | `string[]` | ✓ | 无效的 country IDs（在地图数据中不存在） |
-| `warnings` | `string[]` | ✓ | 警告信息列表 |
-| `stats` | `MappingStats` | ✓ | 映射统计信息 |
+| 字段名              | 类型                         | 必填 | 说明                                                   |
+| ------------------- | ---------------------------- | ---- | ------------------------------------------------------ |
+| `mappedCountries`   | `Map<string, MappedCountry>` | ✓    | 成功映射的国家（key: countryId, value: MappedCountry） |
+| `unmappedRegions`   | `string[]`                   | ✓    | 未能映射的 region IDs（配置缺失或错误）                |
+| `invalidCountryIds` | `string[]`                   | ✓    | 无效的 country IDs（在地图数据中不存在）               |
+| `warnings`          | `string[]`                   | ✓    | 警告信息列表                                           |
+| `stats`             | `MappingStats`               | ✓    | 映射统计信息                                           |
 
 **TypeScript 定义**:
+
 ```typescript
 export interface CountryMappingResult {
   mappedCountries: Map<string, MappedCountry>;
@@ -111,6 +116,7 @@ export interface MappingStats {
 ```
 
 **示例**:
+
 ```typescript
 {
   mappedCountries: Map([
@@ -152,14 +158,15 @@ export interface MappingStats {
 
 **字段**:
 
-| 字段名 | 类型 | 必填 | 说明 |
-|--------|------|------|------|
-| `valid` | `boolean` | ✓ | 验证是否通过 |
-| `errors` | `ValidationError[]` | ✓ | 错误列表（阻止运行） |
-| `warnings` | `ValidationWarning[]` | ✓ | 警告列表（可降级运行） |
-| `summary` | `ValidationSummary` | ✓ | 验证摘要 |
+| 字段名     | 类型                  | 必填 | 说明                   |
+| ---------- | --------------------- | ---- | ---------------------- |
+| `valid`    | `boolean`             | ✓    | 验证是否通过           |
+| `errors`   | `ValidationError[]`   | ✓    | 错误列表（阻止运行）   |
+| `warnings` | `ValidationWarning[]` | ✓    | 警告列表（可降级运行） |
+| `summary`  | `ValidationSummary`   | ✓    | 验证摘要               |
 
 **TypeScript 定义**:
+
 ```typescript
 export interface ValidationResult {
   valid: boolean;
@@ -192,6 +199,7 @@ export interface ValidationSummary {
 ```
 
 **示例**:
+
 ```typescript
 // 验证通过
 {
@@ -250,11 +258,13 @@ export interface ValidationSummary {
 **描述**: 历史指挥官实体，需要确保 `controlledTerritories` 字段的含义明确。
 
 **修改说明**:
+
 - `controlledTerritories` 字段在初始化时使用旧的 region IDs（如 'china', 'russia'）
 - 在运行时，通过映射逻辑转换为真实的 country IDs（如 '156', '643'）
 - 添加新字段 `initialRegions` 用于保存原始的 region IDs（可选，用于调试）
 
 **TypeScript 定义**:
+
 ```typescript
 export interface HistoricalCommander {
   id: string;
@@ -270,7 +280,7 @@ export interface HistoricalCommander {
   skillCards: SkillCard[];
   currentPower: number;
   controlledTerritories: string[]; // 运行时为 country IDs，初始化时为 region IDs
-  initialRegions?: string[];       // NEW: 保存原始 region IDs（可选）
+  initialRegions?: string[]; // NEW: 保存原始 region IDs（可选）
   alliances: string[];
   hostilities: string[];
   morale: number;
@@ -280,6 +290,7 @@ export interface HistoricalCommander {
 ```
 
 **状态转换**:
+
 ```
 初始化时:
 controlledTerritories = ['china', 'russia'] (region IDs)
@@ -296,14 +307,16 @@ initialRegions = ['china', 'russia'] (保存原始值，可选)
 **描述**: 领土状态实体，需要确保 `countryId` 字段使用标准的 ISO codes。
 
 **修改说明**:
+
 - `countryId` 必须是 ISO 3166-1 numeric code (string)
 - 添加新字段 `countryName` 用于显示（避免重复查找）
 
 **TypeScript 定义**:
+
 ```typescript
 export interface TerritoryState {
-  countryId: string;          // ISO 3166-1 numeric code
-  countryName?: string;        // NEW: 国家名称（缓存，避免重复查找）
+  countryId: string; // ISO 3166-1 numeric code
+  countryName?: string; // NEW: 国家名称（缓存，避免重复查找）
   ownerId: string | null;
   troops: number;
   resources: number;
@@ -408,6 +421,7 @@ export interface TerritoryState {
 ### TerritoryState 状态转换
 
 **场景 1: 游戏初始化**
+
 ```
 State: null
  ↓ [mapCountriesToCommanders]
@@ -421,6 +435,7 @@ State: {
 ```
 
 **场景 2: 领土易手**
+
 ```
 State: {
   countryId: '156',
@@ -443,6 +458,7 @@ State: {
 ```
 
 **场景 3: 指挥官被消灭**
+
 ```
 State: {
   countryId: '156',

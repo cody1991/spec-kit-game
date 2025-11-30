@@ -12,19 +12,22 @@
 ## Technical Context
 
 **Language/Version**: TypeScript 5.4.5 (ES2020 target)
-**Primary Dependencies**: 
+**Primary Dependencies**:
+
 - Phaser 3.80.1 (游戏引擎，地图渲染)
 - React 18.2.0 + React-DOM (UI 组件)
 - Zustand 4.4.7 (状态管理)
 - D3-Geo 3.1.0 (地理坐标投影)
 - TopoJSON-Client 3.1.0 (地图数据解析)
 
-**Storage**: 
+**Storage**:
+
 - IndexedDB via `idb` 7.1.1 (地图数据缓存)
 - In-memory Zustand store (游戏状态)
 - Static JSON files (`/app/public/maps/world-countries.json`)
 
-**Testing**: 
+**Testing**:
+
 - Vitest 1.0.4 (单元测试 + 集成测试)
 - @testing-library/react 14.1.2 (React 组件测试)
 - Playwright 1.40.1 (E2E 测试)
@@ -33,18 +36,21 @@
 **Target Platform**: Web (Vite 5.0.8 开发服务器，静态部署)
 **Project Type**: Web application (单页应用，Phaser + React 混合架构)
 
-**Performance Goals**: 
+**Performance Goals**:
+
 - 地图渲染保持 60 FPS（当前已实现）
 - 映射逻辑执行时间 < 50ms（不影响启动速度）
 - 国家颜色更新延迟 < 100ms（实时性）
 
-**Constraints**: 
+**Constraints**:
+
 - 不修改现有地图数据文件（world-countries.json）的结构
 - 保持与现有 Phaser 渲染管线的兼容性
 - 不破坏已有的 commander 和 territory 数据模型
 - 向后兼容旧的 region-based 配置（过渡期）
 
-**Scale/Scope**: 
+**Scale/Scope**:
+
 - 10 位历史指挥官
 - 193 个国家（联合国成员国）
 - 15 个旧区域 ID 需要映射
@@ -52,27 +58,31 @@
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 ### ✅ 1. 代码质量门禁
 
 **格式化与静态分析**:
+
 - 使用现有的 ESLint + Prettier 配置
 - `npm run lint` 检查 TypeScript + React 代码
 - `npm run format` 统一格式化
 - 配置文件：`.eslintrc.json`, `.prettierrc`
 
 **复杂度衡量**:
+
 - ESLint 规则：`max-lines: 300`, `complexity: 15`
 - SonarJS 插件已启用，检测代码异味
 - 映射逻辑将提取到独立配置文件，单个文件 < 200 行
 
 **代码评审策略**:
+
 - 映射配置文件需 peer review（关键数据）
 - 渲染逻辑变更需验证性能无回归
 - 所有 PR 需通过 CI lint 检查
 
 **文档产出**:
+
 - `regionMapping.config.ts` 包含详细注释（每个 region 的地理含义）
 - `research.md` 记录映射决策依据
 - `quickstart.md` 提供开发者快速上手指南
@@ -84,6 +94,7 @@
 ### ✅ 2. 测试门禁
 
 **测试金字塔**:
+
 ```
        /\       E2E (Playwright)
       /  \        - 10个关键国家对齐验证
@@ -97,16 +108,19 @@
 ```
 
 **覆盖率目标**:
+
 - 映射逻辑（config + mapper）: 100%（关键路径）
 - WorldScene.mapCountriesToCommanders: 90%
 - 整体新增代码覆盖率: > 85%
 
 **测试先行策略**:
+
 - Phase 2 实施时，先编写失败的单元测试
 - 映射配置完成后，立即运行验证测试
 - E2E 测试在集成阶段添加，验证用户可见结果
 
 **CI 集成**:
+
 - `npm run test` 运行所有单元测试（< 10s）
 - `npm run test:coverage` 生成覆盖率报告
 - `npm run test:e2e` 运行 E2E 测试（< 2min）
@@ -118,26 +132,31 @@
 
 ### ✅ 3. 体验门禁
 
-**目标用户**: 
+**目标用户**:
+
 - 游戏玩家（观察地图，识别国家）
 - 开发者（维护映射配置，调试问题）
 
 **成功路径**:
+
 1. **主路径（P1）**: 玩家启动游戏 → 查看地图 → 点击指挥官 → 看到正确的国家名称与地图位置对应
 2. **验证路径（P2）**: 开发者运行测试 → 测试自动验证10个关键国家 → 测试通过
 3. **调试路径（P3）**: 开发者打开控制台 → 查看映射日志 → 快速定位问题
 
 **失败恢复体验**:
+
 - 如果映射文件缺失或损坏 → 显示警告日志，降级到旧的 region 显示，游戏继续运行
 - 如果某个 region 无法映射 → 跳过该 region，记录警告，不影响其他映射
 - 如果地图数据加载失败 → 显示简化地图（现有降级逻辑）
 
 **可达性验证方法**:
+
 - 键盘导航：Tab 键可访问所有交互元素（国家点击、面板操作）
 - 颜色对比：使用高对比度颜色区分不同指挥官（已有）
 - 屏幕阅读器：国家名称通过 aria-label 暴露（现有 CountryDetailPanel 已支持）
 
 **可用性指标**:
+
 - SC-002: 100% 用户能正确识别秦始皇占领中国（测试验证）
 - SC-008: 80% 用户首次游戏时顺利完成任务（用户测试）
 
@@ -148,23 +167,27 @@
 ### ✅ 4. 性能门禁
 
 **端到端性能预算**:
+
 - 游戏启动时间：不增加超过 50ms
 - 映射逻辑执行时间：< 50ms（10位指挥官 × 15个region → ~50个country）
 - 国家颜色更新：< 100ms（单次领土变化）
 - 地图渲染帧率：保持 60 FPS（不低于现有水平）
 
 **基准方案**:
+
 - 使用现有的 `PerformanceMonitor` 工具测量 FPS
 - 在 `WorldScene.mapCountriesToCommanders` 中添加 `performance.mark/measure`
 - 记录映射前后的时间差，输出到控制台
 - E2E 测试中使用 Playwright 的 Performance API 测量页面加载时间
 
 **降级与背压策略**:
+
 - 如果映射时间超过 100ms → 记录警告，考虑简化映射表（减少 country 数量）
 - 如果 FPS 低于 30 → 禁用颜色过渡动画（现有逻辑已支持）
 - 如果内存占用超过阈值 → 使用简化版地图数据（现有降级逻辑）
 
 **监测回归**:
+
 - CI 中运行性能基准测试（使用 Vitest benchmark）
 - 对比 PR 前后的性能指标（启动时间、映射时间）
 - 如果回归 > 5% → PR 被阻止，需优化或提供豁免说明
@@ -176,29 +199,34 @@
 ### ✅ 5. 可观测性门禁
 
 **日志最小集合**:
+
 - **启动日志**: "🔍 Starting country-to-commander mapping..." (INFO)
-- **映射详情**: "   秦始皇 -> 中国 (156) ✓" (DEBUG)
-- **映射统计**: "🗺️  Mapped 45 countries to 10 commanders" (INFO)
+- **映射详情**: " 秦始皇 -> 中国 (156) ✓" (DEBUG)
+- **映射统计**: "🗺️ Mapped 45 countries to 10 commanders" (INFO)
 - **错误日志**: "❌ Failed to map region 'unknown-region': not found in mapping table" (ERROR)
-- **性能日志**: "⏱️  Mapping completed in 23ms" (DEBUG)
+- **性能日志**: "⏱️ Mapping completed in 23ms" (DEBUG)
 
 **指标最小集合**:
+
 - `game.mapping.duration_ms`: 映射逻辑执行时间
 - `game.mapping.success_count`: 成功映射的国家数
 - `game.mapping.failure_count`: 失败映射的 region 数
 - `game.render.fps`: 地图渲染帧率（已有）
 
 **追踪信号**:
+
 - 用户点击国家 → 记录 country ID 和 owner ID
 - 领土易手 → 记录 previous owner → new owner 转换
 - 映射冲突 → 记录冲突的 region 和 country IDs
 
 **仪表盘位置**:
+
 - 开发模式：`DevHud` 组件显示 FPS、映射统计、错误数
 - 生产模式：控制台日志（用户可通过 F12 查看）
 - CI 报告：测试输出中包含性能指标和覆盖率
 
 **上线后复盘流程**:
+
 - 上线后 1 小时：检查控制台是否有映射错误日志
 - 上线后 24 小时：收集用户反馈，检查是否有国家对齐问题报告
 - 上线后 7 天：统计 E2E 测试通过率，评估视觉回归测试结果
@@ -270,7 +298,7 @@ tests/
     └── us2-commander-territories.spec.ts  # NEW: Test commander detail panel
 ```
 
-**Structure Decision**: 
+**Structure Decision**:
 采用单 Web 应用结构（`app/` 目录），前端使用 Phaser (Canvas) + React (UI Overlay) 混合架构。新增的映射逻辑集中在 `app/src/config/` 和 `app/src/scenes/world/utils/` 中，保持与现有代码结构的一致性。测试文件按类型分层（unit/integration/e2e），对应测试金字塔结构。
 
 ## Complexity Tracking
@@ -301,21 +329,19 @@ tests/
   - RegionMapping, CountryMappingResult, ValidationResult
   - HistoricalCommander 和 TerritoryState 扩展
   - 数据流和状态转换定义
-  
 - [x] `contracts/` - API 契约定义完成
   - `regionMapping.schema.json` - JSON Schema
   - `mappingValidation.contract.md` - 验证契约（3个核心函数）
-  
 - [x] `quickstart.md` - 开发者快速上手指南完成
   - 4步实施指南（配置 + 修复 + 验证 + 测试）
   - 常见问题解答
   - 性能优化建议
-  
 - [x] Agent context update - CodeBuddy 上下文已更新
 
 ### Constitution Check (Re-evaluation) ✅
 
 所有 5 项门禁已通过（详见 [Constitution Check](#constitution-check) 章节）：
+
 1. ✅ 代码质量门禁
 2. ✅ 测试门禁
 3. ✅ 体验门禁

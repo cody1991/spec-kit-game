@@ -1,6 +1,6 @@
 /**
  * Map Data Loader
- * 
+ *
  * Loads and parses TopoJSON/GeoJSON map data, converts to Country entities.
  * Supports Web Worker offloading and IndexedDB caching.
  */
@@ -15,11 +15,7 @@ export class MapDataLoadError extends Error {
   code: 'FETCH_FAILED' | 'PARSE_ERROR' | 'INVALID_FORMAT' | 'TIMEOUT';
   originalError?: Error;
 
-  constructor(
-    message: string,
-    code: MapDataLoadError['code'],
-    originalError?: Error
-  ) {
+  constructor(message: string, code: MapDataLoadError['code'], originalError?: Error) {
     super(message);
     this.name = 'MapDataLoadError';
     this.code = code;
@@ -37,15 +33,8 @@ export class MapDataLoader {
   /**
    * Load map data from URL (main entry point)
    */
-  async loadMapData(
-    dataUrl: string,
-    options: LoadOptions = {}
-  ): Promise<Country[]> {
-    const {
-      enableCache = true,
-      cacheDuration = 7,
-      timeout = 10000,
-    } = options;
+  async loadMapData(dataUrl: string, options: LoadOptions = {}): Promise<Country[]> {
+    const { enableCache = true, cacheDuration = 7, timeout = 10000 } = options;
 
     const startTime = performance.now();
 
@@ -56,7 +45,9 @@ export class MapDataLoader {
       // Check cache first
       const cached = await this.cache.get(dataUrl);
       if (cached) {
-        console.log(`✅ Map data loaded from cache in ${Math.round(performance.now() - startTime)}ms`);
+        console.log(
+          `✅ Map data loaded from cache in ${Math.round(performance.now() - startTime)}ms`
+        );
         return cached;
       }
     }
@@ -105,7 +96,9 @@ export class MapDataLoader {
       }
 
       const loadTime = Math.round(performance.now() - startTime);
-      console.log(`✅ Map data loaded from network in ${loadTime}ms (${countries.length} countries)`);
+      console.log(
+        `✅ Map data loaded from network in ${loadTime}ms (${countries.length} countries)`
+      );
 
       return processedCountries;
     } catch (error) {
@@ -115,11 +108,7 @@ export class MapDataLoader {
 
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          throw new MapDataLoadError(
-            `Map data load timeout after ${timeout}ms`,
-            'TIMEOUT',
-            error
-          );
+          throw new MapDataLoadError(`Map data load timeout after ${timeout}ms`, 'TIMEOUT', error);
         }
 
         throw new MapDataLoadError(
@@ -129,20 +118,14 @@ export class MapDataLoader {
         );
       }
 
-      throw new MapDataLoadError(
-        'Unknown error loading map data',
-        'FETCH_FAILED'
-      );
+      throw new MapDataLoadError('Unknown error loading map data', 'FETCH_FAILED');
     }
   }
 
   /**
    * Parse TopoJSON to GeoJSON FeatureCollection
    */
-  parseTopoJSON(
-    topoData: any,
-    objectName: string
-  ): GeoJSON.FeatureCollection {
+  parseTopoJSON(topoData: any, objectName: string): GeoJSON.FeatureCollection {
     try {
       if (!topoData.objects || !topoData.objects[objectName]) {
         throw new Error(`TopoJSON object '${objectName}' not found`);
@@ -174,10 +157,7 @@ export class MapDataLoader {
     const properties = feature.properties || {};
     const geometry = feature.geometry;
 
-    if (
-      !geometry ||
-      (geometry.type !== 'MultiPolygon' && geometry.type !== 'Polygon')
-    ) {
+    if (!geometry || (geometry.type !== 'MultiPolygon' && geometry.type !== 'Polygon')) {
       throw new Error(`Invalid geometry type: ${geometry?.type}`);
     }
 
@@ -209,7 +189,14 @@ export class MapDataLoader {
 
     // Extract country ID and name
     // Try feature.id first (set by TopoJSON), then properties
-    const id = String(feature.id || properties.id || properties.iso_a3 || properties.ISO_A3 || properties.name || `country-${Date.now()}`);
+    const id = String(
+      feature.id ||
+        properties.id ||
+        properties.iso_a3 ||
+        properties.ISO_A3 ||
+        properties.name ||
+        `country-${Date.now()}`
+    );
     const name = properties.name || properties.NAME || id;
     const nameEn = properties.name_en || properties.NAME_EN || name;
 

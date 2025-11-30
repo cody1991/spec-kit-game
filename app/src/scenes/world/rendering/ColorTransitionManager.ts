@@ -1,8 +1,8 @@
 /**
  * Color Transition Manager
- * 
+ *
  * 管理领土颜色过渡动画，使占领状态变化更流畅自然。
- * 
+ *
  * @module rendering/ColorTransitionManager
  */
 
@@ -19,7 +19,7 @@ export type EasingFunction = (t: number) => number;
 export interface IColorTransitionManager {
   /**
    * 启动颜色过渡
-   * 
+   *
    * @param countryId - 国家ID
    * @param fromColor - 起始颜色 (0xRRGGBB)
    * @param toColor - 目标颜色 (0xRRGGBB)
@@ -36,14 +36,14 @@ export interface IColorTransitionManager {
 
   /**
    * 取消指定国家的过渡
-   * 
+   *
    * @param countryId - 国家ID
    */
   cancelTransition(countryId: string): void;
 
   /**
    * 更新所有过渡状态（每帧调用）
-   * 
+   *
    * @param deltaTime - 距上一帧的时间 (ms)
    * @returns 当前过渡状态映射
    */
@@ -51,7 +51,7 @@ export interface IColorTransitionManager {
 
   /**
    * 获取指定国家的当前插值颜色
-   * 
+   *
    * @param countryId - 国家ID
    * @returns 当前颜色 (0xRRGGBB) 或 null
    */
@@ -181,7 +181,7 @@ export class ColorTransitionManager implements IColorTransitionManager {
 
   /**
    * 颜色线性插值
-   * 
+   *
    * @param fromColor - 起始颜色 (0xRRGGBB)
    * @param toColor - 目标颜色 (0xRRGGBB)
    * @param t - 插值参数 [0, 1]
@@ -242,8 +242,6 @@ export class ColorTransitionManager implements IColorTransitionManager {
 /**
  * 工厂函数：创建颜色过渡管理器
  */
-export function createColorTransitionManager(
-  defaultDuration?: number
-): IColorTransitionManager {
+export function createColorTransitionManager(defaultDuration?: number): IColorTransitionManager {
   return new ColorTransitionManager(defaultDuration);
 }

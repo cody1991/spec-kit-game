@@ -43,30 +43,30 @@
 ```typescript
 interface Country {
   // 唯一标识
-  id: string;                    // ISO 3166-1 alpha-3 国家代码（如 "CHN", "USA"）
-  
+  id: string; // ISO 3166-1 alpha-3 国家代码（如 "CHN", "USA"）
+
   // 显示信息
-  name: string;                  // 国家名称（如 "中国", "美国"）
-  nameEn: string;                // 英文名称（用于调试和日志）
-  
+  name: string; // 国家名称（如 "中国", "美国"）
+  nameEn: string; // 英文名称（用于调试和日志）
+
   // 地理数据
-  geometry: MultiPolygon;        // GeoJSON MultiPolygon 格式的边界坐标
-  centroid: Point;               // 国家中心点（用于放置标签或图标）
-  bbox: BoundingBox;             // 边界框（用于快速碰撞检测）
-  area: number;                  // 面积（平方千米，用于排序或筛选）
-  
+  geometry: MultiPolygon; // GeoJSON MultiPolygon 格式的边界坐标
+  centroid: Point; // 国家中心点（用于放置标签或图标）
+  bbox: BoundingBox; // 边界框（用于快速碰撞检测）
+  area: number; // 面积（平方千米，用于排序或筛选）
+
   // 拓扑关系
-  neighbors: string[];           // 相邻国家的 ID 列表
-  
+  neighbors: string[]; // 相邻国家的 ID 列表
+
   // 渲染优化
   simplifiedGeometry?: MultiPolygon; // 简化版本几何数据（LOD 使用）
-  gridCells: number[];           // 所属网格单元 ID（空间索引）
+  gridCells: number[]; // 所属网格单元 ID（空间索引）
 }
 
 // 辅助类型
 interface Point {
-  x: number;  // 经度或屏幕 X 坐标
-  y: number;  // 纬度或屏幕 Y 坐标
+  x: number; // 经度或屏幕 X 坐标
+  y: number; // 纬度或屏幕 Y 坐标
 }
 
 interface BoundingBox {
@@ -78,7 +78,7 @@ interface BoundingBox {
 
 interface MultiPolygon {
   type: 'MultiPolygon';
-  coordinates: number[][][][];  // GeoJSON 标准格式
+  coordinates: number[][][][]; // GeoJSON 标准格式
 }
 ```
 
@@ -133,22 +133,22 @@ interface MultiPolygon {
 ```typescript
 interface TerritoryState {
   // 关联
-  countryId: string;             // Country.id 外键
-  ownerId: string | null;        // Commander.id，null 表示中立
-  
+  countryId: string; // Country.id 外键
+  ownerId: string | null; // Commander.id，null 表示中立
+
   // 游戏数据
-  troops: number;                // 当前驻军数量
-  resources: number;             // 资源储备
-  defense: number;               // 防御力（基础值 + 地形修正）
-  
+  troops: number; // 当前驻军数量
+  resources: number; // 资源储备
+  defense: number; // 防御力（基础值 + 地形修正）
+
   // 状态追踪
-  updatedAt: number;             // 最后更新时间戳（ms）
-  conqueredAt: number | null;    // 被当前 owner 占领的时间戳
+  updatedAt: number; // 最后更新时间戳（ms）
+  conqueredAt: number | null; // 被当前 owner 占领的时间戳
   previousOwnerId: string | null; // 前任占领者（用于颜色过渡动画）
-  
+
   // 渲染状态
-  transitionProgress: number;    // 颜色过渡进度 (0-1)，null 表示无过渡
-  isHighlighted: boolean;        // 是否高亮（用户选中或悬停）
+  transitionProgress: number; // 颜色过渡进度 (0-1)，null 表示无过渡
+  isHighlighted: boolean; // 是否高亮（用户选中或悬停）
 }
 ```
 
@@ -230,20 +230,20 @@ interface TerritoryState {
 ```typescript
 interface CommanderColor {
   // 关联
-  commanderId: string;           // Commander.id 外键
-  
+  commanderId: string; // Commander.id 外键
+
   // 颜色方案
-  primary: number;               // 主要填充颜色（Phaser 颜色格式：0xRRGGBB）
-  secondary: number;             // 次要颜色（边界或高亮）
-  alpha: number;                 // 透明度（0-1）
-  
+  primary: number; // 主要填充颜色（Phaser 颜色格式：0xRRGGBB）
+  secondary: number; // 次要颜色（边界或高亮）
+  alpha: number; // 透明度（0-1）
+
   // 可访问性
-  pattern?: string;              // 纹理图案名称（用于色盲模式）
-  label?: string;                // 单字符标签（如 "秦"、"拿"）
-  
+  pattern?: string; // 纹理图案名称（用于色盲模式）
+  label?: string; // 单字符标签（如 "秦"、"拿"）
+
   // 动画
-  glowColor?: number;            // 发光效果颜色（选中时）
-  pulseSpeed?: number;           // 脉冲速度（ms，选中时）
+  glowColor?: number; // 发光效果颜色（选中时）
+  pulseSpeed?: number; // 脉冲速度（ms，选中时）
 }
 ```
 
@@ -258,39 +258,40 @@ interface CommanderColor {
 ### 颜色方案设计
 
 **设计原则**：
+
 1. **高对比度**: 相邻领土颜色明显区分（WCAG AA 对比度 ≥ 4.5:1）
 2. **色盲友好**: 避免纯红绿组合，提供纹理备选
 3. **文化适配**: 尊重历史人物的地域或象征颜色
 
 **预定义 10 种颜色**：
 
-| 指挥官 | primary | secondary | 纹理 | 理由 |
-|--------|---------|-----------|------|------|
-| 拿破仑 | 0x0066CC（蓝） | 0x003D7A | stripes | 法国蓝 |
-| 秦始皇 | 0xCC0000（红） | 0x7A0000 | dots | 中国红 |
-| 克娄巴特拉 | 0xFFCC00（金黄） | 0xB8860B | waves | 埃及金 |
-| 成吉思汗 | 0x008800（绿） | 0x004D00 | triangles | 草原绿 |
-| 亚历山大 | 0x9933FF（紫） | 0x5B1F99 | grid | 皇家紫 |
-| 凯撒 | 0xFF6600（橙） | 0xB84700 | circles | 罗马橙 |
-| 阿提拉 | 0x663300（棕） | 0x3D1F00 | crosses | 匈奴棕 |
-| 萨拉丁 | 0x00AA88（青绿） | 0x006655 | diamonds | 阿拉伯青 |
-| 维多利亚 | 0xFF0066（玫红） | 0x99003D | hexagons | 英国玫瑰 |
-| 俾斯麦 | 0x666666（灰） | 0x333333 | checkers | 铁血灰 |
+| 指挥官     | primary          | secondary | 纹理      | 理由     |
+| ---------- | ---------------- | --------- | --------- | -------- |
+| 拿破仑     | 0x0066CC（蓝）   | 0x003D7A  | stripes   | 法国蓝   |
+| 秦始皇     | 0xCC0000（红）   | 0x7A0000  | dots      | 中国红   |
+| 克娄巴特拉 | 0xFFCC00（金黄） | 0xB8860B  | waves     | 埃及金   |
+| 成吉思汗   | 0x008800（绿）   | 0x004D00  | triangles | 草原绿   |
+| 亚历山大   | 0x9933FF（紫）   | 0x5B1F99  | grid      | 皇家紫   |
+| 凯撒       | 0xFF6600（橙）   | 0xB84700  | circles   | 罗马橙   |
+| 阿提拉     | 0x663300（棕）   | 0x3D1F00  | crosses   | 匈奴棕   |
+| 萨拉丁     | 0x00AA88（青绿） | 0x006655  | diamonds  | 阿拉伯青 |
+| 维多利亚   | 0xFF0066（玫红） | 0x99003D  | hexagons  | 英国玫瑰 |
+| 俾斯麦     | 0x666666（灰）   | 0x333333  | checkers  | 铁血灰   |
 
 ### 色盲模式映射
 
 ```typescript
 const colorBlindPatterns = {
-  'stripes': 'diagonal-lines',    // 斜线纹理
-  'dots': 'small-circles',        // 小圆点
-  'waves': 'wavy-lines',          // 波浪线
-  'triangles': 'up-triangles',    // 向上三角
-  'grid': 'square-grid',          // 方格
-  'circles': 'large-circles',     // 大圆圈
-  'crosses': 'cross-hatch',       // 交叉线
-  'diamonds': 'diamond-shape',    // 钻石形
-  'hexagons': 'hexagon-tiles',    // 六边形
-  'checkers': 'checkerboard'      // 棋盘格
+  stripes: 'diagonal-lines', // 斜线纹理
+  dots: 'small-circles', // 小圆点
+  waves: 'wavy-lines', // 波浪线
+  triangles: 'up-triangles', // 向上三角
+  grid: 'square-grid', // 方格
+  circles: 'large-circles', // 大圆圈
+  crosses: 'cross-hatch', // 交叉线
+  diamonds: 'diamond-shape', // 钻石形
+  hexagons: 'hexagon-tiles', // 六边形
+  checkers: 'checkerboard', // 棋盘格
 };
 ```
 
@@ -299,12 +300,12 @@ const colorBlindPatterns = {
 ```json
 {
   "commanderId": "qin-shi-huang",
-  "primary": 0xCC0000,
-  "secondary": 0x7A0000,
+  "primary": 0xcc0000,
+  "secondary": 0x7a0000,
   "alpha": 0.7,
   "pattern": "dots",
   "label": "秦",
-  "glowColor": 0xFF0000,
+  "glowColor": 0xff0000,
   "pulseSpeed": 1000
 }
 ```
@@ -320,27 +321,27 @@ const colorBlindPatterns = {
 ```typescript
 interface MapRenderState {
   // 视口
-  cameraViewport: BoundingBox;   // 摄像机可见区域（世界坐标）
-  zoom: number;                  // 当前缩放级别（0.5x - 5x）
-  
+  cameraViewport: BoundingBox; // 摄像机可见区域（世界坐标）
+  zoom: number; // 当前缩放级别（0.5x - 5x）
+
   // LOD 系统
-  lodLevel: 0 | 1 | 2;           // 当前细节级别
+  lodLevel: 0 | 1 | 2; // 当前细节级别
   // 0: 完整 193 国家（zoom > 2x）
   // 1: 简化 193 国家（0.5x < zoom ≤ 2x）
   // 2: 50 区域（zoom ≤ 0.5x）
-  
+
   // 可见性
-  visibleCountryIds: string[];   // 当前帧需要渲染的 Country ID 列表
-  gridCellsInView: number[];     // 可见的网格单元 ID
-  
+  visibleCountryIds: string[]; // 当前帧需要渲染的 Country ID 列表
+  gridCellsInView: number[]; // 可见的网格单元 ID
+
   // 交互
-  hoveredCountryId: string | null;   // 鼠标悬停的国家
-  selectedCountryId: string | null;  // 用户选中的国家
-  
+  hoveredCountryId: string | null; // 鼠标悬停的国家
+  selectedCountryId: string | null; // 用户选中的国家
+
   // 性能
-  lastFrameTime: number;         // 上一帧渲染时间（ms）
-  averageFps: number;            // 平均帧率（滑动窗口）
-  enableAnimation: boolean;      // 是否启用动画（根据性能动态调整）
+  lastFrameTime: number; // 上一帧渲染时间（ms）
+  averageFps: number; // 平均帧率（滑动窗口）
+  enableAnimation: boolean; // 是否启用动画（根据性能动态调整）
 }
 ```
 
@@ -356,9 +357,9 @@ interface MapRenderState {
 
 ```typescript
 function updateLodLevel(zoom: number): 0 | 1 | 2 {
-  if (zoom > 2.0) return 0;       // 完整细节
-  if (zoom > 0.5) return 1;       // 中等细节
-  return 2;                       // 低细节（简化地图）
+  if (zoom > 2.0) return 0; // 完整细节
+  if (zoom > 0.5) return 1; // 中等细节
+  return 2; // 低细节（简化地图）
 }
 ```
 
@@ -372,7 +373,7 @@ function updateVisibleCountries(
 ): string[] {
   // 1. 找到视口内的网格单元
   const cellsInView = grid.getCellsInBounds(cameraViewport);
-  
+
   // 2. 收集这些单元中的所有国家
   const candidateIds = new Set<string>();
   for (const cellId of cellsInView) {
@@ -380,7 +381,7 @@ function updateVisibleCountries(
       candidateIds.add(countryId);
     }
   }
-  
+
   // 3. 精确检测（Bounding Box 相交）
   const visibleIds: string[] = [];
   for (const id of candidateIds) {
@@ -389,7 +390,7 @@ function updateVisibleCountries(
       visibleIds.push(id);
     }
   }
-  
+
   return visibleIds;
 }
 ```
@@ -398,9 +399,9 @@ function updateVisibleCountries(
 
 ```typescript
 function updateAnimationSetting(averageFps: number): boolean {
-  if (averageFps > 55) return true;   // High: 启用全部动画
-  if (averageFps > 45) return true;   // Medium: 启用动画但缩短时间
-  return false;                       // Low: 禁用动画
+  if (averageFps > 55) return true; // High: 启用全部动画
+  if (averageFps > 45) return true; // Medium: 启用动画但缩短时间
+  return false; // Low: 禁用动画
 }
 ```
 
@@ -431,10 +432,10 @@ function updateAnimationSetting(averageFps: number): boolean {
 
 ```typescript
 interface SpatialGrid {
-  cols: number;                  // 网格列数（16）
-  rows: number;                  // 网格行数（8）
-  cellWidth: number;             // 单元格宽度（世界坐标）
-  cellHeight: number;            // 单元格高度
+  cols: number; // 网格列数（16）
+  rows: number; // 网格行数（8）
+  cellWidth: number; // 单元格宽度（世界坐标）
+  cellHeight: number; // 单元格高度
   cells: Map<number, Set<string>>; // cellId -> countryIds
 }
 
@@ -449,10 +450,10 @@ const countriesInCell = grid.getCountriesInCell(52);
 ```typescript
 interface ColorLerpState {
   countryId: string;
-  fromColor: number;             // 旧颜色
-  toColor: number;               // 新颜色
-  startTime: number;             // 开始时间戳
-  duration: number;              // 持续时间（ms）
+  fromColor: number; // 旧颜色
+  toColor: number; // 新颜色
+  startTime: number; // 开始时间戳
+  duration: number; // 持续时间（ms）
   easing: 'linear' | 'easeInOut'; // 缓动函数
 }
 
@@ -477,6 +478,7 @@ function getCurrentColor(state: ColorLerpState, now: number): number {
 ### 级联更新
 
 1. **领土易手**:
+
    ```
    BattleSystem → TerritoryState.ownerId 更新
      → 触发 ColorLerpState 创建
@@ -484,6 +486,7 @@ function getCurrentColor(state: ColorLerpState, now: number): number {
    ```
 
 2. **摄像机移动**:
+
    ```
    User Input → Camera.setScroll()
      → MapRenderState.cameraViewport 更新
@@ -507,9 +510,9 @@ function getCurrentColor(state: ColorLerpState, now: number): number {
 
 ```typescript
 interface MapStore {
-  countries: Map<string, Country>;           // 地图数据（加载后不变）
+  countries: Map<string, Country>; // 地图数据（加载后不变）
   territoryStates: Map<string, TerritoryState>; // 动态游戏状态
-  renderState: MapRenderState;               // 渲染状态
+  renderState: MapRenderState; // 渲染状态
   colorMappings: Map<string, CommanderColor>; // 颜色配置
 }
 ```
@@ -519,10 +522,10 @@ interface MapStore {
 ```typescript
 // 缓存地图数据，加速二次加载
 interface MapDataCache {
-  version: string;               // 数据版本（如 "world-atlas-50m-v1"）
+  version: string; // 数据版本（如 "world-atlas-50m-v1"）
   countries: Country[];
-  cachedAt: number;              // 缓存时间戳
-  expiresAt: number;             // 过期时间（7 天后）
+  cachedAt: number; // 缓存时间戳
+  expiresAt: number; // 过期时间（7 天后）
 }
 ```
 
@@ -532,25 +535,25 @@ interface MapDataCache {
 
 ### 内存占用估算
 
-| 数据 | 数量 | 单项大小 | 总计 |
-|------|------|----------|------|
-| Country | 193 | ~50KB | ~10MB |
-| TerritoryState | 193 | ~200B | ~40KB |
-| CommanderColor | 10 | ~100B | ~1KB |
-| MapRenderState | 1 | ~5KB | ~5KB |
-| SpatialGrid | 128 cells | ~50KB | ~50KB |
-| **总计** | | | **~10.1MB** |
+| 数据           | 数量      | 单项大小 | 总计        |
+| -------------- | --------- | -------- | ----------- |
+| Country        | 193       | ~50KB    | ~10MB       |
+| TerritoryState | 193       | ~200B    | ~40KB       |
+| CommanderColor | 10        | ~100B    | ~1KB        |
+| MapRenderState | 1         | ~5KB     | ~5KB        |
+| SpatialGrid    | 128 cells | ~50KB    | ~50KB       |
+| **总计**       |           |          | **~10.1MB** |
 
 符合 ≤ 50MB 内存增量预算。
 
 ### 更新频率
 
-| 操作 | 频率 | 影响范围 |
-|------|------|----------|
-| 渲染帧 | 60 FPS | visibleCountryIds（~60 个） |
-| 领土更新 | ~1/秒 | 单个 TerritoryState |
+| 操作       | 频率    | 影响范围                      |
+| ---------- | ------- | ----------------------------- |
+| 渲染帧     | 60 FPS  | visibleCountryIds（~60 个）   |
+| 领土更新   | ~1/秒   | 单个 TerritoryState           |
 | 摄像机移动 | ~10 FPS | MapRenderState.cameraViewport |
-| 交互检测 | ~60 FPS | hoveredCountryId |
+| 交互检测   | ~60 FPS | hoveredCountryId              |
 
 ---
 

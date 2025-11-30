@@ -1,8 +1,8 @@
 /**
  * E2E Tests for User Story 1: 查看真实世界地图
- * 
+ *
  * Goal: 用户能够看到完整的世界地图轮廓和国家边界，而不是黑屏
- * 
+ *
  * Test Scenarios:
  * - T027: User should see world map on game start
  * - T028: Map remains visible during drag/zoom
@@ -15,14 +15,14 @@ test.describe('US1: View World Map', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the game
     await page.goto('http://localhost:5173');
-    
+
     // Wait for the game to load
     await page.waitForSelector('canvas', { timeout: 10000 });
   });
 
   /**
    * T027: User should see world map on game start
-   * 
+   *
    * Acceptance Criteria:
    * - Canvas element is visible
    * - Map data is loaded (not black screen)
@@ -34,9 +34,10 @@ test.describe('US1: View World Map', () => {
     await expect(canvas).toBeVisible();
 
     // Wait for map to load (check console logs)
-    const mapLoadedPromise = page.waitForEvent('console', msg => 
-      msg.text().includes('Map loaded successfully') || 
-      msg.text().includes('countries loaded')
+    const mapLoadedPromise = page.waitForEvent(
+      'console',
+      (msg) =>
+        msg.text().includes('Map loaded successfully') || msg.text().includes('countries loaded')
     );
 
     await mapLoadedPromise;
@@ -56,7 +57,7 @@ test.describe('US1: View World Map', () => {
 
   /**
    * T028: Map remains visible during drag/zoom
-   * 
+   *
    * Acceptance Criteria:
    * - Map borders don't disappear during camera movement
    * - Zoom in/out maintains map visibility
@@ -64,7 +65,7 @@ test.describe('US1: View World Map', () => {
    */
   test('T028: map remains visible during drag and zoom', async ({ page }) => {
     const canvas = page.locator('canvas');
-    
+
     // Wait for initial render
     await page.waitForTimeout(2000);
 
@@ -111,7 +112,7 @@ test.describe('US1: View World Map', () => {
 
   /**
    * T029: User can identify major countries
-   * 
+   *
    * Acceptance Criteria:
    * - Hovering over a country shows tooltip with country name
    * - Major countries (USA, China, Russia, etc.) are identifiable
@@ -119,7 +120,7 @@ test.describe('US1: View World Map', () => {
    */
   test('T029: can identify major countries via tooltip', async ({ page }) => {
     const canvas = page.locator('canvas');
-    
+
     // Wait for initial render
     await page.waitForTimeout(2000);
 
@@ -160,7 +161,7 @@ test.describe('US1: View World Map', () => {
       // At minimum, verify map is still rendered after hover
       const screenshot = await canvas.screenshot();
       expect(screenshot.length).toBeGreaterThan(5000);
-      
+
       // Log warning that tooltip UI is not implemented yet
       console.warn('Country tooltip UI not found - may be implemented in later tasks');
     } else {

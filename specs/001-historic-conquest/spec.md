@@ -5,7 +5,7 @@
 **Status**: Draft  
 **Input**: User description: "你是一位专业的web游戏开发人员。创建一个web游戏，整个游戏以世界地图为背景，每次游戏开始的时候，在世界地图上随机生成一些历史人物，带有一定的初始属性。然后按照属性和地理位置，他们开始互相攻击，占领地盘，最后统一全世界的就是胜利者了。"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - 启动全球征服战局 (Priority: P1)
 
@@ -60,7 +60,7 @@
 - 如果战局进入长时间僵持（例如 5 分钟无领土易主），系统应自动触发「决战事件」提升冲突概率或宣布双赢条件。
 - 网络波动或页面重新加载时，最近一局需在本地存档中可恢复，避免玩家观察进度突然丢失。
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -75,7 +75,7 @@
 - **FR-009**: 玩家可以重新开局或加载上一局存档；再次开局必须重新生成随机种子以确保可重玩性，同时允许玩家记录该种子以便分享。
 - **FR-010**: 系统必须在浏览器本地存储最近一次战局的核心状态（开始时间、角色列表、战报索引），以便意外刷新后恢复。
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **HistoricalCommander**: 表示单个历史人物，包含姓名、出生洲、攻防/机动/统御力、特殊技能、当前军力、控制领土列表、盟友与敌对名单、下一次行动时间。
 - **Territory**: 表示地图上可占领的多边形区域，记录地理坐标、地形类型、当前占领者、驻军规模、资源产出、相邻领土列表。
@@ -88,14 +88,14 @@
 2. 单人体验优先，暂不支持多人实时对战；分享以复制文本/种子为主。
 3. 浏览器环境默认为桌面与平板，移动端仅需保证地图浏览与战报查看的基本可用性。
 
-## Quality Guardrails *(per Constitution)*
+## Quality Guardrails _(per Constitution)_
 
 - **Code Quality**: 提供完整的随机生成与战斗判定算法文档，核心模块需保持函数/文件粒度的循环复杂度阈值，提交前强制通过格式化与静态分析，并在评审清单中记录复杂度与数据结构取舍。
 - **Testing Evidence**: 为随机生成、战斗结算、战报记录、存档恢复分别编写单元与合同测试，关键战局流程具备端到端回放测试，测试覆盖率维持 ≥90%，并由 CI 阻塞合并。
 - **User Experience**: 地图操作提供键盘与触控双入口，颜色对比满足 WCAG 2.1 AA；可用性指标聚焦「开局耗时、战报理解度、结算可读性」，并在规格中定义衡量方式。
 - **Performance & Observability**: 设定 p95 互动延迟 <120 ms、完整战局仿真时长 5–12 分钟；记录关键指标（战局 FPS、事件数、胜利耗时分布）以及日志/指标/追踪三类信号，支持上线后 24 小时内复盘。
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

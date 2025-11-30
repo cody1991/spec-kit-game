@@ -1,6 +1,6 @@
 /**
  * Country Detail Panel
- * 
+ *
  * Displays detailed information about a selected country/territory
  * Shows: country name, owner (commander), troops, resources, defense
  */
@@ -20,27 +20,25 @@ export function CountryDetailPanel() {
     return null;
   }
 
-  // Get territory data
-  const territory = territories.find((t) => t.id === selectedTerritoryId);
+  // Get territory state (new system - country-based)
   const territoryState = territoryStates.get(selectedTerritoryId);
-  
-  if (!territory) {
-    return null;
-  }
+
+  // Fallback to legacy territory system if territoryState not found
+  const territory = territories.find((t) => t.id === selectedTerritoryId);
+
+  // Use country name from territoryState if available, otherwise use territory name
+  const displayName = territoryState?.countryName || territory?.name || selectedTerritoryId;
+  const ownerId = territoryState?.ownerId || territory?.ownerId;
 
   // Get owner info
-  const owner = territory.ownerId
-    ? commanders.find((c) => c.id === territory.ownerId)
-    : null;
-  
-  const colorMapping = territory.ownerId
-    ? colorMappings.get(territory.ownerId)
-    : null;
+  const owner = ownerId ? commanders.find((c) => c.id === ownerId) : null;
+
+  const colorMapping = ownerId ? colorMappings.get(ownerId) : null;
 
   return (
     <div className="country-detail-panel">
       <div className="panel-header">
-        <h3>{territory.name}</h3>
+        <h3>{displayName}</h3>
         <button
           className="close-button"
           onClick={() => useGameStore.getState().selectTerritory(null)}
@@ -77,19 +75,14 @@ export function CountryDetailPanel() {
           <>
             <div className="info-section">
               <div className="info-label">驻军</div>
-              <div className="info-value">
-                {territoryState.troops.toLocaleString()} 兵力
-              </div>
+              <div className="info-value">{territoryState.troops.toLocaleString()} 兵力</div>
             </div>
 
             <div className="info-section">
               <div className="info-label">防御力</div>
               <div className="info-value">
                 <div className="stat-bar">
-                  <div
-                    className="stat-bar-fill"
-                    style={{ width: `${territoryState.defense}%` }}
-                  />
+                  <div className="stat-bar-fill" style={{ width: `${territoryState.defense}%` }} />
                 </div>
                 <span className="stat-value">{territoryState.defense}</span>
               </div>
@@ -98,9 +91,7 @@ export function CountryDetailPanel() {
             {territoryState.resources > 0 && (
               <div className="info-section">
                 <div className="info-label">资源</div>
-                <div className="info-value">
-                  {territoryState.resources.toLocaleString()}
-                </div>
+                <div className="info-value">{territoryState.resources.toLocaleString()}</div>
               </div>
             )}
           </>
@@ -111,9 +102,7 @@ export function CountryDetailPanel() {
           <>
             <div className="info-section">
               <div className="info-label">驻军</div>
-              <div className="info-value">
-                {territory.garrison?.toLocaleString() || 0} 兵力
-              </div>
+              <div className="info-value">{territory.garrison?.toLocaleString() || 0} 兵力</div>
             </div>
 
             <div className="info-section">
@@ -135,9 +124,7 @@ export function CountryDetailPanel() {
         {territoryState?.conqueredAt && (
           <div className="info-section conquest-info">
             <div className="info-label">占领时间</div>
-            <div className="info-value">
-              {formatTimeSince(territoryState.conqueredAt)}
-            </div>
+            <div className="info-value">{formatTimeSince(territoryState.conqueredAt)}</div>
           </div>
         )}
       </div>

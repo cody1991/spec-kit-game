@@ -1,6 +1,6 @@
 /**
  * Map Types for Real World Map Visualization
- * 
+ *
  * This module contains all type definitions specific to the map rendering system.
  * For core game types, see @core/types.ts
  */

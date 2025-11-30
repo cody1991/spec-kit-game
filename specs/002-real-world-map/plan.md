@@ -10,19 +10,22 @@
 ## Technical Context
 
 **Language/Version**: TypeScript 5.4（ESM，strictNullChecks on）  
-**Primary Dependencies**: 
+**Primary Dependencies**:
+
 - Phaser 3.80（地图渲染、Graphics API、交互事件）
 - React 18 + React DOM（UI 面板和详情展示）
 - Zustand 4（全局状态管理）
 - d3-geo 3.1（地理投影和坐标转换）
 - topojson-client 3.1（TopoJSON 解析和优化）
 
-**Storage**: 
+**Storage**:
+
 - 静态资源（public/maps/）：GeoJSON/TopoJSON 地图数据文件
 - Zustand store：当前领土占领状态、颜色映射
 - IndexedDB：地图数据缓存（可选，用于加速二次加载）
 
-**Testing**: 
+**Testing**:
+
 - Vitest：地图数据加载、坐标转换、颜色映射算法单测
 - Testing Library：React 详情面板组件测试
 - Playwright：端到端可视化验证（截图对比）
@@ -32,21 +35,24 @@
 
 **Project Type**: Web SPA（Phaser Canvas + React Overlay）- 现有项目扩展
 
-**Performance Goals**: 
+**Performance Goals**:
+
 - 地图初始加载 ≤ 2秒（包括数据下载和首次渲染）
 - 地图渲染帧率 ≥ 60 FPS（标准设备）/ ≥ 30 FPS（低配设备）
 - 单次领土更新 ≤ 50ms
 - 交互响应延迟 ≤ 100ms
 - 内存增量 ≤ 50MB
 
-**Constraints**: 
+**Constraints**:
+
 - 必须兼容现有的 Phaser WorldScene
 - 不能破坏现有的游戏逻辑和状态管理
 - 需要支持 193 个国家的完整边界数据
 - 必须提供降级方案（数据加载失败时回退到简化地图）
 - 颜色方案必须支持色盲用户（提供纹理或标签备选）
 
-**Scale/Scope**: 
+**Scale/Scope**:
+
 - 1 个新的地图渲染模块
 - 193+ 个国家多边形（每个约 50-500 个顶点）
 - 10 种指挥官颜色映射
@@ -55,7 +61,7 @@
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 1. ✅ **代码质量门禁**：
    - **格式化与静态分析**：继续使用现有的 ESLint + Prettier 配置，所有新代码必须通过 CI 检查
@@ -160,7 +166,8 @@ tests/
     └── us4-map-interaction.spec.ts    # 新增：US4 验收测试
 ```
 
-**Structure Decision**: 
+**Structure Decision**:
+
 - 在现有 `app/src/scenes/world/` 目录下新增三个专门的地图处理模块，保持与现有 Phaser 场景的集成
 - 重用现有的 Zustand store 和 UI 面板结构，最小化对现有代码的影响
 - 将地图数据文件放在 `public/maps/` 下，便于静态资源管理和 CDN 缓存
@@ -171,6 +178,7 @@ tests/
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
 当前方案未超出宪章允许的复杂度，无需额外豁免。主要复杂性来自：
+
 1. **地图数据规模**：193 个国家多边形（约 50,000 个顶点）- 通过 TopoJSON 压缩和按需加载解决
 2. **渲染性能**：大量多边形实时渲染 - 通过空间索引、视口裁剪、LOD（细节层次）优化解决
 3. **状态同步**：地图渲染与游戏状态实时同步 - 通过 Zustand 订阅机制和批量更新解决
@@ -229,6 +237,7 @@ tests/
 ### Expected Outputs
 
 完成 Phase 0 后，`research.md` 应包含：
+
 - 每个研究任务的决策结论（选择哪个方案）
 - 决策理由（为什么选择该方案）
 - 被拒绝的替代方案及原因
@@ -278,6 +287,7 @@ tests/
 **Status**: 待执行 - 将由 `/speckit.tasks` 命令生成
 
 Phase 2 将生成详细的任务列表（`tasks.md`），包括：
+
 - 开发任务（实现地图加载、渲染、交互）
 - 测试任务（单元测试、集成测试、E2E 测试）
 - 质量任务（性能优化、代码审查、文档）

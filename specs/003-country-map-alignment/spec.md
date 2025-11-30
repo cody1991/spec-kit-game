@@ -5,7 +5,7 @@
 **Status**: Draft  
 **Input**: User description: "该项目已经完成了两次的迭代更新了。这一次我们向更加好的展示产品的形态。因为现在看起来页面的展示是非常不符合我们想要的形式的：国家和地图匹配不上"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - 准确识别国家位置 (Priority: P1)
 
@@ -83,7 +83,7 @@
 - 当用户缩放地图到极端级别（非常大或非常小），国家标签和颜色标记是否仍然对齐？（使用相对坐标系统，确保标签跟随国家几何图形缩放）
 - 当地图数据使用简化版本（world-countries-simplified.json），国家边界精度降低，是否会影响对齐准确性？（不影响，因为映射基于 country ID 而非几何坐标）
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -102,46 +102,45 @@
 
 - **Region-to-Country 映射表 (regionCountryMap)**: 记录旧系统的 region ID（如 'china', 'western-europe'）到新系统的真实国家 ID 列表（ISO 3166-1 codes）的映射关系。映射表应该覆盖当前游戏中使用的所有 15 个旧 region IDs
   - 示例结构：`{ 'china': ['156'], 'western-europe': ['250', '276', '380', '528'], ... }`
-  
 - **国家验证元数据 (Country Validation Metadata)**: 包含每个国家的预期位置信息（如中心坐标、边界框），用于自动化测试验证国家名称和位置的对齐性
   - 示例：`{ id: '156', expectedName: '中国', expectedCentroid: { x: 105, y: 35 }, expectedBBox: {...} }`
 
 - **国家对齐测试用例 (Country Alignment Test Cases)**: 定义一组关键国家（如中国、美国、法国、俄罗斯等）及其预期占领者，用于 E2E 测试验证映射准确性
 
-## Quality Guardrails *(per Constitution)*
+## Quality Guardrails _(per Constitution)_
 
-- **Code Quality**: 
+- **Code Quality**:
   - `regionCountryMap` 映射表必须从代码中抽离到独立的配置文件（如 `regionMapping.config.ts`），便于维护和测试
   - 映射逻辑必须有单元测试，覆盖率要求 100%（因为这是关键的数据转换逻辑）
   - 所有映射函数必须有完整的 TypeScript 类型注解，确保编译时类型安全
   - 代码必须通过 ESLint 和 Prettier 检查
 
-- **Testing Evidence**: 
+- **Testing Evidence**:
   - **单元测试**: 测试 `regionCountryMap` 的每个条目是否有效，测试映射函数能正确处理正常输入、边界情况和错误输入
   - **集成测试**: 测试指挥官初始化流程，验证 `controlledTerritories` 中的 region IDs 能正确转换为 country IDs 并存入 `territoryStates`
-  - **E2E测试**: 
+  - **E2E测试**:
     - 测试至少 10 个主要国家的名称和位置对齐（中国、美国、俄罗斯、法国、德国、日本、印度、巴西、澳大利亚、南非）
     - 测试点击地图上的中国区域，验证弹出的详情显示"中国"而非其他国家名
     - 测试秦始皇的详情面板，验证其控制的国家列表中包含"中国"且地图上中国区域确实被标记为秦始皇的颜色
   - **视觉回归测试**: 对比修复前后的地图截图，确保国家位置准确且无视觉回归
   - 所有测试必须在 CI 中自动运行，测试失败时阻止代码合并
 
-- **User Experience**: 
+- **User Experience**:
   - **准确性**: 100% 的指挥官显示的国家名称与地图位置匹配（零容忍错误）
   - **识别度**: 90% 的用户能够在不查看帮助的情况下，通过地图颜色和国家形状识别出主要国家
   - **一致性**: 游戏内所有显示国家名称的地方（详情面板、提示框、事件日志）都使用真实国家名，且与地图一致
   - **调试友好性**: 开发者能够在 1 分钟内通过控制台日志定位任何国家对齐问题
 
-- **Performance & Observability**: 
+- **Performance & Observability**:
   - **性能影响**: 修复映射逻辑不应该显著增加启动时间或运行时性能开销（增量不超过 50ms）
   - **映射验证时间**: 启动时的映射验证和日志输出不应该超过 100ms
-  - **可观测性**: 
+  - **可观测性**:
     - 记录每个 region ID 映射到的 country IDs 数量和名称
     - 记录映射成功率（成功映射的国家数 / 总国家数）
     - 记录任何映射警告或错误，包括缺失的 region IDs、无效的 country IDs、映射冲突
     - 在开发模式下，提供详细的映射过程日志和验证报告
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

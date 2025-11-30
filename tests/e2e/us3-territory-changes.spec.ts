@@ -1,8 +1,8 @@
 /**
  * E2E Tests for User Story 3: 观察领土扩张和侵蚀
- * 
+ *
  * Goal: 实时观察领土随战斗结果逐渐扩张或被侵蚀，感受征服战争的动态过程
- * 
+ *
  * Test Scenarios:
  * - T049: Smooth territory color transition on conquest
  * - T050: Expanding commander's territory visibly grows
@@ -15,17 +15,17 @@ test.describe('US3: Territory Changes and Animations', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the game
     await page.goto('http://localhost:5173');
-    
+
     // Wait for the game to load
     await page.waitForSelector('canvas', { timeout: 10000 });
-    
+
     // Wait for map and initial territories to render
     await page.waitForTimeout(2000);
   });
 
   /**
    * T049: Smooth territory color transition on conquest
-   * 
+   *
    * Acceptance Criteria:
    * - Color transition takes approximately 500ms
    * - Transition is smooth (no flashing or jumps)
@@ -33,7 +33,7 @@ test.describe('US3: Territory Changes and Animations', () => {
    */
   test('T049: color transition is smooth on conquest', async ({ page }) => {
     const canvas = page.locator('canvas');
-    
+
     // Wait for initial state
     await page.waitForTimeout(2000);
 
@@ -42,14 +42,17 @@ test.describe('US3: Territory Changes and Animations', () => {
 
     // Listen for conquest event
     const logs: string[] = [];
-    page.on('console', msg => logs.push(msg.text()));
+    page.on('console', (msg) => logs.push(msg.text()));
 
     // Wait for a battle/conquest to occur
-    const conquestPromise = page.waitForEvent('console', msg => 
-      msg.text().includes('conquered') ||
-      msg.text().includes('占领') ||
-      msg.text().includes('Territory update')
-    , { timeout: 60000 }); // Wait up to 60s for a conquest
+    const conquestPromise = page.waitForEvent(
+      'console',
+      (msg) =>
+        msg.text().includes('conquered') ||
+        msg.text().includes('占领') ||
+        msg.text().includes('Territory update'),
+      { timeout: 60000 }
+    ); // Wait up to 60s for a conquest
 
     await conquestPromise;
     console.log('Conquest detected, observing transition...');
@@ -63,7 +66,7 @@ test.describe('US3: Territory Changes and Animations', () => {
 
     // Verify that screenshots are different (transition is happening)
     expect(screenshots.length).toBe(5);
-    
+
     // In a proper visual regression test, we'd analyze the color changes
     // to verify smooth interpolation
     console.log('Captured 5 frames during transition');
@@ -74,14 +77,12 @@ test.describe('US3: Territory Changes and Animations', () => {
     // Verify final state is different from initial
     const afterScreenshot = await canvas.screenshot();
     expect(afterScreenshot.length).toBeGreaterThan(0);
-    
+
     // Check for transition-related logs
-    const hasTransitionLogs = logs.some(log => 
-      log.includes('transition') ||
-      log.includes('color') ||
-      log.includes('animation')
+    const hasTransitionLogs = logs.some(
+      (log) => log.includes('transition') || log.includes('color') || log.includes('animation')
     );
-    
+
     if (hasTransitionLogs) {
       console.log('Color transition system is active');
     }
@@ -89,7 +90,7 @@ test.describe('US3: Territory Changes and Animations', () => {
 
   /**
    * T050: Expanding commander's territory visibly grows
-   * 
+   *
    * Acceptance Criteria:
    * - Multiple conquests by same commander are observable
    * - Territory expansion is visually clear
@@ -98,7 +99,7 @@ test.describe('US3: Territory Changes and Animations', () => {
   test('T050: territory expansion is visible over time', async ({ page }) => {
     // This test observes the game for a longer period to see expansion
     const canvas = page.locator('canvas');
-    
+
     // Wait for initial state
     await page.waitForTimeout(2000);
 
@@ -107,7 +108,7 @@ test.describe('US3: Territory Changes and Animations', () => {
 
     // Track conquest events
     const conquests: string[] = [];
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       const text = msg.text();
       if (text.includes('conquered') || text.includes('占领')) {
         conquests.push(text);
@@ -129,14 +130,14 @@ test.describe('US3: Territory Changes and Animations', () => {
 
     // Verify visual changes
     expect(finalScreenshot.length).toBeGreaterThan(0);
-    
+
     // In a real test, we'd use image diff to verify territory expansion
     console.log('Territory expansion observed successfully');
   });
 
   /**
    * T051: Defeated commander's territory disappears
-   * 
+   *
    * Acceptance Criteria:
    * - All territories change color when commander is eliminated
    * - Fade effect is visible (not instant)
@@ -145,26 +146,27 @@ test.describe('US3: Territory Changes and Animations', () => {
   test('T051: eliminated commander territories fade to neutral', async ({ page }) => {
     // This is a harder test since elimination may not happen quickly
     // We'll check for the elimination mechanism and visual feedback
-    
+
     const canvas = page.locator('canvas');
-    
+
     // Wait for initial state
     await page.waitForTimeout(2000);
 
     // Track elimination events
     const logs: string[] = [];
-    page.on('console', msg => logs.push(msg.text()));
+    page.on('console', (msg) => logs.push(msg.text()));
 
     // Check if elimination visual feedback is implemented
     // Look for logs about fading or neutral colors
     await page.waitForTimeout(30000); // Wait 30s for game to progress
 
     // Check for elimination or fade logs
-    const hasEliminationFeature = logs.some(log => 
-      log.includes('fadeToNeutral') ||
-      log.includes('eliminated') ||
-      log.includes('defeated') ||
-      log.includes('消灭')
+    const hasEliminationFeature = logs.some(
+      (log) =>
+        log.includes('fadeToNeutral') ||
+        log.includes('eliminated') ||
+        log.includes('defeated') ||
+        log.includes('消灭')
     );
 
     // If no elimination happened, at least verify the visual feedback mechanism exists

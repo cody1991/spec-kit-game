@@ -19,9 +19,7 @@ describe('createInitialWorld', () => {
     const result1 = createInitialWorld({ seed, commanderCount: 10 });
     const result2 = createInitialWorld({ seed, commanderCount: 10 });
 
-    expect(result1.commanders.map((c) => c.name)).toEqual(
-      result2.commanders.map((c) => c.name)
-    );
+    expect(result1.commanders.map((c) => c.name)).toEqual(result2.commanders.map((c) => c.name));
   });
 
   it('不同种子应该生成不同的指挥官组合', () => {

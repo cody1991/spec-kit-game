@@ -1,9 +1,9 @@
 /**
  * Point-in-Polygon Detector
- * 
+ *
  * Uses Ray Casting algorithm to determine if a point is inside a polygon.
  * Optimized for real-time interaction detection.
- * 
+ *
  * @module interaction/PointInPolygonDetector
  */
 
@@ -15,7 +15,7 @@ import type { Point, MultiPolygon } from '../types/mapTypes';
 export interface IPointInPolygonDetector {
   /**
    * Test if a point is inside a polygon
-   * 
+   *
    * @param point - Point to test (screen coordinates)
    * @param polygon - Ring of points [[x,y], [x,y], ...]
    * @returns True if point is inside polygon
@@ -24,7 +24,7 @@ export interface IPointInPolygonDetector {
 
   /**
    * Test if a point is inside a multi-polygon geometry
-   * 
+   *
    * @param point - Point to test (screen coordinates)
    * @param multiPolygon - MultiPolygon geometry
    * @returns True if point is inside any polygon
@@ -33,7 +33,7 @@ export interface IPointInPolygonDetector {
 
   /**
    * Test if a point is near a polygon border
-   * 
+   *
    * @param point - Point to test
    * @param polygon - Ring of points
    * @param threshold - Distance threshold in pixels
@@ -50,10 +50,10 @@ export class PointInPolygonDetector implements IPointInPolygonDetector {
 
   /**
    * Ray Casting algorithm for point-in-polygon test
-   * 
+   *
    * Casts a ray from the point to infinity and counts intersections
    * with polygon edges. Odd count = inside, even count = outside.
-   * 
+   *
    * @param point - Point to test
    * @param polygon - Polygon ring [[x,y], [x,y], ...]
    * @returns True if point is inside
@@ -70,9 +70,7 @@ export class PointInPolygonDetector implements IPointInPolygonDetector {
       const yj = polygon[j][1];
 
       // Check if ray crosses edge
-      const intersect =
-        yi > y !== yj > y &&
-        x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+      const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
 
       if (intersect) {
         inside = !inside;
@@ -84,7 +82,7 @@ export class PointInPolygonDetector implements IPointInPolygonDetector {
 
   /**
    * Test point against multi-polygon geometry
-   * 
+   *
    * A multi-polygon consists of multiple polygons, each with outer ring
    * and optional holes. Point is inside if it's in any outer ring and
    * not in any holes.
@@ -93,12 +91,12 @@ export class PointInPolygonDetector implements IPointInPolygonDetector {
     for (const polygon of multiPolygon.coordinates) {
       // polygon[0] is outer ring, polygon[1+] are holes
       const outerRing = polygon[0];
-      
+
       // Check outer ring
       if (this.isPointInPolygon(point, outerRing)) {
         // Check if point is in any holes
         let inHole = false;
-        
+
         for (let i = 1; i < polygon.length; i++) {
           if (this.isPointInPolygon(point, polygon[i])) {
             inHole = true;
@@ -117,7 +115,7 @@ export class PointInPolygonDetector implements IPointInPolygonDetector {
 
   /**
    * Check if point is near polygon border
-   * 
+   *
    * Uses perpendicular distance from point to each edge.
    * Useful for hover effects on borders.
    */
@@ -148,7 +146,7 @@ export class PointInPolygonDetector implements IPointInPolygonDetector {
 
   /**
    * Calculate perpendicular distance from point to line segment
-   * 
+   *
    * @param px Point X
    * @param py Point Y
    * @param x1 Segment start X

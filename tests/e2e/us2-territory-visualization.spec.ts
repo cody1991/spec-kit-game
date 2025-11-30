@@ -1,8 +1,8 @@
 /**
  * E2E Tests for User Story 2: 可视化领土占领状态
- * 
+ *
  * Goal: 通过不同颜色清楚地看到每个指挥官占领的国家/地区
- * 
+ *
  * Test Scenarios:
  * - T040: Initial territories colored by commander
  * - T041: Territory color updates on conquest
@@ -15,17 +15,17 @@ test.describe('US2: Territory Visualization', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the game
     await page.goto('http://localhost:5173');
-    
+
     // Wait for the game to load
     await page.waitForSelector('canvas', { timeout: 10000 });
-    
+
     // Wait for map and initial territories to render
     await page.waitForTimeout(2000);
   });
 
   /**
    * T040: Initial territories colored by commander
-   * 
+   *
    * Acceptance Criteria:
    * - 10 different colors visible on the map
    * - Each commander's starting territory has distinct color
@@ -33,7 +33,7 @@ test.describe('US2: Territory Visualization', () => {
    */
   test('T040: initial territories are colored by commander', async ({ page }) => {
     const canvas = page.locator('canvas');
-    
+
     // Wait for territories to be colored
     await page.waitForTimeout(2000);
 
@@ -43,15 +43,13 @@ test.describe('US2: Territory Visualization', () => {
 
     // Check console logs for territory state initialization
     const logs: string[] = [];
-    page.on('console', msg => logs.push(msg.text()));
+    page.on('console', (msg) => logs.push(msg.text()));
 
     await page.waitForTimeout(1000);
 
     // Verify that territories are mapped to commanders
-    const hasTerritoryLogs = logs.some(log => 
-      log.includes('with owner') || 
-      log.includes('commander') ||
-      log.includes('territory')
+    const hasTerritoryLogs = logs.some(
+      (log) => log.includes('with owner') || log.includes('commander') || log.includes('territory')
     );
 
     // If logs exist, verify territory assignment
@@ -66,7 +64,7 @@ test.describe('US2: Territory Visualization', () => {
 
   /**
    * T041: Territory color updates on conquest
-   * 
+   *
    * Acceptance Criteria:
    * - When a battle occurs, territory color changes
    * - Color transition is visible and smooth
@@ -82,11 +80,14 @@ test.describe('US2: Territory Visualization', () => {
     const beforeScreenshot = await canvas.screenshot();
 
     // Listen for battle events
-    const battleLogPromise = page.waitForEvent('console', msg => 
-      msg.text().includes('battle') || 
-      msg.text().includes('conquered') ||
-      msg.text().includes('Territory update')
-    , { timeout: 30000 });
+    const battleLogPromise = page.waitForEvent(
+      'console',
+      (msg) =>
+        msg.text().includes('battle') ||
+        msg.text().includes('conquered') ||
+        msg.text().includes('Territory update'),
+      { timeout: 30000 }
+    );
 
     // Wait for game simulation to trigger battles
     await battleLogPromise;
@@ -101,7 +102,7 @@ test.describe('US2: Territory Visualization', () => {
     // In a proper test, we'd use image diff tools
     expect(beforeScreenshot.length).toBeGreaterThan(0);
     expect(afterScreenshot.length).toBeGreaterThan(0);
-    
+
     // They should be different if a conquest happened
     // (This is a weak assertion - ideally use visual diff tools)
     console.log('Before screenshot size:', beforeScreenshot.length);
@@ -110,7 +111,7 @@ test.describe('US2: Territory Visualization', () => {
 
   /**
    * T042: Click country shows detail panel
-   * 
+   *
    * Acceptance Criteria:
    * - Clicking a country opens detail panel
    * - Panel shows owner, troops, resources
@@ -118,7 +119,7 @@ test.describe('US2: Territory Visualization', () => {
    */
   test('T042: clicking country shows detail panel', async ({ page }) => {
     const canvas = page.locator('canvas');
-    
+
     // Wait for map to be ready
     await page.waitForTimeout(2000);
 
@@ -138,7 +139,7 @@ test.describe('US2: Territory Visualization', () => {
     for (const point of testPoints) {
       // Click on the map
       await page.mouse.click(point.x, point.y);
-      
+
       // Wait for panel to appear
       await page.waitForTimeout(500);
 
@@ -152,7 +153,7 @@ test.describe('US2: Territory Visualization', () => {
 
         // Verify panel contains expected information
         const panelText = await detailPanel.textContent();
-        
+
         // Panel should show some relevant information
         expect(panelText).toBeTruthy();
         expect(panelText!.length).toBeGreaterThan(0);
@@ -163,8 +164,10 @@ test.describe('US2: Territory Visualization', () => {
 
     // If no panel UI exists yet, just verify clicking doesn't break the map
     if (!panelFound) {
-      console.warn('Country detail panel not found - may be implemented but not using expected test ID');
-      
+      console.warn(
+        'Country detail panel not found - may be implemented but not using expected test ID'
+      );
+
       // At minimum, verify map is still rendered after click
       const screenshot = await canvas.screenshot();
       expect(screenshot.length).toBeGreaterThan(5000);

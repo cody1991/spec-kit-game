@@ -67,14 +67,11 @@ class WorldScene extends Phaser.Scene {
 
     try {
       // 加载地图数据（支持缓存）
-      this.countries = await this.mapDataLoader.loadMapData(
-        '/maps/world-countries.json',
-        {
-          enableCache: true,
-          cacheDuration: 7, // 天
-          useWorker: true   // 后台解析
-        }
-      );
+      this.countries = await this.mapDataLoader.loadMapData('/maps/world-countries.json', {
+        enableCache: true,
+        cacheDuration: 7, // 天
+        useWorker: true, // 后台解析
+      });
 
       console.log(`✅ Loaded ${this.countries.length} countries`);
 
@@ -109,7 +106,7 @@ class WorldScene extends Phaser.Scene {
       useWebGL: true,
       fillAlpha: 0.7,
       enableTransition: true,
-      transitionDuration: 500
+      transitionDuration: 500,
     });
 
     // 首次渲染
@@ -124,11 +121,7 @@ class WorldScene extends Phaser.Scene {
   renderMap() {
     const { territoryStates, colorMappings } = useGameStore.getState();
 
-    const stats = this.mapRenderer.render(
-      this.countries,
-      territoryStates,
-      colorMappings
-    );
+    const stats = this.mapRenderer.render(this.countries, territoryStates, colorMappings);
 
     console.log(`Rendered ${stats.countriesRendered} countries in ${stats.renderTime}ms`);
     console.log(`FPS: ${stats.fps}`);
@@ -140,7 +133,7 @@ class WorldScene extends Phaser.Scene {
     for (const countryId of changedCountries) {
       const territoryState = state.territoryStates.get(countryId);
       const colorMapping = state.colorMappings.get(territoryState?.ownerId || 'neutral');
-      
+
       if (territoryState && colorMapping) {
         this.mapRenderer.updateCountry(countryId, territoryState, colorMapping);
       }
@@ -168,7 +161,7 @@ class WorldScene extends Phaser.Scene {
       enableHover: true,
       enableZoom: true,
       enableDrag: true,
-      hoverDelay: 300
+      hoverDelay: 300,
     });
 
     // 监听交互事件
@@ -196,12 +189,12 @@ class WorldScene extends Phaser.Scene {
   }
 
   showCountryTooltip(countryId: string, position: Point) {
-    const country = this.countries.find(c => c.id === countryId);
+    const country = this.countries.find((c) => c.id === countryId);
     const state = useGameStore.getState().territoryStates.get(countryId);
-    
+
     if (country && state) {
       // 显示 React 组件或 DOM 提示
-      const commander = useGameStore.getState().commanders.find(c => c.id === state.ownerId);
+      const commander = useGameStore.getState().commanders.find((c) => c.id === state.ownerId);
       console.log(`Tooltip: ${country.name} - ${commander?.name || '中立'}`);
     }
   }
@@ -235,24 +228,30 @@ export function startSession(seed?: string): void {
 
   // 定义颜色方案
   const colorMappings = new Map<string, CommanderColor>([
-    ['napoleon', {
-      commanderId: 'napoleon',
-      primary: 0x0066CC,      // 法国蓝
-      secondary: 0x003D7A,
-      alpha: 0.7,
-      pattern: 'stripes',
-      label: '拿',
-      glowColor: 0x0088FF,
-      pulseSpeed: 1000
-    }],
-    ['qin-shi-huang', {
-      commanderId: 'qin-shi-huang',
-      primary: 0xCC0000,      // 中国红
-      secondary: 0x7A0000,
-      alpha: 0.7,
-      pattern: 'dots',
-      label: '秦'
-    }],
+    [
+      'napoleon',
+      {
+        commanderId: 'napoleon',
+        primary: 0x0066cc, // 法国蓝
+        secondary: 0x003d7a,
+        alpha: 0.7,
+        pattern: 'stripes',
+        label: '拿',
+        glowColor: 0x0088ff,
+        pulseSpeed: 1000,
+      },
+    ],
+    [
+      'qin-shi-huang',
+      {
+        commanderId: 'qin-shi-huang',
+        primary: 0xcc0000, // 中国红
+        secondary: 0x7a0000,
+        alpha: 0.7,
+        pattern: 'dots',
+        label: '秦',
+      },
+    ],
     // ... 其他指挥官 ...
   ]);
 
@@ -268,11 +267,7 @@ export function startSession(seed?: string): void {
 ```typescript
 // app/src/scenes/world/MapRenderer.ts
 class MapRenderer {
-  renderCountryWithPattern(
-    country: Country,
-    color: number,
-    pattern: string
-  ) {
+  renderCountryWithPattern(country: Country, color: number, pattern: string) {
     // 1. 填充颜色
     this.graphics.fillStyle(color, 0.7);
     this.graphics.fillPath();
@@ -381,7 +376,7 @@ class WorldScene extends Phaser.Scene {
     fps: 60,
     renderTime: 0,
     frameCount: 0,
-    lastTime: 0
+    lastTime: 0,
   };
 
   update(time: number, delta: number) {
@@ -407,7 +402,7 @@ class WorldScene extends Phaser.Scene {
     // 更新 HUD
     useGameStore.getState().updatePerformance({
       fps: this.performanceMonitor.fps,
-      tickMs: this.performanceMonitor.renderTime
+      tickMs: this.performanceMonitor.renderTime,
     });
   }
 }
@@ -439,7 +434,7 @@ describe('MapDataLoader', () => {
     const loader = new MapDataLoader();
     const countries = await loader.loadMapData('/test/sample-map.json');
 
-    const china = countries.find(c => c.id === 'CHN');
+    const china = countries.find((c) => c.id === 'CHN');
     expect(china).toBeDefined();
     expect(china!.bbox.minX).toBeLessThan(china!.bbox.maxX);
     expect(china!.bbox.minY).toBeLessThan(china!.bbox.maxY);
@@ -504,7 +499,7 @@ class WorldScene extends Phaser.Scene {
     if (process.env.NODE_ENV !== 'development') return;
 
     const debugGraphics = this.add.graphics();
-    debugGraphics.lineStyle(1, 0xFF0000, 0.5);
+    debugGraphics.lineStyle(1, 0xff0000, 0.5);
 
     // 绘制所有国家的边界框
     for (const country of this.countries) {
@@ -517,7 +512,7 @@ class WorldScene extends Phaser.Scene {
     }
 
     // 绘制空间网格
-    debugGraphics.lineStyle(1, 0x00FF00, 0.3);
+    debugGraphics.lineStyle(1, 0x00ff00, 0.3);
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 16; col++) {
         const x = col * (this.worldWidth / 16);
@@ -539,9 +534,9 @@ class WorldScene extends Phaser.Scene {
 
 ```typescript
 const countries = await loader.loadMapData('/maps/world-countries.json', {
-  enableCache: true,      // 启用 IndexedDB 缓存
-  useWorker: true,        // 后台解析
-  timeout: 10000          // 增加超时时间
+  enableCache: true, // 启用 IndexedDB 缓存
+  useWorker: true, // 后台解析
+  timeout: 10000, // 增加超时时间
 });
 ```
 

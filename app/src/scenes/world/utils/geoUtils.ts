@@ -1,6 +1,6 @@
 /**
  * Geographic Utility Functions
- * 
+ *
  * Helper functions for geographic calculations (bounding boxes, centroids, intersections).
  */
 
@@ -10,12 +10,7 @@ import type { BoundingBox, Point, MultiPolygon } from '../types/mapTypes';
  * Check if two bounding boxes intersect
  */
 export function bboxIntersects(a: BoundingBox, b: BoundingBox): boolean {
-  return !(
-    a.maxX < b.minX ||
-    a.minX > b.maxX ||
-    a.maxY < b.minY ||
-    a.minY > b.maxY
-  );
+  return !(a.maxX < b.minX || a.minX > b.maxX || a.maxY < b.minY || a.minY > b.maxY);
 }
 
 /**
@@ -107,10 +102,7 @@ export function calculateArea(geometry: MultiPolygon): number {
  */
 export function pointInBbox(point: Point, bbox: BoundingBox): boolean {
   return (
-    point.x >= bbox.minX &&
-    point.x <= bbox.maxX &&
-    point.y >= bbox.minY &&
-    point.y <= bbox.maxY
+    point.x >= bbox.minX && point.x <= bbox.maxX && point.y >= bbox.minY && point.y <= bbox.maxY
   );
 }
 

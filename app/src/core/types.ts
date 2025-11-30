@@ -11,7 +11,8 @@ export interface HistoricalCommander {
   };
   skillCards: SkillCard[];
   currentPower: number;
-  controlledTerritories: string[];
+  controlledTerritories: string[]; // Runtime: country IDs, Initial: region IDs
+  initialRegions?: string[]; // NEW: Store original region IDs for debugging
   alliances: string[];
   hostilities: string[];
   morale: number;
@@ -125,6 +126,7 @@ export interface Country {
  */
 export interface TerritoryState {
   countryId: string;
+  countryName?: string; // NEW: Country name (cached to avoid repeated lookups)
   ownerId: string | null;
   troops: number;
   resources: number;

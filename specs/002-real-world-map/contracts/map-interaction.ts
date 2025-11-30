@@ -1,8 +1,8 @@
 /**
  * Map Interaction Handler Contract
- * 
+ *
  * 定义地图交互处理接口，包括点击检测、悬停处理、缩放控制。
- * 
+ *
  * @module contracts/map-interaction
  */
 
@@ -14,7 +14,7 @@ import type { Country, Point, BoundingBox, MapInteractionEvent } from './types';
 export interface IMapInteractionHandler {
   /**
    * 初始化交互处理器
-   * 
+   *
    * @param scene - Phaser Scene 实例
    * @param config - 交互配置
    */
@@ -32,7 +32,7 @@ export interface IMapInteractionHandler {
 
   /**
    * 处理鼠标移动事件
-   * 
+   *
    * @param pointer - Phaser 指针对象
    * @returns 鼠标下的国家 ID，无则返回 null
    */
@@ -40,7 +40,7 @@ export interface IMapInteractionHandler {
 
   /**
    * 处理点击事件
-   * 
+   *
    * @param pointer - Phaser 指针对象
    * @returns 点击的国家 ID，无则返回 null
    */
@@ -48,7 +48,7 @@ export interface IMapInteractionHandler {
 
   /**
    * 处理缩放事件
-   * 
+   *
    * @param deltaY - 滚轮增量
    * @param pointerPosition - 鼠标位置（作为缩放中心）
    */
@@ -119,13 +119,13 @@ export interface InteractionConfig {
  * 交互事件类型
  */
 export type MapInteractionEventType =
-  | 'hover'      // 鼠标悬停在国家上
-  | 'hoverEnd'   // 鼠标离开国家
-  | 'click'      // 点击国家
-  | 'select'     // 选中国家
-  | 'deselect'   // 取消选中
-  | 'zoom'       // 缩放变化
-  | 'drag';      // 地图拖拽
+  | 'hover' // 鼠标悬停在国家上
+  | 'hoverEnd' // 鼠标离开国家
+  | 'click' // 点击国家
+  | 'select' // 选中国家
+  | 'deselect' // 取消选中
+  | 'zoom' // 缩放变化
+  | 'drag'; // 地图拖拽
 
 /**
  * 交互事件回调
@@ -138,7 +138,7 @@ export type MapInteractionCallback = (event: MapInteractionEvent) => void;
 export interface IPointInPolygonDetector {
   /**
    * 检测点是否在多边形内
-   * 
+   *
    * @param point - 测试点
    * @param polygon - 多边形顶点列表
    * @returns 是否在多边形内
@@ -147,15 +147,12 @@ export interface IPointInPolygonDetector {
 
   /**
    * 批量检测点在哪些多边形内
-   * 
+   *
    * @param point - 测试点
    * @param polygons - 多边形列表（带 ID）
    * @returns 包含该点的多边形 ID 列表
    */
-  findContainingPolygons(
-    point: Point,
-    polygons: Array<{ id: string; polygon: Point[] }>
-  ): string[];
+  findContainingPolygons(point: Point, polygons: Array<{ id: string; polygon: Point[] }>): string[];
 }
 
 /**
@@ -164,7 +161,7 @@ export interface IPointInPolygonDetector {
 export interface ISpatialQuery {
   /**
    * 查询边界框内的国家
-   * 
+   *
    * @param bbox - 边界框
    * @returns 国家 ID 列表
    */
@@ -172,7 +169,7 @@ export interface ISpatialQuery {
 
   /**
    * 查询点附近的国家（用于快速粗筛）
-   * 
+   *
    * @param point - 查询点
    * @param radius - 查询半径（世界坐标单位）
    * @returns 国家 ID 列表
@@ -181,7 +178,7 @@ export interface ISpatialQuery {
 
   /**
    * 更新空间索引（当地图数据变化时）
-   * 
+   *
    * @param countries - 国家列表
    */
   updateIndex(countries: Country[]): void;
@@ -193,7 +190,7 @@ export interface ISpatialQuery {
 export interface IZoomController {
   /**
    * 设置缩放级别
-   * 
+   *
    * @param zoom - 目标缩放级别 (0.5-5.0)
    * @param center - 缩放中心（世界坐标），null 表示屏幕中心
    * @param animated - 是否使用动画过渡（默认 false）
@@ -202,7 +199,7 @@ export interface IZoomController {
 
   /**
    * 相对缩放（增加或减少）
-   * 
+   *
    * @param delta - 缩放增量（正数放大，负数缩小）
    * @param center - 缩放中心
    */
@@ -210,7 +207,7 @@ export interface IZoomController {
 
   /**
    * 缩放到适应所有国家
-   * 
+   *
    * @param countryIds - 国家 ID 列表，null 表示所有国家
    * @param padding - 边距（像素）
    * @param animated - 是否使用动画
@@ -234,21 +231,21 @@ export interface IZoomController {
 export interface IDragController {
   /**
    * 开始拖拽
-   * 
+   *
    * @param startPosition - 起始位置（屏幕坐标）
    */
   startDrag(startPosition: Point): void;
 
   /**
    * 更新拖拽位置
-   * 
+   *
    * @param currentPosition - 当前位置（屏幕坐标）
    */
   updateDrag(currentPosition: Point): void;
 
   /**
    * 结束拖拽
-   * 
+   *
    * @param endPosition - 结束位置（屏幕坐标）
    */
   endDrag(endPosition: Point): void;
@@ -285,7 +282,7 @@ export async function validateMapInteractionHandler(
     x: 100,
     y: 100,
     worldX: 100,
-    worldY: 100
+    worldY: 100,
   } as Phaser.Input.Pointer;
 
   const hoveredId = handler.handlePointerMove(mockPointer);
@@ -303,7 +300,7 @@ export async function validateMapInteractionHandler(
 
   handler.on('click', callback);
   handler.handlePointerDown(mockPointer);
-  
+
   if (!eventFired) {
     console.warn('Warning: click event not fired (may be expected if no country at position)');
   }
@@ -312,7 +309,7 @@ export async function validateMapInteractionHandler(
 
   // 5. 测试缩放
   handler.handleZoom(-1, { x: 100, y: 100 }); // 放大
-  handler.handleZoom(1, { x: 100, y: 100 });  // 缩小
+  handler.handleZoom(1, { x: 100, y: 100 }); // 缩小
 
   // 6. 测试禁用/启用
   handler.disable();
@@ -362,7 +359,7 @@ export const INTERACTION_OPTIMIZATION_TIPS = {
   /**
    * 缓存 PIP 结果（针对静态多边形）
    */
-  CACHE_PIP_RESULTS: 'Precompute PIP for grid cells if polygons don\'t change',
+  CACHE_PIP_RESULTS: "Precompute PIP for grid cells if polygons don't change",
 
   /**
    * 使用 Web Worker 处理复杂计算

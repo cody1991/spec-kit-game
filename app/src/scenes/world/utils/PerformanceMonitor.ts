@@ -1,6 +1,6 @@
 /**
  * Performance Monitor
- * 
+ *
  * Tracks FPS, render time, and other performance metrics.
  * Provides sliding window averages for smoother readings.
  */
@@ -31,7 +31,7 @@ export class PerformanceMonitor {
   endMeasure(label: string): number {
     const endTime = performance.now();
     const startTimes = this.measurements.get(`${label}_start`);
-    
+
     if (!startTimes || startTimes.length === 0) {
       console.warn(`No start measurement found for label: ${label}`);
       return 0;
@@ -43,12 +43,12 @@ export class PerformanceMonitor {
     // Store in history
     const history = this.measurements.get(label) || [];
     history.push(duration);
-    
+
     // Keep only windowSize entries
     if (history.length > this.windowSize) {
       history.shift();
     }
-    
+
     this.measurements.set(label, history);
 
     // Clean up start measurement
@@ -69,7 +69,7 @@ export class PerformanceMonitor {
     const size = windowSize || Math.min(this.windowSize, history.length);
     const recentValues = history.slice(-size);
     const sum = recentValues.reduce((a, b) => a + b, 0);
-    
+
     return sum / recentValues.length;
   }
 
@@ -81,10 +81,7 @@ export class PerformanceMonitor {
     this.frameTimestamps.push(currentTime);
 
     // Remove old timestamps (older than 1 second)
-    while (
-      this.frameTimestamps.length > 0 &&
-      currentTime - this.frameTimestamps[0] > 1000
-    ) {
+    while (this.frameTimestamps.length > 0 && currentTime - this.frameTimestamps[0] > 1000) {
       this.frameTimestamps.shift();
     }
 
@@ -140,7 +137,7 @@ export class PerformanceMonitor {
     measurements: Record<string, number>;
   } {
     const measurements: Record<string, number> = {};
-    
+
     this.measurements.forEach((values, label) => {
       if (!label.endsWith('_start')) {
         measurements[label] = this.getAverageMeasure(label);

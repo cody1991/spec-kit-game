@@ -18,6 +18,7 @@
 ### 问题描述
 
 当前版本中，指挥官显示占领的国家名称（如"中国"）与地图上的实际位置不匹配。例如：
+
 - 秦始皇显示"占领中国"，但地图上标记的位置可能是欧洲
 - 拿破仑显示"占领法国"，但地图上标记的位置可能是亚洲
 
@@ -61,15 +62,15 @@ territoryStates.set('643', ...) // 643 = Russia (ISO 3166-1)
 
 /**
  * Region-to-Country Mapping Configuration
- * 
+ *
  * Maps legacy region IDs to ISO 3166-1 numeric country codes.
  * Reference: https://www.iso.org/iso-3166-country-codes.html
  */
 
 export interface RegionMapping {
-  id: string;           // 旧 region ID（如 'china', 'western-europe'）
-  name: string;         // 区域名称（显示用）
-  nameEn?: string;      // 英文名称（可选）
+  id: string; // 旧 region ID（如 'china', 'western-europe'）
+  name: string; // 区域名称（显示用）
+  nameEn?: string; // 英文名称（可选）
   countryIds: string[]; // ISO 3166-1 numeric codes
   description?: string; // 地理范围说明（可选）
 }
@@ -83,14 +84,14 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
     name: '中国',
     nameEn: 'China',
     countryIds: ['156'], // China
-    description: '东亚地区，中华人民共和国'
+    description: '东亚地区，中华人民共和国',
   },
   {
     id: 'russia',
     name: '俄罗斯',
     nameEn: 'Russia',
     countryIds: ['643'], // Russia
-    description: '欧亚地区，俄罗斯联邦'
+    description: '欧亚地区，俄罗斯联邦',
   },
   {
     id: 'western-europe',
@@ -101,11 +102,11 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
       '276', // Germany
       '380', // Italy
       '528', // Netherlands
-      '56',  // Belgium
+      '56', // Belgium
       '442', // Luxembourg
-      '724'  // Spain
+      '724', // Spain
     ],
-    description: '西欧地区，包括法国、德国、意大利等主要国家'
+    description: '西欧地区，包括法国、德国、意大利等主要国家',
   },
   {
     id: 'eastern-europe',
@@ -116,9 +117,9 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
       '804', // Ukraine
       '348', // Hungary
       '203', // Czech Republic
-      '642'  // Romania
+      '642', // Romania
     ],
-    description: '东欧地区，包括波兰、乌克兰等国家'
+    description: '东欧地区，包括波兰、乌克兰等国家',
   },
   {
     id: 'middle-east',
@@ -129,22 +130,22 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
       '784', // United Arab Emirates
       '792', // Turkey
       '368', // Iraq
-      '364'  // Iran
-    ]
+      '364', // Iran
+    ],
   },
   {
     id: 'india',
     name: '印度',
     nameEn: 'India',
     countryIds: ['356'], // India
-    description: '南亚地区，印度共和国'
+    description: '南亚地区，印度共和国',
   },
   {
     id: 'japan',
     name: '日本',
     nameEn: 'Japan',
     countryIds: ['392'], // Japan
-    description: '东亚岛国，日本国'
+    description: '东亚岛国，日本国',
   },
   {
     id: 'southeast-asia',
@@ -155,8 +156,8 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
       '764', // Thailand
       '360', // Indonesia
       '458', // Malaysia
-      '608'  // Philippines
-    ]
+      '608', // Philippines
+    ],
   },
   {
     id: 'north-africa',
@@ -167,8 +168,8 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
       '012', // Algeria
       '434', // Libya
       '788', // Tunisia
-      '504'  // Morocco
-    ]
+      '504', // Morocco
+    ],
   },
   {
     id: 'central-africa',
@@ -178,15 +179,15 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
       '180', // DR Congo
       '178', // Congo
       '408', // Kenya
-      '120'  // Cameroon
-    ]
+      '120', // Cameroon
+    ],
   },
   {
     id: 'south-africa',
     name: '南非',
     nameEn: 'South Africa',
     countryIds: ['710'], // South Africa
-    description: '南部非洲，南非共和国'
+    description: '南部非洲，南非共和国',
   },
   {
     id: 'north-america',
@@ -194,8 +195,8 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
     nameEn: 'North America',
     countryIds: [
       '840', // United States
-      '124'  // Canada
-    ]
+      '124', // Canada
+    ],
   },
   {
     id: 'central-america',
@@ -204,8 +205,8 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
     countryIds: [
       '484', // Mexico
       '188', // Costa Rica
-      '591'  // Panama
-    ]
+      '591', // Panama
+    ],
   },
   {
     id: 'south-america',
@@ -215,23 +216,23 @@ export const REGION_COUNTRY_MAPPINGS: RegionMapping[] = [
       '076', // Brazil
       '032', // Argentina
       '170', // Colombia
-      '152'  // Chile
-    ]
+      '152', // Chile
+    ],
   },
   {
     id: 'australia',
     name: '澳大利亚',
     nameEn: 'Australia',
     countryIds: ['036'], // Australia
-    description: '大洋洲，澳大利亚联邦'
-  }
+    description: '大洋洲，澳大利亚联邦',
+  },
 ];
 
 /**
  * 辅助函数：根据 region ID 查找对应的 country IDs
  */
 export function getCountryIdsByRegion(regionId: string): string[] {
-  const mapping = REGION_COUNTRY_MAPPINGS.find(m => m.id === regionId);
+  const mapping = REGION_COUNTRY_MAPPINGS.find((m) => m.id === regionId);
   return mapping?.countryIds || [];
 }
 
@@ -239,9 +240,7 @@ export function getCountryIdsByRegion(regionId: string): string[] {
  * 辅助函数：创建 region ID 到 country IDs 的 Map（优化查找性能）
  */
 export function createRegionCountryMap(): Map<string, string[]> {
-  return new Map(
-    REGION_COUNTRY_MAPPINGS.map(m => [m.id, m.countryIds])
-  );
+  return new Map(REGION_COUNTRY_MAPPINGS.map((m) => [m.id, m.countryIds]));
 }
 ```
 
@@ -261,10 +260,10 @@ private mapCountriesToCommanders(): void {
   const { commanders } = state;
 
   console.log('🔍 Starting country-to-commander mapping...');
-  
+
   // 使用新的映射配置
   const regionCountryMap = createRegionCountryMap();
-  
+
   // 验证映射配置（开发模式）
   if (process.env.NODE_ENV === 'development') {
     console.log('   Region-Country Map entries:', regionCountryMap.size);
@@ -272,12 +271,12 @@ private mapCountriesToCommanders(): void {
 
   // 创建国家所有权 Map
   const countryOwnership = new Map<string, string>();
-  
+
   commanders.forEach((commander) => {
     commander.controlledTerritories.forEach((regionId) => {
       // 使用映射表查找对应的国家 IDs
       const countryIds = regionCountryMap.get(regionId);
-      
+
       if (countryIds) {
         console.log(`   Mapping ${regionId} -> [${countryIds.join(', ')}]`);
         countryIds.forEach((countryId) => {
@@ -295,7 +294,7 @@ private mapCountriesToCommanders(): void {
   const territoryStates = new Map();
   this.countries.forEach((country) => {
     const ownerId = countryOwnership.get(country.id);
-    
+
     if (ownerId) {
       territoryStates.set(country.id, {
         countryId: country.id,
@@ -315,9 +314,9 @@ private mapCountriesToCommanders(): void {
 
   // 更新 store
   state.setTerritoryStates(territoryStates);
-  
+
   console.log(`🗺️  Mapped ${territoryStates.size} countries to ${commanders.length} commanders`);
-  
+
   // 日志映射详情（开发模式）
   if (process.env.NODE_ENV === 'development') {
     const samples = Array.from(territoryStates.entries()).slice(0, 3);
@@ -345,36 +344,29 @@ export interface ValidationResult {
 }
 
 export class MappingValidator {
-  validate(
-    mappings: RegionMapping[],
-    countries: Country[]
-  ): ValidationResult {
+  validate(mappings: RegionMapping[], countries: Country[]): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     // 创建国家 ID 集合（快速查找）
-    const validCountryIds = new Set(countries.map(c => c.id));
-    
+    const validCountryIds = new Set(countries.map((c) => c.id));
+
     // 检查每个映射
     const usedCountryIds = new Set<string>();
     mappings.forEach((mapping) => {
       // 检查 country IDs 是否有效
       mapping.countryIds.forEach((countryId) => {
         if (!validCountryIds.has(countryId)) {
-          errors.push(
-            `Invalid country ID "${countryId}" in region "${mapping.id}"`
-          );
+          errors.push(`Invalid country ID "${countryId}" in region "${mapping.id}"`);
         }
-        
+
         // 检查是否重复
         if (usedCountryIds.has(countryId)) {
-          errors.push(
-            `Duplicate country ID "${countryId}" in region "${mapping.id}"`
-          );
+          errors.push(`Duplicate country ID "${countryId}" in region "${mapping.id}"`);
         }
         usedCountryIds.add(countryId);
       });
-      
+
       // 检查区域大小（警告级别）
       if (mapping.countryIds.length > 7) {
         warnings.push(
@@ -382,11 +374,11 @@ export class MappingValidator {
         );
       }
     });
-    
+
     return {
       valid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 }
@@ -397,10 +389,7 @@ export class MappingValidator {
 ```typescript
 // 在 mapCountriesToCommanders 方法开头
 const validator = new MappingValidator();
-const validationResult = validator.validate(
-  REGION_COUNTRY_MAPPINGS,
-  this.countries
-);
+const validationResult = validator.validate(REGION_COUNTRY_MAPPINGS, this.countries);
 
 if (!validationResult.valid) {
   console.error('❌ Mapping validation failed:', validationResult.errors);
@@ -458,15 +447,15 @@ import { test, expect } from '@playwright/test';
 test('秦始皇占领的国家名称与地图位置匹配', async ({ page }) => {
   await page.goto('http://localhost:5173');
   await page.click('button:has-text("开始征服")');
-  
+
   // 等待地图加载
   await page.waitForSelector('canvas', { state: 'visible', timeout: 10000 });
   await page.waitForTimeout(2000); // 等待地图渲染完成
-  
+
   // 点击中国区域（东亚位置，大致坐标）
   const canvas = page.locator('canvas');
   await canvas.click({ position: { x: 800, y: 300 } });
-  
+
   // 验证弹出的详情面板
   const detailPanel = page.locator('.country-detail-panel');
   await expect(detailPanel).toBeVisible({ timeout: 5000 });
@@ -482,11 +471,13 @@ test('秦始皇占领的国家名称与地图位置匹配', async ({ page }) => 
 ### 开发环境验证
 
 1. **启动开发服务器**:
+
 ```bash
 npm run dev
 ```
 
 2. **打开浏览器控制台**，查看日志输出:
+
 ```
 🔍 Starting country-to-commander mapping...
    Mapping china -> [156]
@@ -522,6 +513,7 @@ npm run test:coverage
 ### Q1: 如何找到某个国家的 ISO 3166-1 numeric code？
 
 **A**: 参考 [ISO 3166-1 官方列表](https://www.iso.org/iso-3166-country-codes.html) 或使用以下工具：
+
 ```typescript
 // 在浏览器控制台中运行
 const countries = await fetch('/maps/world-countries.json')
@@ -533,7 +525,8 @@ console.table(countries.map(c => ({ id: c.id, name: c.name })));
 
 ### Q2: 如何调试映射错误？
 
-**A**: 
+**A**:
+
 1. 检查控制台日志，查找 `⚠️` 或 `❌` 标记的错误信息
 2. 使用 DevHud 组件查看实时映射统计
 3. 在 `regionMapping.config.ts` 中添加 `console.log` 调试
@@ -541,7 +534,8 @@ console.table(countries.map(c => ({ id: c.id, name: c.name })));
 
 ### Q3: 如何添加新的 region？
 
-**A**: 
+**A**:
+
 1. 在 `REGION_COUNTRY_MAPPINGS` 数组中添加新的 `RegionMapping` 对象
 2. 确保 `countryIds` 都是有效的 ISO 3166-1 numeric codes
 3. 运行 `npm run lint` 检查类型错误
@@ -558,7 +552,7 @@ console.table(countries.map(c => ({ id: c.id, name: c.name })));
 
 ```typescript
 // ❌ 慢：每次都要遍历数组
-const countryIds = REGION_COUNTRY_MAPPINGS.find(m => m.id === regionId)?.countryIds;
+const countryIds = REGION_COUNTRY_MAPPINGS.find((m) => m.id === regionId)?.countryIds;
 
 // ✅ 快：使用 Map 直接查找
 const regionCountryMap = createRegionCountryMap(); // 初始化时创建一次
