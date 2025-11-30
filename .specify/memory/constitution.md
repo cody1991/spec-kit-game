@@ -1,50 +1,73 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- Sync Impact Report
+- Version: (unversioned) → 1.0.0
+- Modified Principles:
+  - ∅ → I. 卓越代码质量
+  - ∅ → II. 测试即规范
+  - ∅ → III. 用户体验与可达性优先
+  - ∅ → IV. 性能预算与弹性护栏
+  - ∅ → V. 可观测反馈循环
+- Added Sections: Core Principles, 质量·测试·体验·性能基线, 交付流程与质量门禁, Governance
+- Removed Sections: None
+- Template Updates:
+  - ✅ .specify/templates/plan-template.md
+  - ✅ .specify/templates/spec-template.md
+  - ✅ .specify/templates/tasks-template.md
+  - ⚠️ .specify/templates/commands（目录不存在，需确认是否应创建）
+- Follow-ups: None
+-->
+
+# Spec Kit Game Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. 卓越代码质量
+- 所有提交必须通过自动化格式化、静态分析与安全扫描，严禁带有高严重级别的警告进入主分支。
+- 关键路径代码需成对评审，评审结论中必须记录维持可维护性的依据（复杂度、职责划分、依赖关系）。
+- 每个模块在交付前补全接口契约与代码级文档，确保二次维护者能独立理解与扩展。
+**Rationale**: 一致可读、可维护的代码是后续测试、体验优化与性能调优的前提。
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. 测试即规范
+- 功能开发以测试驱动：先提交失败的自动化测试，再实现功能，保持红-绿-重构节奏。
+- 单元测试覆盖率不得低于 90%，关键业务流的集成与端到端测试必须在 CI 中可重复。
+- 测试命名需映射用户故事或需求编号，便于追踪缺陷与回归验证。
+**Rationale**: 测试用例即合约，可阻止质量回退并为重构提供安全网。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. 用户体验与可达性优先
+- 每个功能在规格中必须定义目标用户、成功路径与失败恢复体验。
+- 交互需满足 WCAG 2.1 AA 同等级可达性要求，包括键盘可用性与可感知反馈。
+- 交付前提供可用性验收或可观测指标（任务完成率、NPS、CES）以评估体验成效。
+**Rationale**: 优秀体验直接决定用户粘性与产品价值，应与功能实现同步设计与验证。
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. 性能预算与弹性护栏
+- 在计划阶段设定端到端性能目标（如 p95 延迟、吞吐、内存），实现阶段以基准测试验证。
+- 引入任何第三方依赖或算法前必须量化对性能的影响并记录优化策略。
+- 架构需具备降级与背压方案，确保当压力突破预算时系统可受控退化而非崩溃。
+**Rationale**: 明确的性能预算是可预测交付与稳定运营的基础。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. 可观测反馈循环
+- 关键业务流必须产生日志、指标与分布式追踪三类信号，且在仪表盘中可视化。
+- 将用户行为与性能指标接入同一监控视图，使体验问题可与代码变化实时关联。
+- 每次发布后 24 小时内审查遥测数据与用户反馈，必要时触发回滚或热修计划。
+**Rationale**: 持续反馈使团队能在质量、体验与性能之间快速做出数据驱动的决策。
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## 质量·测试·体验·性能基线
+- **代码质量**：遵循统一格式化与 lint 规则，复杂度指标（如循环复杂度、文件行数）超过阈值时必须拆解；评审模板需要记录质量风险与缓解措施。
+- **测试标准**：测试金字塔需完整（单元 > 合同/集成 > 端到端），并在 CI/CD 中串联；回归测试套件需在 10 分钟内完成以确保高频迭代。
+- **用户体验**：规格文档必须包含用户旅程、可用性成功指标与失败路径；可视化/交互改动需附设计稿与可达性检查清单。
+- **性能**：每个特性附带性能工单或验收任务，记录基准、工具、数据集与结果；性能退化 >5% 必须在同一版本修复或提供豁免记录。
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## 交付流程与质量门禁
+1. **Phase 0 研究**：验证问题、设定体验与性能目标；若缺少目标则流程不得进入 Phase 1。
+2. **Phase 1 设计**：产出技术方案、测试策略与性能计划；`/speckit.plan` 的 Constitution Check 需逐项通过。
+3. **Phase 2 实施**：所有任务文件必须追踪到对应用户故事与测试任务，且包含质量/性能/UX 子任务。
+4. **Review & Verification**：合并前需演示通过的自动化测试、可用性检验结果与性能基准；发现违反原则的 PR 必须驳回。
+5. **运营回馈**：上线 24 小时与 7 天时复盘遥测与用户反馈，形成记录并输入后续迭代。
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+- 本宪章自 2025-11-30 生效，适用于仓库内所有项目与自动化指令。
+- 版本遵循语义化：新增或强化原则记为 MINOR，文本澄清记为 PATCH，若修改/删除已存在原则则为 MAJOR。
+- 修改流程：提出 RFC → 评审会讨论 → 更新宪章 → 同步到所有模板与运行指令 → 在下次迭代计划会上宣布。
+- 合规检查：每次计划、规格、任务输出都需引用宪章检查结果；CI 中配置脚本验证必须的文档字段与测试报告是否存在。
+- 违例处理：如需临时豁免，必须记录期限、补救计划与负责人，且在下一版本审核是否关闭。
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-11-30 | **Last Amended**: 2025-11-30

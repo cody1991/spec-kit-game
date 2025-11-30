@@ -100,6 +100,13 @@
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+## Quality Guardrails *(per Constitution)*
+
+- **Code Quality**: 说明该特性将如何满足统一格式化、lint、文档要求，并引用计划中的质量门禁。
+- **Testing Evidence**: 列出对应用户故事的自动化测试、覆盖率指标与在 CI 中执行的位置，确保测试先行。
+- **User Experience**: 对每个高优先级故事添加体验指标（如任务完成率、NPS/CES）与可达性验收方法。
+- **Performance & Observability**: 定义性能预算、基准方案、退化策略以及日志/指标/追踪信号。
+
 ## Success Criteria *(mandatory)*
 
 <!--

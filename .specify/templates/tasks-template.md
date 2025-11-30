@@ -25,6 +25,13 @@ description: "Task list template for feature implementation"
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
 - Paths shown below assume single project - adjust based on plan.md structure
 
+## Constitution-Driven Task Requirements
+
+- 每个用户故事至少包含一个代码质量/文档任务（lint、格式化、接口契约或可维护性拆解）。
+- 明确测试任务：单元、合同/集成与端到端测试要标记所属故事，并在描述中写出需覆盖的场景或指标。
+- 用户体验与可达性需具备专门任务（可用性验证、辅助功能对齐、失败路径演示）。
+- 性能与可观测性任务必须指定目标指标、基准工具与需要接入的日志/指标/追踪信号。
+
 <!-- 
   ============================================================================
   IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.
