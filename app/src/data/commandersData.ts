@@ -704,6 +704,631 @@ export const commandersPool: CommanderTemplate[] = [
       pulseSpeed: 1000,
     },
   },
+  {
+    id: 'bismarck',
+    name: '俾斯麦',
+    originRegion: 'europe',
+    baseAttributes: { attack: 84, defense: 88, mobility: 79, leadership: 93 },
+    skillCards: [
+      {
+        id: 'bismarck-iron',
+        name: '铁血政策',
+        trigger: 'on_diplomacy',
+        modifier: '+26% leadership',
+        cooldownMs: 220000,
+        durationMs: 82000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x2f4f4f, // Iron Gray
+      secondary: 0x1c2e2e,
+      alpha: 0.7,
+      pattern: 'iron-cross',
+      label: '俾',
+      glowColor: 0x708090,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'peter-great',
+    name: '彼得大帝',
+    originRegion: 'europe',
+    baseAttributes: { attack: 85, defense: 82, mobility: 84, leadership: 91 },
+    skillCards: [
+      {
+        id: 'peter-westernization',
+        name: '西化改革',
+        trigger: 'on_expand',
+        modifier: '+24% all_stats',
+        cooldownMs: 240000,
+        durationMs: 90000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x4682b4, // Steel Blue
+      secondary: 0x315a7a,
+      alpha: 0.7,
+      pattern: 'anchors',
+      label: '彼',
+      glowColor: 0x5f9ea0,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'zhuge-liang',
+    name: '诸葛亮',
+    originRegion: 'asia',
+    baseAttributes: { attack: 75, defense: 88, mobility: 80, leadership: 97 },
+    skillCards: [
+      {
+        id: 'zhuge-strategy',
+        name: '锦囊妙计',
+        trigger: 'on_defend',
+        modifier: '+33% defense',
+        cooldownMs: 235000,
+        durationMs: 87000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x20b2aa, // Strategist Teal
+      secondary: 0x147a75,
+      alpha: 0.7,
+      pattern: 'fans',
+      label: '诸',
+      glowColor: 0x40e0d0,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'william-conqueror',
+    name: '征服者威廉',
+    originRegion: 'europe',
+    baseAttributes: { attack: 90, defense: 84, mobility: 82, leadership: 88 },
+    skillCards: [
+      {
+        id: 'william-conquest',
+        name: '诺曼征服',
+        trigger: 'on_attack',
+        modifier: '+25% attack',
+        cooldownMs: 195000,
+        durationMs: 69000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x8b0000, // Norman Red
+      secondary: 0x5d0000,
+      alpha: 0.7,
+      pattern: 'lions',
+      label: '威',
+      glowColor: 0xb22222,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'ramesses',
+    name: '拉美西斯二世',
+    originRegion: 'africa',
+    baseAttributes: { attack: 86, defense: 89, mobility: 78, leadership: 92 },
+    skillCards: [
+      {
+        id: 'ramesses-monuments',
+        name: '法老神威',
+        trigger: 'on_defend',
+        modifier: '+28% defense',
+        cooldownMs: 225000,
+        durationMs: 83000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xdaa520, // Pharaoh Gold
+      secondary: 0xa67c00,
+      alpha: 0.7,
+      pattern: 'pyramids',
+      label: '拉',
+      glowColor: 0xffd700,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'kublai-khan',
+    name: '忽必烈',
+    originRegion: 'asia',
+    baseAttributes: { attack: 89, defense: 81, mobility: 91, leadership: 90 },
+    skillCards: [
+      {
+        id: 'kublai-yuan',
+        name: '元朝铁骑',
+        trigger: 'on_attack',
+        modifier: '+27% mobility',
+        cooldownMs: 170000,
+        durationMs: 57000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff8c00, // Yuan Orange
+      secondary: 0xd97500,
+      alpha: 0.7,
+      pattern: 'dragons',
+      label: '忽',
+      glowColor: 0xffa500,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'cyrus',
+    name: '居鲁士大帝',
+    originRegion: 'asia',
+    baseAttributes: { attack: 88, defense: 85, mobility: 83, leadership: 94 },
+    skillCards: [
+      {
+        id: 'cyrus-tolerance',
+        name: '波斯帝国',
+        trigger: 'on_expand',
+        modifier: '+23% leadership',
+        cooldownMs: 215000,
+        durationMs: 78000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x9932cc, // Persian Purple
+      secondary: 0x6a1f99,
+      alpha: 0.7,
+      pattern: 'lions-sun',
+      label: '居',
+      glowColor: 0xba55d3,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'richard-lionheart',
+    name: '狮心王理查',
+    originRegion: 'europe',
+    baseAttributes: { attack: 93, defense: 80, mobility: 87, leadership: 86 },
+    skillCards: [
+      {
+        id: 'richard-crusade',
+        name: '十字军',
+        trigger: 'on_attack',
+        modifier: '+29% attack',
+        cooldownMs: 180000,
+        durationMs: 62000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xdc143c, // Crusader Red
+      secondary: 0xa00d2b,
+      alpha: 0.7,
+      pattern: 'crosses',
+      label: '理',
+      glowColor: 0xff1744,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'tokugawa-ieyasu',
+    name: '织田信长',
+    originRegion: 'asia',
+    baseAttributes: { attack: 92, defense: 78, mobility: 86, leadership: 89 },
+    skillCards: [
+      {
+        id: 'oda-unification',
+        name: '天下布武',
+        trigger: 'on_attack',
+        modifier: '+28% attack',
+        cooldownMs: 175000,
+        durationMs: 60000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff4500, // Oda Red
+      secondary: 0xd43d00,
+      alpha: 0.7,
+      pattern: 'samurai',
+      label: '织',
+      glowColor: 0xff6347,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'lincoln',
+    name: '林肯',
+    originRegion: 'americas',
+    baseAttributes: { attack: 76, defense: 86, mobility: 78, leadership: 92 },
+    skillCards: [
+      {
+        id: 'lincoln-union',
+        name: '联邦之父',
+        trigger: 'on_alliance',
+        modifier: '+27% leadership',
+        cooldownMs: 230000,
+        durationMs: 85000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x191970, // Union Blue
+      secondary: 0x0e0e3d,
+      alpha: 0.7,
+      pattern: 'stars-stripes',
+      label: '林',
+      glowColor: 0x4169e1,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'shivaji',
+    name: '希瓦吉',
+    originRegion: 'asia',
+    baseAttributes: { attack: 87, defense: 89, mobility: 84, leadership: 88 },
+    skillCards: [
+      {
+        id: 'shivaji-maratha',
+        name: '马拉塔战士',
+        trigger: 'on_defend',
+        modifier: '+26% defense',
+        cooldownMs: 210000,
+        durationMs: 76000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff8c00, // Maratha Orange
+      secondary: 0xd97500,
+      alpha: 0.7,
+      pattern: 'tigers',
+      label: '希',
+      glowColor: 0xffa500,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'gustavus',
+    name: '古斯塔夫二世',
+    originRegion: 'europe',
+    baseAttributes: { attack: 91, defense: 83, mobility: 88, leadership: 90 },
+    skillCards: [
+      {
+        id: 'gustavus-lion',
+        name: '北方雄狮',
+        trigger: 'on_attack',
+        modifier: '+26% attack',
+        cooldownMs: 185000,
+        durationMs: 64000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x4169e1, // Swedish Blue
+      secondary: 0x1e3a8a,
+      alpha: 0.7,
+      pattern: 'nordic',
+      label: '古',
+      glowColor: 0x6495ed,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'sejong',
+    name: '世宗大王',
+    originRegion: 'asia',
+    baseAttributes: { attack: 74, defense: 84, mobility: 77, leadership: 96 },
+    skillCards: [
+      {
+        id: 'sejong-enlightenment',
+        name: '文化繁荣',
+        trigger: 'on_develop',
+        modifier: '+35% leadership',
+        cooldownMs: 260000,
+        durationMs: 100000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff1493, // Joseon Pink
+      secondary: 0xc71585,
+      alpha: 0.7,
+      pattern: 'hangul',
+      label: '世',
+      glowColor: 0xff69b4,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'trajan',
+    name: '图拉真',
+    originRegion: 'europe',
+    baseAttributes: { attack: 87, defense: 88, mobility: 81, leadership: 91 },
+    skillCards: [
+      {
+        id: 'trajan-expansion',
+        name: '罗马扩张',
+        trigger: 'on_expand',
+        modifier: '+24% all_stats',
+        cooldownMs: 220000,
+        durationMs: 81000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x800020, // Roman Burgundy
+      secondary: 0x4d0013,
+      alpha: 0.7,
+      pattern: 'eagles',
+      label: '图',
+      glowColor: 0xa0153e,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'ashoka',
+    name: '阿育王',
+    originRegion: 'asia',
+    baseAttributes: { attack: 82, defense: 87, mobility: 79, leadership: 93 },
+    skillCards: [
+      {
+        id: 'ashoka-dharma',
+        name: '正法治国',
+        trigger: 'on_alliance',
+        modifier: '+28% leadership',
+        cooldownMs: 240000,
+        durationMs: 90000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff9933, // Ashoka Orange
+      secondary: 0xcc7a29,
+      alpha: 0.7,
+      pattern: 'chakra',
+      label: '阿',
+      glowColor: 0xffad5c,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'hiawatha',
+    name: '海华沙',
+    originRegion: 'americas',
+    baseAttributes: { attack: 79, defense: 85, mobility: 86, leadership: 84 },
+    skillCards: [
+      {
+        id: 'hiawatha-confederation',
+        name: '易洛魁联盟',
+        trigger: 'on_alliance',
+        modifier: '+25% all_stats',
+        cooldownMs: 230000,
+        durationMs: 84000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x8b4513, // Iroquois Brown
+      secondary: 0x5d2e0d,
+      alpha: 0.7,
+      pattern: 'longhouse',
+      label: '海',
+      glowColor: 0xa0522d,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'leonidas',
+    name: '列奥尼达',
+    originRegion: 'europe',
+    baseAttributes: { attack: 89, defense: 95, mobility: 77, leadership: 87 },
+    skillCards: [
+      {
+        id: 'leonidas-spartans',
+        name: '斯巴达勇士',
+        trigger: 'on_defend',
+        modifier: '+34% defense',
+        cooldownMs: 190000,
+        durationMs: 66000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x8b0000, // Spartan Red
+      secondary: 0x5d0000,
+      alpha: 0.7,
+      pattern: 'shields-lambda',
+      label: '列',
+      glowColor: 0xb22222,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'harun',
+    name: '哈伦·拉希德',
+    originRegion: 'asia',
+    baseAttributes: { attack: 81, defense: 83, mobility: 82, leadership: 90 },
+    skillCards: [
+      {
+        id: 'harun-golden-age',
+        name: '黄金时代',
+        trigger: 'on_develop',
+        modifier: '+30% leadership',
+        cooldownMs: 245000,
+        durationMs: 92000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xffd700, // Abbasid Gold
+      secondary: 0xb8860b,
+      alpha: 0.7,
+      pattern: 'minarets',
+      label: '哈',
+      glowColor: 0xffed4e,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'boudica',
+    name: '布狄卡',
+    originRegion: 'europe',
+    baseAttributes: { attack: 88, defense: 82, mobility: 89, leadership: 85 },
+    skillCards: [
+      {
+        id: 'boudica-rebellion',
+        name: '不列颠起义',
+        trigger: 'on_attack',
+        modifier: '+27% attack',
+        cooldownMs: 180000,
+        durationMs: 61000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x228b22, // Celtic Green
+      secondary: 0x145a14,
+      alpha: 0.7,
+      pattern: 'celtic-knots',
+      label: '布',
+      glowColor: 0x32cd32,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'meiji',
+    name: '明治天皇',
+    originRegion: 'asia',
+    baseAttributes: { attack: 78, defense: 81, mobility: 83, leadership: 94 },
+    skillCards: [
+      {
+        id: 'meiji-restoration',
+        name: '明治维新',
+        trigger: 'on_develop',
+        modifier: '+32% all_stats',
+        cooldownMs: 250000,
+        durationMs: 95000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff0000, // Rising Sun Red
+      secondary: 0xcc0000,
+      alpha: 0.7,
+      pattern: 'chrysanthemum',
+      label: '明',
+      glowColor: 0xff3333,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'zhu-yuanzhang',
+    name: '朱元璋',
+    originRegion: 'asia',
+    baseAttributes: { attack: 86, defense: 87, mobility: 80, leadership: 92 },
+    skillCards: [
+      {
+        id: 'zhu-ming',
+        name: '明朝开国',
+        trigger: 'on_expand',
+        modifier: '+26% all_stats',
+        cooldownMs: 225000,
+        durationMs: 83000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff6600, // Ming Orange
+      secondary: 0xcc5200,
+      alpha: 0.7,
+      pattern: 'dragons-phoenix',
+      label: '朱',
+      glowColor: 0xff8533,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'simon-bolivar',
+    name: '圣马丁',
+    originRegion: 'americas',
+    baseAttributes: { attack: 83, defense: 79, mobility: 85, leadership: 88 },
+    skillCards: [
+      {
+        id: 'san-martin-andes',
+        name: '安第斯军团',
+        trigger: 'on_attack',
+        modifier: '+24% mobility',
+        cooldownMs: 205000,
+        durationMs: 73000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x0033a0, // Argentine Blue
+      secondary: 0x002266,
+      alpha: 0.7,
+      pattern: 'andes',
+      label: '圣',
+      glowColor: 0x0055cc,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'nzinga',
+    name: '恩津加女王',
+    originRegion: 'africa',
+    baseAttributes: { attack: 84, defense: 86, mobility: 83, leadership: 87 },
+    skillCards: [
+      {
+        id: 'nzinga-resistance',
+        name: '抗争精神',
+        trigger: 'on_defend',
+        modifier: '+27% defense',
+        cooldownMs: 215000,
+        durationMs: 78000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x8b4513, // African Brown
+      secondary: 0x5d2e0d,
+      alpha: 0.7,
+      pattern: 'warriors',
+      label: '恩',
+      glowColor: 0xa0522d,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'barbarossa',
+    name: '巴巴罗萨',
+    originRegion: 'europe',
+    baseAttributes: { attack: 90, defense: 79, mobility: 92, leadership: 86 },
+    skillCards: [
+      {
+        id: 'barbarossa-corsairs',
+        name: '海盗舰队',
+        trigger: 'on_naval',
+        modifier: '+30% mobility',
+        cooldownMs: 175000,
+        durationMs: 59000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xdc143c, // Corsair Red
+      secondary: 0xa00d2b,
+      alpha: 0.7,
+      pattern: 'ships',
+      label: '巴',
+      glowColor: 0xff1744,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'victoria',
+    name: '维多利亚女王',
+    originRegion: 'europe',
+    baseAttributes: { attack: 75, defense: 88, mobility: 81, leadership: 95 },
+    skillCards: [
+      {
+        id: 'victoria-empire',
+        name: '日不落帝国',
+        trigger: 'on_expand',
+        modifier: '+29% leadership',
+        cooldownMs: 240000,
+        durationMs: 89000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff1493, // Victorian Pink
+      secondary: 0xc71585,
+      alpha: 0.7,
+      pattern: 'roses-crown',
+      label: '维',
+      glowColor: 0xff69b4,
+      pulseSpeed: 1000,
+    },
+  },
 ];
 
 export function getRandomCommanders(count: number, seed: number): CommanderTemplate[] {

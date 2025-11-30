@@ -12,7 +12,7 @@ export function startSession(seed?: string): void {
   // 创建初始世界
   const { commanders, territories } = createInitialWorld({
     seed: numericSeed,
-    commanderCount: 16, // 增加到 16 个指挥官，让战斗更激烈
+    commanderCount: 30, // 增加到 30 个指挥官，史诗级战斗！
   });
 
   // 创建颜色映射
