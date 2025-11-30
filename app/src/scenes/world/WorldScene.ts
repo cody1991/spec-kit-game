@@ -667,63 +667,8 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Track territory state changes for map updates
+    // Access game state (for tick-based rendering)
     const state = useGameStore.getState();
-
-    // Sync territory changes (region-based) to country states (map-based)
-    if (this.mapRenderer && this.countries.length > 0) {
-      const regionCountryMap = createRegionCountryMap();
-      
-      state.territories.forEach((territory) => {
-        // Territory is region-based, need to map to countries
-        if (territory.id.startsWith('region-')) {
-          const countryIds = regionCountryMap.get(territory.id);
-          
-          if (countryIds && countryIds.length > 0) {
-            // Update all countries in this region
-            countryIds.forEach((countryId) => {
-              const existingState = state.territoryStates.get(countryId);
-
-              // Check if ownership changed
-              if (existingState && existingState.ownerId !== territory.ownerId) {
-                // Territory changed hands
-                const newState = {
-                  ...existingState,
-                  previousOwnerId: existingState.ownerId,
-                  ownerId: territory.ownerId,
-                  troops: territory.garrison,
-                  defense: territory.stability || 50,
-                  updatedAt: Date.now(),
-                  conqueredAt: Date.now(),
-                  transitionProgress: 0,
-                };
-
-                state.updateTerritoryState(countryId, newState);
-
-                // Update the visual rendering
-                const colorMapping = territory.ownerId
-                  ? state.colorMappings.get(territory.ownerId)
-                  : null;
-
-                if (colorMapping) {
-                  this.mapRenderer.updateCountry(countryId, newState, colorMapping);
-                  console.log(
-                    `🎨 [Region→Country] ${territory.id} → ${countryId}: ${existingState.ownerId} → ${territory.ownerId}`
-                  );
-                }
-              } else if (existingState) {
-                // Update troops/defense without owner change
-                state.updateTerritoryState(countryId, {
-                  troops: territory.garrison,
-                  defense: territory.stability || 50,
-                  updatedAt: Date.now(),
-                });
-              }
-            });
-          }
-        }
-      });
-    }
 
     // 每30 tick 重新渲染一次完整地图（降低渲染频率以提升性能）
     if (state.tick % 30 === 0) {

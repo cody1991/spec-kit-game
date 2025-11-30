@@ -23,67 +23,68 @@ function updateTerritoryOwnership(
 ) {
   console.log(`🔄 [updateTerritoryOwnership] Processing ${id}, ownerId: ${updates.ownerId}`);
   
-  const existingState = state.territoryStates.get(id);
   const newStates = new Map(state.territoryStates);
 
-  console.log(`🔄 [updateTerritoryOwnership] Existing state:`, existingState ? `${existingState.ownerId}` : 'NOT FOUND');
+  // Treat incoming id as a region ID if it exists in the mapping table
+  const regionCountryMap = createRegionCountryMap();
+  const mappedCountryIds = regionCountryMap.get(id);
 
-  // Check if this is a region ID (starts with 'region-') or a country ID
-  const isRegionId = id.startsWith('region-');
-  
-  if (isRegionId) {
-    // This is a region update - we need to update all countries in this region
-    console.log(`🗺️  [updateTerritoryOwnership] Region detected: ${id}, finding mapped countries...`);
-    
-    const regionCountryMap = createRegionCountryMap();
-    const countryIds = regionCountryMap.get(id);
-    
-    if (countryIds && countryIds.length > 0) {
-      console.log(`🗺️  [updateTerritoryOwnership] Found ${countryIds.length} countries for region ${id}:`, countryIds);
-      
-      // Update all countries in this region
-      countryIds.forEach((countryId) => {
-        const existingCountryState = newStates.get(countryId);
-        
-        if (existingCountryState) {
-          const updatedState = {
-            ...existingCountryState,
-            previousOwnerId: existingCountryState.ownerId,
-            ownerId: updates.ownerId!,
-            troops: updates.garrison ?? existingCountryState.troops,
-            defense: updates.stability ?? existingCountryState.defense,
-            conqueredAt: Date.now(),
-            updatedAt: Date.now(),
-            transitionProgress: 0,
-          };
-          
-          newStates.set(countryId, updatedState);
-          console.log(`  ✅ Updated country ${countryId}: ${existingCountryState.ownerId} → ${updates.ownerId}`);
-        } else {
-          // Country state doesn't exist yet, create it
-          const newCountryState = {
-            countryId,
-            countryName: countryId, // Will be updated when countries load
-            ownerId: updates.ownerId!,
-            troops: updates.garrison ?? 50,
-            resources: 0,
-            defense: updates.stability ?? 50,
-            updatedAt: Date.now(),
-            conqueredAt: Date.now(),
-            previousOwnerId: null,
-            transitionProgress: null,
-            isHighlighted: false,
-          };
-          
-          newStates.set(countryId, newCountryState);
-          console.log(`  🆕 Created country state ${countryId} → ${updates.ownerId}`);
-        }
-      });
-    } else {
-      console.warn(`⚠️  [updateTerritoryOwnership] No countries found for region ${id}`);
-    }
+  if (mappedCountryIds && mappedCountryIds.length > 0) {
+    console.log(
+      `🗺️  [updateTerritoryOwnership] Region detected: ${id}, updating ${mappedCountryIds.length} countries`,
+      mappedCountryIds
+    );
+
+    mappedCountryIds.forEach((countryId) => {
+      const existingCountryState = newStates.get(countryId);
+
+      if (existingCountryState) {
+        const updatedState = {
+          ...existingCountryState,
+          previousOwnerId: existingCountryState.ownerId,
+          ownerId: updates.ownerId!,
+          troops: updates.garrison ?? existingCountryState.troops,
+          defense: updates.stability ?? existingCountryState.defense,
+          conqueredAt: Date.now(),
+          updatedAt: Date.now(),
+          transitionProgress: 0,
+        };
+
+        newStates.set(countryId, updatedState);
+        console.log(
+          `  ✅ [updateTerritoryOwnership] Country ${countryId}: ${existingCountryState.ownerId} → ${updates.ownerId}`
+        );
+      } else {
+        // Country state doesn't exist yet, create it
+        const newCountryState = {
+          countryId,
+          countryName: countryId, // Will be updated when countries load
+          ownerId: updates.ownerId!,
+          troops: updates.garrison ?? 50,
+          resources: 0,
+          defense: updates.stability ?? 50,
+          updatedAt: Date.now(),
+          conqueredAt: Date.now(),
+          previousOwnerId: null,
+          transitionProgress: null,
+          isHighlighted: false,
+        };
+
+        newStates.set(countryId, newCountryState);
+        console.log(
+          `  🆕 [updateTerritoryOwnership] Created state for ${countryId} → ${updates.ownerId}`
+        );
+      }
+    });
   } else {
-    // This is a direct country update
+    // No region mapping, treat id as direct country ID
+    const existingState = newStates.get(id);
+
+    console.log(
+      `🔄 [updateTerritoryOwnership] No region mapping for ${id}, treating as direct country. Existing:`,
+      existingState ? `${existingState.ownerId}` : 'NOT FOUND'
+    );
+
     if (existingState) {
       const updatedState = {
         ...existingState,
@@ -95,7 +96,7 @@ function updateTerritoryOwnership(
         updatedAt: Date.now(),
         transitionProgress: 0,
       };
-      
+
       newStates.set(id, updatedState);
 
       console.log(
@@ -117,7 +118,7 @@ function updateTerritoryOwnership(
         transitionProgress: null,
         isHighlighted: false,
       };
-      
+
       newStates.set(id, newState);
 
       console.log(`🆕 [Territory] Created new state: ${id} → ${updates.ownerId}`);

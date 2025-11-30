@@ -13,7 +13,6 @@ import type {
   RenderStats,
 } from '../types/mapTypes';
 import { GraphicsPool } from './GraphicsPool';
-import { bboxIntersects } from '../utils/geoUtils';
 import { CoordinateTransformer } from '../utils/CoordinateTransformer';
 import { ColorTransitionManager, type IColorTransitionManager } from './ColorTransitionManager';
 
@@ -26,6 +25,7 @@ export class MapRenderer {
   private countryGraphics: Map<string, Phaser.GameObjects.Graphics> = new Map();
   private countryLabels: Map<string, Phaser.GameObjects.Text> = new Map(); // NEW: Text labels for countries
   private previousColors: Map<string, number> = new Map(); // Track previous colors for transitions
+  private commanders: Array<{ id: string; name: string }> = [];
   private stats: RenderStats = {
     countriesRendered: 0,
     renderTime: 0,
@@ -120,6 +120,9 @@ export class MapRenderer {
     this.stats.drawCalls = 0;
     this.stats.vertices = 0;
 
+    // Cache commanders for incremental updates (updateCountry)
+    this.commanders = commanders;
+
     // Get camera viewport for culling
     const camera = this.scene.cameras.main;
     const viewport = {
@@ -141,16 +144,9 @@ export class MapRenderer {
       const topLeft = this.transformer.geoToScreen(country.bbox.minX, country.bbox.maxY);
       const bottomRight = this.transformer.geoToScreen(country.bbox.maxX, country.bbox.minY);
 
-      const screenBbox = {
-        minX: topLeft.x,
-        minY: topLeft.y,
-        maxX: bottomRight.x,
-        maxY: bottomRight.y,
-      };
-
       // TEMPORARY: Disable viewport culling for debugging
       // TODO: Fix culling after coordinate system is verified
-      const shouldRender = true; // bboxIntersects(screenBbox, viewport);
+      const shouldRender = true;
 
       if (!shouldRender) {
         culledCount++;
@@ -158,7 +154,7 @@ export class MapRenderer {
       }
 
       const state = territoryStates.get(country.id);
-      const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) : null;
+      const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) ?? null : null;
 
       this.renderCountry(country, state, colorMapping);
       
@@ -212,6 +208,7 @@ export class MapRenderer {
     let graphics = this.countryGraphics.get(country.id);
 
     if (!graphics) {
+      console.log(`🆕 [renderCountry] Creating new graphics for ${country.id}`);
       graphics = this.config.useObjectPool
         ? this.graphicsPool.acquire()
         : this.scene.add.graphics();
@@ -220,10 +217,14 @@ export class MapRenderer {
     }
 
     graphics.clear();
+    console.log(`🎨 [renderCountry] Rendering ${country.name} (${country.id}), has owner: ${!!state?.ownerId}, colorMapping: ${!!colorMapping}`);
 
     // Draw filled polygon if owner exists
     if (state?.ownerId && colorMapping) {
+      console.log(`  → Filling country ${country.id} with color ${colorMapping.primary.toString(16)}`);
       this.fillCountry(graphics, country, colorMapping);
+    } else {
+      console.log(`  → Skipping fill for ${country.id} (no owner or no colorMapping)`);
     }
 
     // Draw border
@@ -430,24 +431,32 @@ export class MapRenderer {
    * Update a single country's rendering
    */
   updateCountry(countryId: string, state: TerritoryState, colorMapping: CommanderColor): void {
+    console.log(`🔄 [MapRenderer.updateCountry] Called for ${countryId}, ownerId: ${state.ownerId}, color: ${colorMapping.primary.toString(16)}`);
+    
     // Re-render this country
     const countries = this.scene.registry.get('countries') as Country[] | undefined;
     const country = countries?.find((c) => c.id === countryId);
 
     if (!country) {
-      console.warn(`Country ${countryId} not found in registry`);
+      console.warn(`❌ [MapRenderer] Country ${countryId} not found in registry, available: ${countries?.length || 0}`);
       return;
     }
 
+    console.log(`✅ [MapRenderer] Found country ${country.name} (${countryId}), calling renderCountry...`);
     this.renderCountry(country, state, colorMapping);
+
+    // Also update label to reflect new owner
+    this.renderCountryLabel(country, state, this.commanders);
+
+    console.log(`✅ [MapRenderer] renderCountry completed for ${countryId}`);
   }
 
   /**
    * Highlight a country
    */
-  highlightCountry(countryId: string | null, type: 'hover' | 'select'): void {
+  highlightCountry(countryId: string | null, _type: 'hover' | 'select'): void {
     // Remove previous highlights of this type
-    this.countryGraphics.forEach((graphics, id) => {
+    this.countryGraphics.forEach((_graphics, _id) => {
       // This is a simplified implementation
       // In production, you'd track highlight states separately
     });
