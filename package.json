@@ -4,9 +4,9 @@
   "type": "module",
   "description": "Historical world conquest simulator game",
   "scripts": {
-    "dev": "vite --config app/vite.config.ts",
-    "build": "tsc && vite build --config app/vite.config.ts",
-    "preview": "vite preview --config app/vite.config.ts",
+    "dev": "cd app && vite",
+    "build": "cd app && tsc && vite build",
+    "preview": "cd app && vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write \"**/*.{ts,tsx,json,css,md}\"",

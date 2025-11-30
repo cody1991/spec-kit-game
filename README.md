@@ -22,38 +22,44 @@
 
 ## 快速开始
 
-### 安装依赖
+### 🚀 启动步骤
 
 ```bash
+# 1. 进入项目目录
+cd /Users/codytang/Desktop/tencent/spec-kit-game
+
+# 2. 安装依赖（首次运行）
 pnpm install
-```
 
-### 开发模式
-
-```bash
+# 3. 启动开发服务器
 pnpm dev
+
+# 4. 在浏览器中访问
+# 自动打开 http://localhost:5173
 ```
 
-访问 http://localhost:5173
-
-### 构建生产版本
+### ⚙️ 其他命令
 
 ```bash
+# 构建生产版本
 pnpm build
-```
 
-### 运行测试
-
-```bash
-# 单元测试
+# 运行单元测试
 pnpm test
 
 # E2E 测试
 pnpm test:e2e
 
-# 覆盖率报告
-pnpm test:coverage
+# 代码检查
+pnpm lint
+
+# 健康检查
+node scripts/check-app.js
 ```
+
+### ❓ 遇到问题？
+
+查看 **[故障排查指南](./TROUBLESHOOTING.md)** 获取详细帮助。
 
 ## 游戏操作
 
