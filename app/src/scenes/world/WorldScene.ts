@@ -111,8 +111,8 @@ export class WorldScene extends Phaser.Scene {
 
     // Set up camera bounds for world map
     const camera = this.cameras.main;
-    // Set a large world bounds to allow panning around the map
-    camera.setBounds(-1000, -1000, 4000, 3000);
+    // Set larger world bounds to allow panning around the map
+    camera.setBounds(-2000, -1500, 6000, 4500);
     // Start camera at (0, 0) to show the center of the map
     camera.setScroll(0, 0);
     camera.setZoom(1);
@@ -331,7 +331,12 @@ export class WorldScene extends Phaser.Scene {
     if (this.mapRenderer && this.countries.length > 0 && territoryStates.size > 0) {
       this.performanceMonitor.startMeasure('mapRender');
 
-      const stats = this.mapRenderer.render(this.countries, territoryStates, colorMappings);
+      const stats = this.mapRenderer.render(
+        this.countries,
+        territoryStates,
+        colorMappings,
+        commanders // Pass commanders for label rendering
+      );
 
       this.performanceMonitor.endMeasure('mapRender');
 
@@ -624,8 +629,8 @@ export class WorldScene extends Phaser.Scene {
 class CameraController {
   private scene: Phaser.Scene;
   private isDragging = false;
-  private dragStartX = 0;
-  private dragStartY = 0;
+  private lastPointerX = 0;
+  private lastPointerY = 0;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -635,43 +640,70 @@ class CameraController {
   private setupControls(): void {
     const camera = this.scene.cameras.main;
 
-    // 鼠标拖拽
+    // 左键或右键都可以拖拽地图
     this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (pointer.rightButtonDown()) {
+      // 允许左键和右键拖拽
+      if (pointer.leftButtonDown() || pointer.rightButtonDown()) {
         this.isDragging = true;
-        this.dragStartX = pointer.x;
-        this.dragStartY = pointer.y;
+        this.lastPointerX = pointer.x;
+        this.lastPointerY = pointer.y;
+        
+        // 改变鼠标样式
+        this.scene.game.canvas.style.cursor = 'grabbing';
       }
     });
 
     this.scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (this.isDragging) {
-        const deltaX = pointer.x - this.dragStartX;
-        const deltaY = pointer.y - this.dragStartY;
-        camera.scrollX -= deltaX;
-        camera.scrollY -= deltaY;
-        this.dragStartX = pointer.x;
-        this.dragStartY = pointer.y;
+        const deltaX = pointer.x - this.lastPointerX;
+        const deltaY = pointer.y - this.lastPointerY;
+        
+        // 直接移动相机，使用更平滑的拖拽
+        camera.scrollX -= deltaX / camera.zoom;
+        camera.scrollY -= deltaY / camera.zoom;
+        
+        this.lastPointerX = pointer.x;
+        this.lastPointerY = pointer.y;
+      } else {
+        // 鼠标悬停时显示可拖拽提示
+        this.scene.game.canvas.style.cursor = 'grab';
       }
     });
 
     this.scene.input.on('pointerup', () => {
-      this.isDragging = false;
+      if (this.isDragging) {
+        this.isDragging = false;
+        this.scene.game.canvas.style.cursor = 'grab';
+      }
     });
 
-    // 缩放
+    // 滚轮缩放 - 扩大缩放范围，允许更小的缩放以查看完整地图
     this.scene.input.on(
       'wheel',
       (
-        _pointer: Phaser.Input.Pointer,
+        pointer: Phaser.Input.Pointer,
         _gameObjects: unknown[],
         _deltaX: number,
         deltaY: number
       ) => {
+        // 计算缩放因子
         const zoomFactor = deltaY > 0 ? 0.9 : 1.1;
-        const newZoom = Phaser.Math.Clamp(camera.zoom * zoomFactor, 0.5, 2);
+        // 扩大缩放范围: 0.3 (完整世界地图) 到 3.0 (区域细节)
+        const newZoom = Phaser.Math.Clamp(camera.zoom * zoomFactor, 0.3, 3.0);
+        
+        // 以鼠标位置为中心进行缩放
+        const worldPoint = camera.getWorldPoint(pointer.x, pointer.y);
         camera.setZoom(newZoom);
+        
+        // 调整相机位置，使缩放中心保持在鼠标位置
+        const newWorldPoint = camera.getWorldPoint(pointer.x, pointer.y);
+        camera.scrollX += worldPoint.x - newWorldPoint.x;
+        camera.scrollY += worldPoint.y - newWorldPoint.y;
+        
+        console.log(`🔍 Zoom: ${newZoom.toFixed(2)}x`);
       }
     );
+
+    console.log('🎮 Camera controls initialized (drag: left/right click, zoom: mouse wheel 0.3x-3.0x)');
   }
 }

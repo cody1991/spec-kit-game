@@ -43,7 +43,7 @@ export function StartScreen() {
           </div>
           <div className="feature-item">
             <span className="feature-icon">⚔️</span>
-            <span className="feature-text">10+ 历史人物</span>
+            <span className="feature-text">26+ 历史人物</span>
           </div>
           <div className="feature-item">
             <span className="feature-icon">🎮</span>

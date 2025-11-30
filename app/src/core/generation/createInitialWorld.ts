@@ -8,7 +8,7 @@ export interface InitialWorldOptions {
 }
 
 export function createInitialWorld(options: InitialWorldOptions) {
-  const { seed, commanderCount = 10 } = options;
+  const { seed, commanderCount = 16 } = options; // 默认 16 个指挥官
 
   // 创建领土
   const territories: Territory[] = createTerritories();

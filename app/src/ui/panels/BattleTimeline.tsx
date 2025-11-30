@@ -13,7 +13,8 @@ export function BattleTimeline() {
     return commander?.name || id;
   };
 
-  const recentEvents = [...eventLog].reverse().slice(0, 20);
+  // 获取最新的 20 条事件（最新的在最上面）
+  const recentEvents = [...eventLog].slice(-20).reverse();
 
   return (
     <div className="battle-timeline">

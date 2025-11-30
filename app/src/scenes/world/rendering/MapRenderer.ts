@@ -24,6 +24,7 @@ export class MapRenderer {
   private transformer!: CoordinateTransformer;
   private transitionManager!: IColorTransitionManager;
   private countryGraphics: Map<string, Phaser.GameObjects.Graphics> = new Map();
+  private countryLabels: Map<string, Phaser.GameObjects.Text> = new Map(); // NEW: Text labels for countries
   private previousColors: Map<string, number> = new Map(); // Track previous colors for transitions
   private stats: RenderStats = {
     countriesRendered: 0,
@@ -110,7 +111,8 @@ export class MapRenderer {
   render(
     countries: Country[],
     territoryStates: Map<string, TerritoryState>,
-    colorMappings: Map<string, CommanderColor>
+    colorMappings: Map<string, CommanderColor>,
+    commanders: Array<{ id: string; name: string }> = [] // NEW: Add commanders parameter
   ): RenderStats {
     const startTime = performance.now();
 
@@ -159,6 +161,10 @@ export class MapRenderer {
       const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) : null;
 
       this.renderCountry(country, state, colorMapping);
+      
+      // NEW: Render country label with commander name
+      this.renderCountryLabel(country, state, commanders);
+      
       this.stats.countriesRendered++;
 
       if (state?.ownerId && colorMapping) {
@@ -230,6 +236,73 @@ export class MapRenderer {
 
     this.stats.drawCalls++;
     this.stats.vertices += this.countVertices(country);
+  }
+
+  /**
+   * Render country label with commander name
+   */
+  private renderCountryLabel(
+    country: Country,
+    state: TerritoryState | undefined,
+    commanders: Array<{ id: string; name: string }>
+  ): void {
+    // Only show labels for countries with owners
+    if (!state?.ownerId) {
+      // Remove label if exists
+      const existingLabel = this.countryLabels.get(country.id);
+      if (existingLabel) {
+        existingLabel.setVisible(false);
+      }
+      return;
+    }
+
+    // Find commander name
+    const commander = commanders.find((c) => c.id === state.ownerId);
+    if (!commander) {
+      const existingLabel = this.countryLabels.get(country.id);
+      if (existingLabel) {
+        existingLabel.setVisible(false);
+      }
+      return;
+    }
+
+    // Get or create text label
+    let label = this.countryLabels.get(country.id);
+    
+    if (!label) {
+      label = this.scene.add.text(0, 0, '', {
+        fontSize: '12px',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 3,
+        fontStyle: 'bold',
+        align: 'center',
+      });
+      label.setOrigin(0.5);
+      label.setDepth(1000); // Render on top of countries
+      this.countryLabels.set(country.id, label);
+    }
+
+    // Transform centroid to screen coordinates
+    const screenPos = this.transformer.geoToScreen(country.centroid.x, country.centroid.y);
+    
+    // Update label position and text (show commander name)
+    label.setPosition(screenPos.x, screenPos.y);
+    label.setText(commander.name);
+    label.setVisible(true);
+
+    // Adjust visibility based on zoom level
+    const camera = this.scene.cameras.main;
+    const zoom = camera.zoom;
+    
+    // Only show labels when zoomed in enough (zoom > 0.6)
+    if (zoom < 0.6) {
+      label.setVisible(false);
+    } else {
+      // Adjust font size based on zoom
+      const fontSize = Math.max(10, Math.min(18, 12 * zoom));
+      label.setFontSize(fontSize);
+    }
   }
 
   /**
@@ -404,6 +477,12 @@ export class MapRenderer {
     });
 
     this.countryGraphics.clear();
+
+    // Clear labels
+    this.countryLabels.forEach((label) => {
+      label.destroy();
+    });
+    this.countryLabels.clear();
   }
 
   /**

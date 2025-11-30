@@ -329,6 +329,381 @@ export const commandersPool: CommanderTemplate[] = [
       pulseSpeed: 1000,
     },
   },
+  {
+    id: 'hannibal',
+    name: '汉尼拔',
+    originRegion: 'africa',
+    baseAttributes: { attack: 94, defense: 80, mobility: 92, leadership: 91 },
+    skillCards: [
+      {
+        id: 'hannibal-elephants',
+        name: '战象军团',
+        trigger: 'on_attack',
+        modifier: '+26% attack',
+        cooldownMs: 180000,
+        durationMs: 60000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x8b4513, // Carthage Brown
+      secondary: 0x5d2e0d,
+      alpha: 0.7,
+      pattern: 'elephants',
+      label: '汉',
+      glowColor: 0xa0522d,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'elizabeth',
+    name: '伊丽莎白一世',
+    originRegion: 'europe',
+    baseAttributes: { attack: 76, defense: 82, mobility: 80, leadership: 92 },
+    skillCards: [
+      {
+        id: 'elizabeth-fleet',
+        name: '无敌舰队',
+        trigger: 'on_naval',
+        modifier: '+24% mobility',
+        cooldownMs: 210000,
+        durationMs: 75000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff1493, // Royal Pink
+      secondary: 0xc71585,
+      alpha: 0.7,
+      pattern: 'roses',
+      label: '伊',
+      glowColor: 0xff69b4,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'sun-tzu',
+    name: '孙子',
+    originRegion: 'asia',
+    baseAttributes: { attack: 88, defense: 90, mobility: 85, leadership: 98 },
+    skillCards: [
+      {
+        id: 'sun-tzu-strategy',
+        name: '兵法',
+        trigger: 'on_battle',
+        modifier: '+35% leadership',
+        cooldownMs: 240000,
+        durationMs: 90000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x4169e1, // Strategy Blue
+      secondary: 0x1e3a8a,
+      alpha: 0.7,
+      pattern: 'yin-yang',
+      label: '孙',
+      glowColor: 0x6495ed,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'shaka',
+    name: '沙卡·祖鲁',
+    originRegion: 'africa',
+    baseAttributes: { attack: 91, defense: 86, mobility: 89, leadership: 88 },
+    skillCards: [
+      {
+        id: 'shaka-impis',
+        name: '祖鲁武士',
+        trigger: 'on_attack',
+        modifier: '+27% attack',
+        cooldownMs: 175000,
+        durationMs: 58000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x8b0000, // Zulu Red
+      secondary: 0x5d0000,
+      alpha: 0.7,
+      pattern: 'shields',
+      label: '沙',
+      glowColor: 0xb22222,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'charlemagne',
+    name: '查理曼大帝',
+    originRegion: 'europe',
+    baseAttributes: { attack: 87, defense: 84, mobility: 79, leadership: 93 },
+    skillCards: [
+      {
+        id: 'charlemagne-empire',
+        name: '帝国荣耀',
+        trigger: 'on_expand',
+        modifier: '+22% all_stats',
+        cooldownMs: 220000,
+        durationMs: 80000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x4b0082, // Imperial Indigo
+      secondary: 0x2f0052,
+      alpha: 0.7,
+      pattern: 'crowns',
+      label: '查',
+      glowColor: 0x6a0dad,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'tokugawa',
+    name: '德川家康',
+    originRegion: 'asia',
+    baseAttributes: { attack: 83, defense: 92, mobility: 76, leadership: 94 },
+    skillCards: [
+      {
+        id: 'tokugawa-shogun',
+        name: '幕府统治',
+        trigger: 'on_defend',
+        modifier: '+32% defense',
+        cooldownMs: 250000,
+        durationMs: 95000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x006400, // Shogun Green
+      secondary: 0x003d00,
+      alpha: 0.7,
+      pattern: 'bamboo',
+      label: '德',
+      glowColor: 0x008000,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'montezuma',
+    name: '蒙特祖马',
+    originRegion: 'americas',
+    baseAttributes: { attack: 85, defense: 81, mobility: 83, leadership: 87 },
+    skillCards: [
+      {
+        id: 'montezuma-eagle',
+        name: '鹰武士',
+        trigger: 'on_attack',
+        modifier: '+23% attack',
+        cooldownMs: 195000,
+        durationMs: 68000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xffd700, // Aztec Gold
+      secondary: 0xb8860b,
+      alpha: 0.7,
+      pattern: 'pyramids',
+      label: '蒙',
+      glowColor: 0xffed4e,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'catherine',
+    name: '叶卡捷琳娜大帝',
+    originRegion: 'europe',
+    baseAttributes: { attack: 79, defense: 87, mobility: 81, leadership: 95 },
+    skillCards: [
+      {
+        id: 'catherine-enlightenment',
+        name: '开明专制',
+        trigger: 'on_expand',
+        modifier: '+28% leadership',
+        cooldownMs: 230000,
+        durationMs: 85000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xffa500, // Russian Gold
+      secondary: 0xd98704,
+      alpha: 0.7,
+      pattern: 'double-eagle',
+      label: '叶',
+      glowColor: 0xffb733,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'tamerlane',
+    name: '帖木儿',
+    originRegion: 'asia',
+    baseAttributes: { attack: 96, defense: 74, mobility: 94, leadership: 89 },
+    skillCards: [
+      {
+        id: 'tamerlane-conquest',
+        name: '铁骑征服',
+        trigger: 'on_attack',
+        modifier: '+30% attack',
+        cooldownMs: 165000,
+        durationMs: 52000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x800080, // Timurid Purple
+      secondary: 0x4b0082,
+      alpha: 0.7,
+      pattern: 'crescents',
+      label: '帖',
+      glowColor: 0x9932cc,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'frederick',
+    name: '腓特烈大帝',
+    originRegion: 'europe',
+    baseAttributes: { attack: 89, defense: 86, mobility: 82, leadership: 92 },
+    skillCards: [
+      {
+        id: 'frederick-discipline',
+        name: '普鲁士纪律',
+        trigger: 'on_battle',
+        modifier: '+25% defense',
+        cooldownMs: 205000,
+        durationMs: 72000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x191970, // Prussian Blue
+      secondary: 0x0e0e3d,
+      alpha: 0.7,
+      pattern: 'iron-cross',
+      label: '腓',
+      glowColor: 0x4169e1,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'sitting-bull',
+    name: '坐牛',
+    originRegion: 'americas',
+    baseAttributes: { attack: 84, defense: 88, mobility: 87, leadership: 86 },
+    skillCards: [
+      {
+        id: 'sitting-bull-spirit',
+        name: '大平原精神',
+        trigger: 'on_defend',
+        modifier: '+26% defense',
+        cooldownMs: 215000,
+        durationMs: 78000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x8b4726, // Native Brown
+      secondary: 0x5d2f19,
+      alpha: 0.7,
+      pattern: 'feathers',
+      label: '坐',
+      glowColor: 0xa0522d,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'suleiman',
+    name: '苏莱曼大帝',
+    originRegion: 'europe',
+    baseAttributes: { attack: 88, defense: 89, mobility: 83, leadership: 94 },
+    skillCards: [
+      {
+        id: 'suleiman-janissaries',
+        name: '禁卫军',
+        trigger: 'on_attack',
+        modifier: '+24% attack_defense',
+        cooldownMs: 200000,
+        durationMs: 70000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xdc143c, // Ottoman Crimson
+      secondary: 0x8b0000,
+      alpha: 0.7,
+      pattern: 'crescents-stars',
+      label: '苏',
+      glowColor: 0xff1744,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'yi-sun-sin',
+    name: '李舜臣',
+    originRegion: 'asia',
+    baseAttributes: { attack: 87, defense: 91, mobility: 88, leadership: 90 },
+    skillCards: [
+      {
+        id: 'yi-turtle-ships',
+        name: '龟船',
+        trigger: 'on_naval',
+        modifier: '+29% defense',
+        cooldownMs: 185000,
+        durationMs: 64000,
+      },
+    ],
+    colorMapping: {
+      primary: 0x00ced1, // Korean Turquoise
+      secondary: 0x008b8b,
+      alpha: 0.7,
+      pattern: 'turtles',
+      label: '李',
+      glowColor: 0x00ffff,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'mansa-musa',
+    name: '曼萨·穆萨',
+    originRegion: 'africa',
+    baseAttributes: { attack: 72, defense: 79, mobility: 78, leadership: 91 },
+    skillCards: [
+      {
+        id: 'mansa-musa-wealth',
+        name: '黄金王国',
+        trigger: 'on_trade',
+        modifier: '+40% resources',
+        cooldownMs: 270000,
+        durationMs: 110000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xdaa520, // Golden Mali
+      secondary: 0x8b6914,
+      alpha: 0.7,
+      pattern: 'gold-dust',
+      label: '曼',
+      glowColor: 0xffd700,
+      pulseSpeed: 1000,
+    },
+  },
+  {
+    id: 'pachacuti',
+    name: '帕查库特克',
+    originRegion: 'americas',
+    baseAttributes: { attack: 86, defense: 90, mobility: 79, leadership: 89 },
+    skillCards: [
+      {
+        id: 'pachacuti-inca',
+        name: '印加帝国',
+        trigger: 'on_expand',
+        modifier: '+25% all_stats',
+        cooldownMs: 235000,
+        durationMs: 88000,
+      },
+    ],
+    colorMapping: {
+      primary: 0xff4500, // Inca Orange
+      secondary: 0xd43d00,
+      alpha: 0.7,
+      pattern: 'mountains',
+      label: '帕',
+      glowColor: 0xff6347,
+      pulseSpeed: 1000,
+    },
+  },
 ];
 
 export function getRandomCommanders(count: number, seed: number): CommanderTemplate[] {

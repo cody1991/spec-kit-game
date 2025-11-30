@@ -20,8 +20,8 @@ export class CoordinateTransformer {
 
     // Create Mercator projection with proper scale for world map
     // Scale calculation: width / (2 * PI) gives proper world coverage
-    // Increase scale to fill the screen better
-    const scale = (worldWidth / (2 * Math.PI)) * 2.2; // 增加到 2.2 倍使地图填充屏幕
+    // Use 1.5x scale to show complete world map with some padding
+    const scale = (worldWidth / (2 * Math.PI)) * 1.5;
 
     this.projection = geoMercator()
       .scale(scale)
