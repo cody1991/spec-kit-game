@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-11-30
 
 ## Active Technologies
+- TypeScript 5.4（严格模式，ESM） + Phaser 3.80（地图渲染）、React 18（UI面板）、Zustand 4（状态管理与订阅） (004-fix-battle-territory-bugs)
+- IndexedDB（eventLog持久化）、Zustand内存存储（territories、territoryStates） (004-fix-battle-territory-bugs)
 
 - TypeScript 5.4.5 (ES2020 target) (003-country-map-alignment)
 
@@ -24,11 +26,11 @@ npm test && npm run lint
 TypeScript 5.4（ESM，strictNullChecks on）: Follow standard conventions
 
 ## Recent Changes
+- 004-fix-battle-territory-bugs: Added TypeScript 5.4（严格模式，ESM） + Phaser 3.80（地图渲染）、React 18（UI面板）、Zustand 4（状态管理与订阅）
 
 - 003-country-map-alignment: Added TypeScript 5.4.5 (ES2020 target)
 - 002-real-world-map: Added TypeScript 5.4（ESM，strictNullChecks on）
 
-- 001-historic-conquest: Added TypeScript 5.4（ESM，strictNullChecks on） + Phaser 3.80（世界地图渲染与摄像机）；React 18 + React DOM（UI 面板）；Zustand 4（全局状态与回放缓存）；d3-geo + topojson-client（投影与地图简化）；idb 7（IndexedDB 封装）；Vite 5（构建）；Vitest + Testing Library + Playwright（测试栈）
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

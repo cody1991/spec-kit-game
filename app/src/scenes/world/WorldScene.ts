@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { useGameStore } from '@core/state/store';
-import type { Territory, HistoricalCommander } from '@core/types';
+import type { Territory, HistoricalCommander, TerritoryState } from '@core/types';
 import { MapDataLoader } from './data/MapDataLoader';
 import { MapRenderer } from './rendering/MapRenderer';
 import { PerformanceMonitor } from './utils/PerformanceMonitor';
@@ -17,6 +17,7 @@ export class WorldScene extends Phaser.Scene {
   private mapRenderer!: MapRenderer;
   private performanceMonitor!: PerformanceMonitor;
   private countries: Country[] = [];
+  private territorySubscription?: () => void;
 
   constructor() {
     super({ key: 'WorldScene' });
@@ -137,6 +138,8 @@ export class WorldScene extends Phaser.Scene {
         console.log(`✅ Map data ready (waited ${elapsedTime}ms), initializing renderer...`);
         this.initializeMapRenderer();
         this.initializeCameraController();
+        this.verifyTerritoryStatesComplete();
+        this.setupTerritorySubscription();
         this.setupStateSubscription();
         this.renderWorld();
         this.events.on('postupdate', this.onUpdate, this);
@@ -146,6 +149,8 @@ export class WorldScene extends Phaser.Scene {
       } else {
         console.warn('⚠️  Map data not loaded after 5s, falling back to old system');
         this.initializeCameraController();
+        this.verifyTerritoryStatesComplete();
+        this.setupTerritorySubscription();
         this.setupStateSubscription();
         this.renderWorld();
         this.events.on('postupdate', this.onUpdate, this);
@@ -313,6 +318,116 @@ export class WorldScene extends Phaser.Scene {
           return `${country?.name || countryId} -> ${commander?.name || ts.ownerId}`;
         })
       );
+    }
+  }
+
+  /**
+   * Verify that all countries have corresponding TerritoryState entries
+   * Creates default states for any missing territories
+   */
+  private verifyTerritoryStatesComplete(): void {
+    const state = useGameStore.getState();
+    const missingStates: string[] = [];
+
+    state.countries.forEach((country) => {
+      if (!state.territoryStates.has(country.id)) {
+        missingStates.push(country.id);
+
+        // Create default state
+        const defaultState: TerritoryState = {
+          countryId: country.id,
+          countryName: country.name,
+          ownerId: null,
+          troops: 0,
+          resources: 0,
+          defense: 50,
+          updatedAt: Date.now(),
+          conqueredAt: null,
+          previousOwnerId: null,
+          transitionProgress: null,
+          isHighlighted: false,
+        };
+
+        const newStates = new Map(state.territoryStates);
+        newStates.set(country.id, defaultState);
+        state.setTerritoryStates(newStates);
+      }
+    });
+
+    if (missingStates.length > 0) {
+      console.warn(
+        `⚠️  [WorldScene] Created default states for ${missingStates.length} territories:`,
+        missingStates.slice(0, 5)
+      );
+    } else {
+      console.log('✅ [WorldScene] All territory states initialized');
+    }
+  }
+
+  /**
+   * Setup subscription to territoryStates changes
+   * Triggers map updates when territory ownership changes
+   */
+  private setupTerritorySubscription(): void {
+    const state = useGameStore.getState();
+    let previousTerritoryStates = new Map(state.territoryStates);
+
+    // Subscribe to all state changes
+    this.territorySubscription = useGameStore.subscribe((newState) => {
+      const newStates = newState.territoryStates;
+
+      // Check for changes in territory ownership
+      newStates.forEach((newState: TerritoryState, territoryId: string) => {
+        const prevState = previousTerritoryStates.get(territoryId);
+
+        // Check if ownerId changed
+        if (!prevState || prevState.ownerId !== newState.ownerId) {
+          this.handleTerritoryOwnershipChange(territoryId, newState);
+        }
+      });
+
+      // Update reference for next comparison
+      previousTerritoryStates = new Map(newStates);
+    });
+
+    console.log('✅ [WorldScene] Territory subscription active');
+  }
+
+  /**
+   * Handle territory ownership change
+   * Updates map rendering with new color
+   */
+  private handleTerritoryOwnershipChange(
+    territoryId: string,
+    newState: TerritoryState
+  ): void {
+    if (!this.mapRenderer) return;
+
+    const state = useGameStore.getState();
+    const colorMapping = newState.ownerId ? state.colorMappings.get(newState.ownerId) : null;
+
+    if (colorMapping) {
+      this.mapRenderer.updateCountry(territoryId, newState, colorMapping);
+      console.log(`🎨 [WorldScene] Map updated: ${territoryId} → ${newState.ownerId}`);
+    } else if (newState.ownerId) {
+      console.warn(
+        `⚠️  [WorldScene] Missing color mapping for commander: ${newState.ownerId}, using default`
+      );
+      // Use default gray color
+      this.mapRenderer.updateCountry(territoryId, newState, {
+        commanderId: newState.ownerId,
+        primary: 0x808080,
+        secondary: 0x606060,
+        alpha: 0.7,
+      });
+    } else {
+      // Territory became neutral (ownerId is null)
+      this.mapRenderer.updateCountry(territoryId, newState, {
+        commanderId: '',
+        primary: 0x444444,
+        secondary: 0x333333,
+        alpha: 0.5,
+      });
     }
   }
 
@@ -619,6 +734,13 @@ export class WorldScene extends Phaser.Scene {
 
   cleanup(): void {
     this.events.off('postupdate', this.onUpdate, this);
+
+    // Cleanup subscription to prevent memory leaks
+    if (this.territorySubscription) {
+      this.territorySubscription();
+      this.territorySubscription = undefined;
+      console.log('✅ [WorldScene] Territory subscription cleaned up');
+    }
 
     if (this.mapRenderer) {
       this.mapRenderer.destroy();

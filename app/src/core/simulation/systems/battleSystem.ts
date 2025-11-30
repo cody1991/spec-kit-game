@@ -3,6 +3,31 @@ import { useGameStore } from '../../state/store';
 import type { BattleEvent, HistoricalCommander, Territory } from '../../types';
 import { globalEventBus } from '../../events/eventTypes';
 
+/**
+ * Global battle event counter for generating unique IDs
+ * Resets on game restart via resetBattleEventCounter()
+ */
+let battleEventCounter = 0;
+
+/**
+ * Reset the battle event counter to 0
+ * Called when starting a new game session
+ */
+export function resetBattleEventCounter(): void {
+  battleEventCounter = 0;
+}
+
+/**
+ * Generate a unique battle event ID
+ * Format: battle-{timestamp}-{counter}
+ * 
+ * @returns A unique ID string that combines timestamp and sequential counter
+ * @example "battle-1701234567890-42"
+ */
+export function generateBattleEventId(): string {
+  return `battle-${Date.now()}-${battleEventCounter++}`;
+}
+
 export class BattleSystem implements System {
   name = 'BattleSystem';
 
@@ -90,7 +115,7 @@ export class BattleSystem implements System {
 
     // 添加占领事件
     const event: BattleEvent = {
-      id: `occupy-${Date.now()}-${Math.random()}`,
+      id: generateBattleEventId(),
       timestamp: new Date().toISOString(),
       type: 'attack',
       attackerId: attacker.id,
@@ -123,7 +148,7 @@ export class BattleSystem implements System {
     const attackerWins = attackPower > defensePower * (0.8 + Math.random() * 0.4);
 
     const event: BattleEvent = {
-      id: `battle-${Date.now()}-${Math.random()}`,
+      id: generateBattleEventId(),
       timestamp: new Date().toISOString(),
       type: 'attack',
       attackerId: attacker.id,

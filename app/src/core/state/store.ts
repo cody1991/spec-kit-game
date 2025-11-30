@@ -9,6 +9,87 @@ import type {
   CommanderColor,
   MapRenderState,
 } from '../types';
+import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
+
+/**
+ * Helper function to update territory ownership and sync state
+ */
+function updateTerritoryOwnership(
+  state: GameState,
+  id: string,
+  updates: Partial<Territory>,
+  newTerritories: Territory[]
+) {
+  const existingState = state.territoryStates.get(id);
+  const newStates = new Map(state.territoryStates);
+
+  if (existingState) {
+    newStates.set(id, {
+      ...existingState,
+      previousOwnerId: existingState.ownerId,
+      ownerId: updates.ownerId!,
+      troops: updates.garrison ?? existingState.troops,
+      defense: updates.stability ?? existingState.defense,
+      conqueredAt: Date.now(),
+      updatedAt: Date.now(),
+      transitionProgress: 0,
+    });
+
+    console.log(
+      `🔄 [Territory] Ownership changed: ${id} ${existingState.ownerId} → ${updates.ownerId}`
+    );
+  } else {
+    const territory = state.territories.find((t) => t.id === id);
+    newStates.set(id, {
+      countryId: id,
+      countryName: territory?.name || id,
+      ownerId: updates.ownerId!,
+      troops: updates.garrison ?? 0,
+      resources: 0,
+      defense: updates.stability ?? 50,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    });
+
+    console.log(`🆕 [Territory] Created new state: ${id} → ${updates.ownerId}`);
+  }
+
+  return {
+    territories: newTerritories,
+    territoryStates: newStates,
+  };
+}
+
+/**
+ * Helper function to update territory stats (garrison/stability)
+ */
+function updateTerritoryStats(
+  state: GameState,
+  id: string,
+  updates: Partial<Territory>,
+  newTerritories: Territory[]
+) {
+  const existingState = state.territoryStates.get(id);
+  if (existingState) {
+    const newStates = new Map(state.territoryStates);
+    newStates.set(id, {
+      ...existingState,
+      troops: updates.garrison ?? existingState.troops,
+      defense: updates.stability ?? existingState.defense,
+      updatedAt: Date.now(),
+    });
+
+    return {
+      territories: newTerritories,
+      territoryStates: newStates,
+    };
+  }
+
+  return { territories: newTerritories };
+}
 
 export interface GameState {
   // 游戏状态
@@ -119,9 +200,24 @@ export const useGameStore = create<GameState>((set) => ({
     })),
 
   updateTerritory: (id, updates) =>
-    set((state) => ({
-      territories: state.territories.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-    })),
+    set((state) => {
+      // 1. 更新 territories 数组
+      const newTerritories = state.territories.map((t) =>
+        t.id === id ? { ...t, ...updates } : t
+      );
+
+      // 2. 如果 ownerId 变化，同步更新 territoryStates
+      if (updates.ownerId !== undefined) {
+        return updateTerritoryOwnership(state, id, updates, newTerritories);
+      }
+
+      // 3. 如果只更新 garrison/stability，也同步到 territoryStates
+      if (updates.garrison !== undefined || updates.stability !== undefined) {
+        return updateTerritoryStats(state, id, updates, newTerritories);
+      }
+
+      return { territories: newTerritories };
+    }),
 
   addBattleEvent: (event) =>
     set((state) => ({
@@ -153,7 +249,10 @@ export const useGameStore = create<GameState>((set) => ({
       performanceMetrics: { ...state.performanceMetrics, ...metrics },
     })),
 
-  resetGame: () =>
+  resetGame: () => {
+    // Reset battle event counter to ensure ID uniqueness in new game session
+    resetBattleEventCounter();
+    
     set({
       gameStarted: false,
       sessionId: '',
@@ -172,7 +271,8 @@ export const useGameStore = create<GameState>((set) => ({
       countries: [],
       territoryStates: new Map(),
       mapRenderState: null,
-    }),
+    });
+  },
 
   // Map Actions
   setCountries: (countries) => set({ countries }),
