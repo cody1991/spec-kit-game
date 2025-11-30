@@ -1,4 +1,5 @@
 export interface CommanderTemplate {
+  id: string;
   name: string;
   originRegion: 'africa' | 'americas' | 'asia' | 'europe' | 'oceania';
   baseAttributes: {
@@ -15,10 +16,21 @@ export interface CommanderTemplate {
     cooldownMs: number;
     durationMs: number;
   }>;
+  // Visual representation for map
+  colorMapping?: {
+    primary: number;
+    secondary: number;
+    alpha: number;
+    pattern?: string;
+    label?: string;
+    glowColor?: number;
+    pulseSpeed?: number;
+  };
 }
 
 export const commandersPool: CommanderTemplate[] = [
   {
+    id: 'napoleon',
     name: '拿破仑',
     originRegion: 'europe',
     baseAttributes: { attack: 90, defense: 75, mobility: 85, leadership: 92 },
@@ -32,8 +44,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 60000,
       },
     ],
+    colorMapping: {
+      primary: 0x0066CC, // French Blue
+      secondary: 0x003D7A,
+      alpha: 0.7,
+      pattern: 'stripes',
+      label: '拿',
+      glowColor: 0x0088FF,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'qin-shi-huang',
     name: '秦始皇',
     originRegion: 'asia',
     baseAttributes: { attack: 85, defense: 88, mobility: 70, leadership: 95 },
@@ -47,8 +69,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 90000,
       },
     ],
+    colorMapping: {
+      primary: 0xCC0000, // Chinese Red
+      secondary: 0x7A0000,
+      alpha: 0.7,
+      pattern: 'dots',
+      label: '秦',
+      glowColor: 0xFF0000,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'cleopatra',
     name: '克娄巴特拉',
     originRegion: 'africa',
     baseAttributes: { attack: 75, defense: 80, mobility: 82, leadership: 88 },
@@ -62,8 +94,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 120000,
       },
     ],
+    colorMapping: {
+      primary: 0xFFCC00, // Egyptian Gold
+      secondary: 0xB8860B,
+      alpha: 0.7,
+      pattern: 'waves',
+      label: '克',
+      glowColor: 0xFFDD00,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'genghis-khan',
     name: '成吉思汗',
     originRegion: 'asia',
     baseAttributes: { attack: 95, defense: 70, mobility: 98, leadership: 90 },
@@ -77,8 +119,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 45000,
       },
     ],
+    colorMapping: {
+      primary: 0x008800, // Steppe Green
+      secondary: 0x004D00,
+      alpha: 0.7,
+      pattern: 'triangles',
+      label: '成',
+      glowColor: 0x00AA00,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'alexander',
     name: '亚历山大大帝',
     originRegion: 'europe',
     baseAttributes: { attack: 92, defense: 78, mobility: 88, leadership: 94 },
@@ -92,8 +144,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 70000,
       },
     ],
+    colorMapping: {
+      primary: 0x9933FF, // Royal Purple
+      secondary: 0x5B1F99,
+      alpha: 0.7,
+      pattern: 'grid',
+      label: '亚',
+      glowColor: 0xAA44FF,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'caesar',
     name: '朱利叶斯·凯撒',
     originRegion: 'europe',
     baseAttributes: { attack: 88, defense: 82, mobility: 80, leadership: 91 },
@@ -107,8 +169,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 65000,
       },
     ],
+    colorMapping: {
+      primary: 0xFF6600, // Roman Orange
+      secondary: 0xB84700,
+      alpha: 0.7,
+      pattern: 'circles',
+      label: '凯',
+      glowColor: 0xFF7700,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'joan',
     name: '圣女贞德',
     originRegion: 'europe',
     baseAttributes: { attack: 82, defense: 85, mobility: 78, leadership: 93 },
@@ -122,8 +194,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 80000,
       },
     ],
+    colorMapping: {
+      primary: 0xFFFFFF, // Holy White
+      secondary: 0xCCCCCC,
+      alpha: 0.7,
+      pattern: 'crosses',
+      label: '贞',
+      glowColor: 0xFFFFFF,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'bolivar',
     name: '西蒙·玻利瓦尔',
     originRegion: 'americas',
     baseAttributes: { attack: 80, defense: 76, mobility: 84, leadership: 86 },
@@ -137,8 +219,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 75000,
       },
     ],
+    colorMapping: {
+      primary: 0x00AAAA, // Liberation Teal
+      secondary: 0x006666,
+      alpha: 0.7,
+      pattern: 'stars',
+      label: '玻',
+      glowColor: 0x00CCCC,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'attila',
     name: '阿提拉',
     originRegion: 'asia',
     baseAttributes: { attack: 93, defense: 72, mobility: 90, leadership: 85 },
@@ -152,8 +244,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 55000,
       },
     ],
+    colorMapping: {
+      primary: 0x663300, // Hun Brown
+      secondary: 0x3D1F00,
+      alpha: 0.7,
+      pattern: 'crosses',
+      label: '阿',
+      glowColor: 0x884400,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'saladin',
     name: '萨拉丁',
     originRegion: 'africa',
     baseAttributes: { attack: 86, defense: 84, mobility: 82, leadership: 89 },
@@ -167,8 +269,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 70000,
       },
     ],
+    colorMapping: {
+      primary: 0x00AA88, // Arabic Cyan
+      secondary: 0x006655,
+      alpha: 0.7,
+      pattern: 'diamonds',
+      label: '萨',
+      glowColor: 0x00CC99,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'wuzetian',
     name: '武则天',
     originRegion: 'asia',
     baseAttributes: { attack: 78, defense: 88, mobility: 75, leadership: 96 },
@@ -182,8 +294,18 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 100000,
       },
     ],
+    colorMapping: {
+      primary: 0xFF0066, // Imperial Rose
+      secondary: 0x99003D,
+      alpha: 0.7,
+      pattern: 'hexagons',
+      label: '武',
+      glowColor: 0xFF0077,
+      pulseSpeed: 1000,
+    },
   },
   {
+    id: 'washington',
     name: '乔治·华盛顿',
     originRegion: 'americas',
     baseAttributes: { attack: 82, defense: 85, mobility: 77, leadership: 90 },
@@ -197,6 +319,15 @@ export const commandersPool: CommanderTemplate[] = [
         durationMs: 85000,
       },
     ],
+    colorMapping: {
+      primary: 0x666666, // Iron Gray
+      secondary: 0x333333,
+      alpha: 0.7,
+      pattern: 'checkers',
+      label: '华',
+      glowColor: 0x888888,
+      pulseSpeed: 1000,
+    },
   },
 ];
 

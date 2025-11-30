@@ -1,5 +1,14 @@
 import { create } from 'zustand';
-import type { HistoricalCommander, Territory, BattleEvent, TelemetrySignal } from '../types';
+import type {
+  HistoricalCommander,
+  Territory,
+  BattleEvent,
+  TelemetrySignal,
+  Country,
+  TerritoryState,
+  CommanderColor,
+  MapRenderState,
+} from '../types';
 
 export interface GameState {
   // 游戏状态
@@ -27,6 +36,12 @@ export interface GameState {
   performanceMetrics: { fps: number; tickMs: number };
   telemetrySignals: TelemetrySignal[];
 
+  // 地图状态
+  countries: Country[];
+  territoryStates: Map<string, TerritoryState>;
+  colorMappings: Map<string, CommanderColor>;
+  mapRenderState: MapRenderState | null;
+
   // Actions
   startGame: (seed: string) => void;
   setCommanders: (commanders: HistoricalCommander[]) => void;
@@ -42,6 +57,14 @@ export interface GameState {
   addTelemetry: (signal: TelemetrySignal) => void;
   updatePerformance: (metrics: Partial<{ fps: number; tickMs: number }>) => void;
   resetGame: () => void;
+
+  // Map Actions
+  setCountries: (countries: Country[]) => void;
+  setTerritoryStates: (states: Map<string, TerritoryState>) => void;
+  updateTerritoryState: (countryId: string, updates: Partial<TerritoryState>) => void;
+  setColorMappings: (mappings: Map<string, CommanderColor>) => void;
+  setMapRenderState: (state: MapRenderState) => void;
+  updateMapRenderState: (updates: Partial<MapRenderState>) => void;
 }
 
 export const useGameStore = create<GameState>((set) => ({
@@ -66,6 +89,11 @@ export const useGameStore = create<GameState>((set) => ({
 
   performanceMetrics: { fps: 60, tickMs: 0 },
   telemetrySignals: [],
+
+  countries: [],
+  territoryStates: new Map(),
+  colorMappings: new Map(),
+  mapRenderState: null,
 
   // Actions
   startGame: (seed: string) =>
@@ -141,5 +169,34 @@ export const useGameStore = create<GameState>((set) => ({
       showVictoryModal: false,
       victorCommanderId: null,
       isPaused: false,
+      countries: [],
+      territoryStates: new Map(),
+      mapRenderState: null,
     }),
+
+  // Map Actions
+  setCountries: (countries) => set({ countries }),
+
+  setTerritoryStates: (states) => set({ territoryStates: states }),
+
+  updateTerritoryState: (countryId, updates) =>
+    set((state) => {
+      const newStates = new Map(state.territoryStates);
+      const existing = newStates.get(countryId);
+      if (existing) {
+        newStates.set(countryId, { ...existing, ...updates });
+      }
+      return { territoryStates: newStates };
+    }),
+
+  setColorMappings: (mappings) => set({ colorMappings: mappings }),
+
+  setMapRenderState: (mapState) => set({ mapRenderState: mapState }),
+
+  updateMapRenderState: (updates) =>
+    set((state) => ({
+      mapRenderState: state.mapRenderState
+        ? { ...state.mapRenderState, ...updates }
+        : null,
+    })),
 }));

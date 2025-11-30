@@ -73,3 +73,95 @@ export interface TelemetrySignal {
   value: number;
   timestamp: string;
 }
+
+// ============================================================================
+// GeoJSON and Map Types
+// ============================================================================
+
+/**
+ * 二维点（可以是地理坐标或屏幕坐标）
+ */
+export interface Point {
+  x: number;
+  y: number;
+}
+
+/**
+ * 边界框（矩形）
+ */
+export interface BoundingBox {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+/**
+ * GeoJSON MultiPolygon 类型
+ */
+export interface MultiPolygon {
+  type: 'MultiPolygon';
+  coordinates: number[][][][]; // [polygon][ring][point][lon|lat]
+}
+
+/**
+ * 国家实体（地图数据）
+ */
+export interface Country {
+  id: string; // ISO 3166-1 alpha-3
+  name: string;
+  nameEn: string;
+  geometry: MultiPolygon;
+  centroid: Point;
+  bbox: BoundingBox;
+  area: number; // km²
+  neighbors: string[];
+  simplifiedGeometry?: MultiPolygon;
+  gridCells: number[];
+}
+
+/**
+ * 领土状态（游戏状态）
+ */
+export interface TerritoryState {
+  countryId: string;
+  ownerId: string | null;
+  troops: number;
+  resources: number;
+  defense: number;
+  updatedAt: number;
+  conqueredAt: number | null;
+  previousOwnerId: string | null;
+  transitionProgress: number | null;
+  isHighlighted: boolean;
+}
+
+/**
+ * 指挥官颜色映射
+ */
+export interface CommanderColor {
+  commanderId: string;
+  primary: number; // 0xRRGGBB
+  secondary: number;
+  alpha: number;
+  pattern?: string;
+  label?: string;
+  glowColor?: number;
+  pulseSpeed?: number;
+}
+
+/**
+ * 地图渲染状态
+ */
+export interface MapRenderState {
+  cameraViewport: BoundingBox;
+  zoom: number;
+  lodLevel: 0 | 1 | 2;
+  visibleCountryIds: string[];
+  gridCellsInView: number[];
+  hoveredCountryId: string | null;
+  selectedCountryId: string | null;
+  lastFrameTime: number;
+  averageFps: number;
+  enableAnimation: boolean;
+}

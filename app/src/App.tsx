@@ -5,6 +5,7 @@ import { WorldScene } from './scenes/world/WorldScene';
 import { StartScreen } from './ui/screens/StartScreen';
 import { CommanderPanel } from './ui/panels/CommanderPanel';
 import { BattleTimeline } from './ui/panels/BattleTimeline';
+import { CountryDetailPanel } from './ui/panels/CountryDetailPanel';
 import { VictoryModal } from './ui/modals/VictoryModal';
 import { DevHud } from './ui/hud/DevHud';
 import { useGameStore } from './core/state/store';
@@ -61,6 +62,7 @@ export function App() {
         <>
           <CommanderPanel />
           <BattleTimeline />
+          <CountryDetailPanel />
           <VictoryModal />
           <DevHud />
         </>

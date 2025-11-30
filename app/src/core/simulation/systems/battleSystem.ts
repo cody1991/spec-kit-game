@@ -91,6 +91,23 @@ export class BattleSystem implements System {
         stability: Math.max(20, territory.stability - 30),
       });
 
+      // Add telemetry for territory ownership change
+      store.addTelemetry({
+        type: 'territory:conquered',
+        timestamp: new Date().toISOString(),
+        payload: {
+          territoryId: territory.id,
+          territoryName: territory.name,
+          previousOwnerId: defender.id,
+          newOwnerId: attacker.id,
+          attackPower,
+          defensePower,
+          battleDuration: 1,
+        },
+      });
+
+      console.log(`📍 Territory Update: ${territory.name} conquered by ${attacker.name} from ${defender.name}`);
+
       store.updateCommander(attacker.id, {
         controlledTerritories: [...attacker.controlledTerritories, territory.id],
         currentPower: Math.max(0, attacker.currentPower - event.delta.attackerPowerLoss),

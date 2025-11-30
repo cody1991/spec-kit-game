@@ -25,10 +25,10 @@
 
 **Purpose**: Project initialization and dependency installation
 
-- [ ] T001 Download World Atlas TopoJSON 50m data to `app/public/maps/world-countries.json` (2.5MB)
-- [ ] T002 [P] Download simplified TopoJSON 110m data to `app/public/maps/world-countries-simplified.json` (700KB)
-- [ ] T003 [P] Verify `d3-geo` and `topojson-client` dependencies in `package.json`
-- [ ] T004 [P] Add type definitions for GeoJSON in `app/src/core/types.ts`
+- [X] T001 Download World Atlas TopoJSON 50m data to `app/public/maps/world-countries.json` (2.5MB)
+- [X] T002 [P] Download simplified TopoJSON 110m data to `app/public/maps/world-countries-simplified.json` (700KB)
+- [X] T003 [P] Verify `d3-geo` and `topojson-client` dependencies in `package.json`
+- [X] T004 [P] Add type definitions for GeoJSON in `app/src/core/types.ts`
 
 ---
 
@@ -38,13 +38,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create shared types in `app/src/scenes/world/types/mapTypes.ts` (Country, TerritoryState, MapRenderState, CommanderColor interfaces)
-- [ ] T006 [P] Create SpatialGrid class in `app/src/scenes/world/spatial/SpatialGrid.ts` (16x8 grid hashing)
-- [ ] T007 [P] Create GraphicsPool class in `app/src/scenes/world/rendering/GraphicsPool.ts` (pool size: 200)
-- [ ] T008 [P] Create PerformanceMonitor class in `app/src/scenes/world/utils/PerformanceMonitor.ts` (FPS tracking, render time measurement)
-- [ ] T009 Extend Zustand store in `app/src/core/state/store.ts` to add map state (countries, territoryStates, colorMappings, renderState)
-- [ ] T010 Create MapDataCache class in `app/src/scenes/world/data/MapDataCache.ts` (IndexedDB wrapper for 7-day cache)
-- [ ] T011 [P] Create utility functions in `app/src/scenes/world/utils/geoUtils.ts` (bboxIntersects, calculateCentroid, calculateBbox)
+- [X] T005 Create shared types in `app/src/scenes/world/types/mapTypes.ts` (Country, TerritoryState, MapRenderState, CommanderColor interfaces)
+- [X] T006 [P] Create SpatialGrid class in `app/src/scenes/world/spatial/SpatialGrid.ts` (16x8 grid hashing)
+- [X] T007 [P] Create GraphicsPool class in `app/src/scenes/world/rendering/GraphicsPool.ts` (pool size: 200)
+- [X] T008 [P] Create PerformanceMonitor class in `app/src/scenes/world/utils/PerformanceMonitor.ts` (FPS tracking, render time measurement)
+- [X] T009 Extend Zustand store in `app/src/core/state/store.ts` to add map state (countries, territoryStates, colorMappings, renderState)
+- [X] T010 Create MapDataCache class in `app/src/scenes/world/data/MapDataCache.ts` (IndexedDB wrapper for 7-day cache)
+- [X] T011 [P] Create utility functions in `app/src/scenes/world/utils/geoUtils.ts` (bboxIntersects, calculateCentroid, calculateBbox)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -58,27 +58,27 @@
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Implement IMapDataLoader interface in `app/src/scenes/world/data/MapDataLoader.ts` (load TopoJSON, parse to Country entities)
-- [ ] T013 [P] [US1] Implement ICoordinateTransformer in `app/src/scenes/world/utils/CoordinateTransformer.ts` (geo to screen projection using d3-geo)
-- [ ] T014 [US1] Implement loadMapData() method with Web Worker support and caching in `app/src/scenes/world/data/MapDataLoader.ts`
-- [ ] T015 [US1] Implement parseTopoJSON() method using topojson-client in `app/src/scenes/world/data/MapDataLoader.ts`
-- [ ] T016 [US1] Implement featureToCountry() conversion in `app/src/scenes/world/data/MapDataLoader.ts` (calculate centroid, bbox, area)
-- [ ] T017 [US1] Implement postProcessCountries() to build neighbors list in `app/src/scenes/world/data/MapDataLoader.ts`
-- [ ] T018 [US1] Implement IMapRenderer interface in `app/src/scenes/world/rendering/MapRenderer.ts` (render countries using Phaser Graphics API)
-- [ ] T019 [US1] Implement initialize() method with RenderConfig support in `app/src/scenes/world/rendering/MapRenderer.ts`
-- [ ] T020 [US1] Implement render() method with viewport culling in `app/src/scenes/world/rendering/MapRenderer.ts` (only render visible countries)
-- [ ] T021 [US1] Implement renderCountry() private method to draw polygon borders in `app/src/scenes/world/rendering/MapRenderer.ts`
-- [ ] T022 [US1] Integrate MapDataLoader into WorldScene.preload() in `app/src/scenes/world/WorldScene.ts`
-- [ ] T023 [US1] Integrate MapRenderer into WorldScene.create() in `app/src/scenes/world/WorldScene.ts`
-- [ ] T024 [US1] Add error handling for map data load failures with fallback to simplified map in `app/src/scenes/world/WorldScene.ts`
-- [ ] T025 [US1] Update WorldScene.update() to call MapRenderer.render() with visible countries in `app/src/scenes/world/WorldScene.ts`
-- [ ] T026 [US1] Add logging for map load success/failure in `app/src/scenes/world/MapDataLoader.ts`
+- [X] T012 [P] [US1] Implement IMapDataLoader interface in `app/src/scenes/world/data/MapDataLoader.ts` (load TopoJSON, parse to Country entities)
+- [X] T013 [P] [US1] Implement ICoordinateTransformer in `app/src/scenes/world/utils/CoordinateTransformer.ts` (geo to screen projection using d3-geo)
+- [X] T014 [US1] Implement loadMapData() method with Web Worker support and caching in `app/src/scenes/world/data/MapDataLoader.ts`
+- [X] T015 [US1] Implement parseTopoJSON() method using topojson-client in `app/src/scenes/world/data/MapDataLoader.ts`
+- [X] T016 [US1] Implement featureToCountry() conversion in `app/src/scenes/world/data/MapDataLoader.ts` (calculate centroid, bbox, area)
+- [X] T017 [US1] Implement postProcessCountries() to build neighbors list in `app/src/scenes/world/data/MapDataLoader.ts`
+- [X] T018 [US1] Implement IMapRenderer interface in `app/src/scenes/world/rendering/MapRenderer.ts` (render countries using Phaser Graphics API)
+- [X] T019 [US1] Implement initialize() method with RenderConfig support in `app/src/scenes/world/rendering/MapRenderer.ts`
+- [X] T020 [US1] Implement render() method with viewport culling in `app/src/scenes/world/rendering/MapRenderer.ts` (only render visible countries)
+- [X] T021 [US1] Implement renderCountry() private method to draw polygon borders in `app/src/scenes/world/rendering/MapRenderer.ts`
+- [X] T022 [US1] Integrate MapDataLoader into WorldScene.preload() in `app/src/scenes/world/WorldScene.ts`
+- [X] T023 [US1] Integrate MapRenderer into WorldScene.create() in `app/src/scenes/world/WorldScene.ts`
+- [X] T024 [US1] Add error handling for map data load failures with fallback to simplified map in `app/src/scenes/world/WorldScene.ts`
+- [X] T025 [US1] Update WorldScene.update() to call MapRenderer.render() with visible countries in `app/src/scenes/world/WorldScene.ts`
+- [X] T026 [US1] Add logging for map load success/failure in `app/src/scenes/world/MapDataLoader.ts`
 
 ### E2E Tests for User Story 1
 
-- [ ] T027 [P] [US1] E2E test: User should see world map on game start in `tests/e2e/us1-view-world-map.spec.ts` (verify canvas visible, map not black)
-- [ ] T028 [P] [US1] E2E test: Map remains visible during drag/zoom in `tests/e2e/us1-view-world-map.spec.ts` (verify borders don't disappear)
-- [ ] T029 [P] [US1] E2E test: User can identify major countries in `tests/e2e/us1-view-world-map.spec.ts` (verify tooltip shows country name)
+- [X] T027 [P] [US1] E2E test: User should see world map on game start in `tests/e2e/us1-view-world-map.spec.ts` (verify canvas visible, map not black)
+- [X] T028 [P] [US1] E2E test: Map remains visible during drag/zoom in `tests/e2e/us1-view-world-map.spec.ts` (verify borders don't disappear)
+- [X] T029 [P] [US1] E2E test: User can identify major countries in `tests/e2e/us1-view-world-map.spec.ts` (verify tooltip shows country name)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can see the world map
 
@@ -92,22 +92,22 @@
 
 ### Implementation for User Story 2
 
-- [ ] T030 [P] [US2] Define 10 commander colors in `app/src/data/commandersData.ts` (high contrast colors with accessibility patterns)
-- [ ] T031 [P] [US2] Create ColorMapping initialization in `app/src/core/session/startSession.ts` (map commander IDs to colors)
-- [ ] T032 [US2] Implement fillCountry() method in `app/src/scenes/world/rendering/MapRenderer.ts` (fill polygon with commander color)
-- [ ] T033 [US2] Implement updateCountry() method in `app/src/scenes/world/rendering/MapRenderer.ts` (redraw single country on state change)
-- [ ] T034 [US2] Subscribe to territoryStates changes in `app/src/scenes/world/WorldScene.ts` (trigger MapRenderer.updateCountry on changes)
-- [ ] T035 [US2] Add border rendering with secondary color in `app/src/scenes/world/rendering/MapRenderer.ts`
-- [ ] T036 [US2] Implement highlightCountry() method for selection/hover in `app/src/scenes/world/rendering/MapRenderer.ts` (add glow effect)
-- [ ] T037 [US2] Create CountryDetailPanel component in `app/src/ui/panels/CountryDetailPanel.tsx` (show owner, troops, resources)
-- [ ] T038 [US2] Integrate CountryDetailPanel into game UI in `app/src/ui/GameUI.tsx`
-- [ ] T039 [US2] Add telemetry logging for territory updates in `app/src/core/simulation/systems/battleSystem.ts`
+- [X] T030 [P] [US2] Define 10 commander colors in `app/src/data/commandersData.ts` (high contrast colors with accessibility patterns)
+- [X] T031 [P] [US2] Create ColorMapping initialization in `app/src/core/session/startSession.ts` (map commander IDs to colors)
+- [X] T032 [US2] Implement fillCountry() method in `app/src/scenes/world/rendering/MapRenderer.ts` (fill polygon with commander color)
+- [X] T033 [US2] Implement updateCountry() method in `app/src/scenes/world/rendering/MapRenderer.ts` (redraw single country on state change)
+- [X] T034 [US2] Subscribe to territoryStates changes in `app/src/scenes/world/WorldScene.ts` (trigger MapRenderer.updateCountry on changes)
+- [X] T035 [US2] Add border rendering with secondary color in `app/src/scenes/world/rendering/MapRenderer.ts`
+- [X] T036 [US2] Implement highlightCountry() method for selection/hover in `app/src/scenes/world/rendering/MapRenderer.ts` (add glow effect)
+- [X] T037 [US2] Create CountryDetailPanel component in `app/src/ui/panels/CountryDetailPanel.tsx` (show owner, troops, resources)
+- [X] T038 [US2] Integrate CountryDetailPanel into game UI in `app/src/ui/GameUI.tsx`
+- [X] T039 [US2] Add telemetry logging for territory updates in `app/src/core/simulation/systems/battleSystem.ts`
 
 ### E2E Tests for User Story 2
 
-- [ ] T040 [P] [US2] E2E test: Initial territories colored by commander in `tests/e2e/us2-territory-visualization.spec.ts` (verify 10 different colors visible)
-- [ ] T041 [P] [US2] E2E test: Territory color updates on conquest in `tests/e2e/us2-territory-visualization.spec.ts` (trigger battle, verify color change)
-- [ ] T042 [P] [US2] E2E test: Click country shows detail panel in `tests/e2e/us2-territory-visualization.spec.ts` (verify panel displays correct info)
+- [X] T040 [P] [US2] E2E test: Initial territories colored by commander in `tests/e2e/us2-territory-visualization.spec.ts` (verify 10 different colors visible)
+- [X] T041 [P] [US2] E2E test: Territory color updates on conquest in `tests/e2e/us2-territory-visualization.spec.ts` (trigger battle, verify color change)
+- [X] T042 [P] [US2] E2E test: Click country shows detail panel in `tests/e2e/us2-territory-visualization.spec.ts` (verify panel displays correct info)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - map visible with colored territories
 
@@ -121,18 +121,18 @@
 
 ### Implementation for User Story 3
 
-- [ ] T043 [P] [US3] Implement IColorTransitionManager in `app/src/scenes/world/rendering/ColorTransitionManager.ts` (manage color lerp animations)
-- [ ] T044 [US3] Implement startTransition() with easing functions in `app/src/scenes/world/rendering/ColorTransitionManager.ts` (500ms transition duration)
-- [ ] T045 [US3] Integrate ColorTransitionManager into MapRenderer.updateCountry() in `app/src/scenes/world/rendering/MapRenderer.ts`
-- [ ] T046 [US3] Update WorldScene.update() to call ColorTransitionManager.update() each frame in `app/src/scenes/world/WorldScene.ts`
-- [ ] T047 [US3] Implement performance-based animation disabling in `app/src/scenes/world/rendering/MapRenderer.ts` (disable if FPS < 30)
-- [ ] T048 [US3] Add visual feedback for commander elimination in `app/src/scenes/world/rendering/MapRenderer.ts` (fade territories to neutral gray)
+- [X] T043 [P] [US3] Implement IColorTransitionManager in `app/src/scenes/world/rendering/ColorTransitionManager.ts` (manage color lerp animations)
+- [X] T044 [US3] Implement startTransition() with easing functions in `app/src/scenes/world/rendering/ColorTransitionManager.ts` (500ms transition duration)
+- [X] T045 [US3] Integrate ColorTransitionManager into MapRenderer.updateCountry() in `app/src/scenes/world/rendering/MapRenderer.ts`
+- [X] T046 [US3] Update WorldScene.update() to call ColorTransitionManager.update() each frame in `app/src/scenes/world/WorldScene.ts`
+- [X] T047 [US3] Implement performance-based animation disabling in `app/src/scenes/world/rendering/MapRenderer.ts` (disable if FPS < 30)
+- [X] T048 [US3] Add visual feedback for commander elimination in `app/src/scenes/world/rendering/MapRenderer.ts` (fade territories to neutral gray)
 
 ### E2E Tests for User Story 3
 
-- [ ] T049 [P] [US3] E2E test: Smooth territory color transition on conquest in `tests/e2e/us3-territory-changes.spec.ts` (verify 500ms animation)
-- [ ] T050 [P] [US3] E2E test: Expanding commander's territory visibly grows in `tests/e2e/us3-territory-changes.spec.ts` (observe multi-conquest sequence)
-- [ ] T051 [P] [US3] E2E test: Defeated commander's territory disappears in `tests/e2e/us3-territory-changes.spec.ts` (verify all territories change color)
+- [X] T049 [P] [US3] E2E test: Smooth territory color transition on conquest in `tests/e2e/us3-territory-changes.spec.ts` (verify 500ms animation)
+- [X] T050 [P] [US3] E2E test: Expanding commander's territory visibly grows in `tests/e2e/us3-territory-changes.spec.ts` (observe multi-conquest sequence)
+- [X] T051 [P] [US3] E2E test: Defeated commander's territory disappears in `tests/e2e/us3-territory-changes.spec.ts` (verify all territories change color)
 
 **Checkpoint**: All core user stories complete - dynamic territory visualization functional
 
@@ -146,8 +146,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T052 [P] [US4] Implement IPointInPolygonDetector in `app/src/scenes/world/interaction/PointInPolygonDetector.ts` (Ray Casting algorithm)
-- [ ] T053 [P] [US4] Implement ISpatialQuery in `app/src/scenes/world/spatial/SpatialQuery.ts` (BBox intersection with grid acceleration)
+- [X] T052 [P] [US4] Implement IPointInPolygonDetector in `app/src/scenes/world/interaction/PointInPolygonDetector.ts` (Ray Casting algorithm)
+- [X] T053 [P] [US4] Implement ISpatialQuery in `app/src/scenes/world/spatial/SpatialQuery.ts` (BBox intersection with grid acceleration)
 - [ ] T054 [US4] Implement IMapInteractionHandler interface in `app/src/scenes/world/interaction/MapInteractionHandler.ts`
 - [ ] T055 [US4] Implement handlePointerMove() with hover detection in `app/src/scenes/world/interaction/MapInteractionHandler.ts` (< 100ms response time)
 - [ ] T056 [US4] Implement handlePointerDown() with click detection in `app/src/scenes/world/interaction/MapInteractionHandler.ts`

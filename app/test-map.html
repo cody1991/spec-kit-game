@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>地图坐标测试</title>
+  <style>
+    body { margin: 0; padding: 20px; font-family: monospace; }
+    canvas { border: 1px solid #ccc; display: block; margin: 20px 0; }
+    .info { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>地图坐标转换测试</h1>
+  <div class="info" id="info"></div>
+  <canvas id="canvas" width="1920" height="1080"></canvas>
+
+  <script type="module">
+    import { geoMercator } from 'https://cdn.skypack.dev/d3-geo@3';
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const info = document.getElementById('info');
+
+    // 创建 Mercator 投影
+    const projection = geoMercator()
+      .scale(canvas.width / (2 * Math.PI))
+      .translate([canvas.width / 2, canvas.height / 2])
+      .center([0, 0]);
+
+    // 清空画布
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 测试坐标转换
+    const testPoints = [
+      { lon: 0, lat: 0, label: '本初子午线/赤道' },
+      { lon: -100, lat: 40, label: '北美' },
+      { lon: 105, lat: 35, label: '中国' },
+      { lon: 30, lat: 50, label: '东欧' },
+      { lon: 138, lat: 38, label: '日本' },
+    ];
+
+    let infoHtml = '<h3>坐标转换结果:</h3>';
+    testPoints.forEach(({ lon, lat, label }) => {
+      const screen = projection([lon, lat]);
+      if (screen) {
+        const [x, y] = screen;
+        infoHtml += `<div>[${lon}, ${lat}] (${label}) -> [${Math.round(x)}, ${Math.round(y)}]</div>`;
+        
+        // 绘制点
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 绘制标签
+        ctx.fillStyle = '#ffff00';
+        ctx.font = '14px monospace';
+        ctx.fillText(label, x + 10, y - 10);
+      }
+    });
+
+    info.innerHTML = infoHtml;
+
+    // 加载并绘制真实地图数据
+    async function loadMap() {
+      try {
+        const response = await fetch('/maps/world-countries-simplified.json');
+        const topoData = await response.json();
+        
+        info.innerHTML += `<div><strong>地图数据加载成功</strong></div>`;
+        info.innerHTML += `<div>Objects: ${Object.keys(topoData.objects || {}).join(', ')}</div>`;
+        
+        // 使用 topojson-client 需要额外加载，这里先显示原始数据结构
+        if (topoData.type === 'Topology' && topoData.objects.countries) {
+          const countries = topoData.objects.countries;
+          info.innerHTML += `<div>国家数量: ${countries.geometries?.length || 0}</div>`;
+          
+          // 绘制一些国家轮廓用于测试
+          if (countries.geometries && countries.geometries.length > 0) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            
+            // 简单处理：绘制前10个国家
+            countries.geometries.slice(0, 10).forEach((geom) => {
+              info.innerHTML += `<div>- ${geom.properties?.name || geom.id}</div>`;
+            });
+          }
+        }
+      } catch (error) {
+        info.innerHTML += `<div style="color: red"><strong>加载地图失败:</strong> ${error.message}</div>`;
+        console.error('地图加载错误:', error);
+      }
+    }
+
+    loadMap();
+
+    // 绘制网格参考线
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
+    
+    // 垂直线 (经度)
+    for (let lon = -180; lon <= 180; lon += 30) {
+      const screen = projection([lon, 0]);
+      if (screen) {
+        ctx.beginPath();
+        ctx.moveTo(screen[0], 0);
+        ctx.lineTo(screen[0], canvas.height);
+        ctx.stroke();
+      }
+    }
+    
+    // 水平线 (纬度)
+    for (let lat = -90; lat <= 90; lat += 30) {
+      const screen = projection([0, lat]);
+      if (screen) {
+        ctx.beginPath();
+        ctx.moveTo(0, screen[1]);
+        ctx.lineTo(canvas.width, screen[1]);
+        ctx.stroke();
+      }
+    }
+  </script>
+</body>
+</html>
