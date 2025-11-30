@@ -657,7 +657,7 @@ export class WorldScene extends Phaser.Scene {
 
     // Update color transitions in map renderer
     if (this.mapRenderer) {
-      const activeTransitions = this.mapRenderer.updateTransitions(delta);
+      this.mapRenderer.updateTransitions(delta);
 
       // Disable animations if performance is poor
       const fps = this.performanceMonitor.getAverageFps();
@@ -670,62 +670,57 @@ export class WorldScene extends Phaser.Scene {
     // Track territory state changes for map updates
     const state = useGameStore.getState();
 
-    // Update territory states from territory entities
+    // Sync territory changes (region-based) to country states (map-based)
     if (this.mapRenderer && this.countries.length > 0) {
+      const regionCountryMap = createRegionCountryMap();
+      
       state.territories.forEach((territory) => {
-        const existingState = state.territoryStates.get(territory.id);
+        // Territory is region-based, need to map to countries
+        if (territory.id.startsWith('region-')) {
+          const countryIds = regionCountryMap.get(territory.id);
+          
+          if (countryIds && countryIds.length > 0) {
+            // Update all countries in this region
+            countryIds.forEach((countryId) => {
+              const existingState = state.territoryStates.get(countryId);
 
-        // Check if territory owner changed
-        if (existingState && existingState.ownerId !== territory.ownerId) {
-          // Territory changed hands
-          const newState = {
-            ...existingState,
-            previousOwnerId: existingState.ownerId,
-            ownerId: territory.ownerId,
-            troops: territory.garrison,
-            defense: territory.stability || 50,
-            updatedAt: Date.now(),
-            conqueredAt: Date.now(),
-            transitionProgress: 0, // Start color transition animation
-          };
+              // Check if ownership changed
+              if (existingState && existingState.ownerId !== territory.ownerId) {
+                // Territory changed hands
+                const newState = {
+                  ...existingState,
+                  previousOwnerId: existingState.ownerId,
+                  ownerId: territory.ownerId,
+                  troops: territory.garrison,
+                  defense: territory.stability || 50,
+                  updatedAt: Date.now(),
+                  conqueredAt: Date.now(),
+                  transitionProgress: 0,
+                };
 
-          state.updateTerritoryState(territory.id, newState);
+                state.updateTerritoryState(countryId, newState);
 
-          // Update the visual rendering
-          const colorMapping = territory.ownerId
-            ? state.colorMappings.get(territory.ownerId)
-            : null;
+                // Update the visual rendering
+                const colorMapping = territory.ownerId
+                  ? state.colorMappings.get(territory.ownerId)
+                  : null;
 
-          if (colorMapping) {
-            this.mapRenderer.updateCountry(territory.id, newState, colorMapping);
+                if (colorMapping) {
+                  this.mapRenderer.updateCountry(countryId, newState, colorMapping);
+                  console.log(
+                    `🎨 [Region→Country] ${territory.id} → ${countryId}: ${existingState.ownerId} → ${territory.ownerId}`
+                  );
+                }
+              } else if (existingState) {
+                // Update troops/defense without owner change
+                state.updateTerritoryState(countryId, {
+                  troops: territory.garrison,
+                  defense: territory.stability || 50,
+                  updatedAt: Date.now(),
+                });
+              }
+            });
           }
-
-          console.log(
-            `🎨 Territory ${territory.id} changed owner: ${existingState.ownerId} -> ${territory.ownerId}`
-          );
-        } else if (existingState) {
-          // Update troops/defense without owner change
-          state.updateTerritoryState(territory.id, {
-            troops: territory.garrison,
-            defense: territory.stability || 50,
-            updatedAt: Date.now(),
-          });
-        } else if (territory.ownerId) {
-          // New territory state (shouldn't happen often)
-          const newState = {
-            countryId: territory.id,
-            ownerId: territory.ownerId,
-            troops: territory.garrison,
-            resources: 0,
-            defense: territory.stability || 50,
-            updatedAt: Date.now(),
-            conqueredAt: Date.now(),
-            previousOwnerId: null,
-            transitionProgress: null,
-            isHighlighted: false,
-          };
-
-          state.setTerritoryStates(new Map(state.territoryStates).set(territory.id, newState));
         }
       });
     }
