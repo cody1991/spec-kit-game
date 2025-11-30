@@ -37,14 +37,14 @@ export class MapRenderer {
   constructor() {
     this.config = {
       useWebGL: true,
-      borderWidth: 1,
-      borderColor: 0x333333,
-      fillAlpha: 0.7,
+      borderWidth: 2,
+      borderColor: 0x666666, // 灰色边框
+      fillAlpha: 0.9,
       antiAlias: true,
       enableTransition: true,
       transitionDuration: 500,
       highlightBorderWidth: 3,
-      highlightGlowColor: 0xffffff,
+      highlightGlowColor: 0xffff00,
       useObjectPool: true,
       poolSize: 200,
     };
@@ -97,14 +97,7 @@ export class MapRenderer {
         console.log(`  [${lon}, ${lat}] -> [${Math.round(screen.x)}, ${Math.round(screen.y)}]`);
       });
 
-      // Draw a test rectangle to verify rendering works
-      console.log('🎨 Drawing test rectangle...');
-      const graphics = this.scene.add.graphics();
-      graphics.fillStyle(0xff00ff, 1);
-      graphics.fillRect(400, 200, 200, 100);
-      graphics.lineStyle(3, 0xffff00, 1);
-      graphics.strokeRect(400, 200, 200, 100);
-      console.log('✅ Test rectangle drawn at [400, 200]');
+      console.log('✅ MapRenderer initialization complete');
     } catch (error) {
       console.error('❌ Error during MapRenderer initialization:', error);
       throw error;
@@ -134,6 +127,8 @@ export class MapRenderer {
       maxY: camera.scrollY + camera.height,
     };
 
+    console.log('📷 Camera viewport:', viewport);
+
     // Render visible countries
     let culledCount = 0;
     let renderedWithOwner = 0;
@@ -151,8 +146,11 @@ export class MapRenderer {
         maxY: bottomRight.y,
       };
 
-      // Viewport culling with screen coordinates
-      if (!bboxIntersects(screenBbox, viewport)) {
+      // TEMPORARY: Disable viewport culling for debugging
+      // TODO: Fix culling after coordinate system is verified
+      const shouldRender = true; // bboxIntersects(screenBbox, viewport);
+
+      if (!shouldRender) {
         culledCount++;
         return;
       }
@@ -172,7 +170,7 @@ export class MapRenderer {
 
     // Log first render details
     if (this.stats.countriesRendered === 0 && countries.length > 0) {
-      console.warn('⚠️  No countries rendered!', {
+      console.error('❌ No countries rendered!', {
         totalCountries: countries.length,
         culled: culledCount,
         viewport,
@@ -188,7 +186,7 @@ export class MapRenderer {
       });
     } else if (this.stats.countriesRendered > 0) {
       console.log(
-        `🎨 Rendered ${this.stats.countriesRendered} countries (${renderedWithOwner} with owner, ${renderedWithoutOwner} without)`
+        `🎨 Rendered ${this.stats.countriesRendered}/${countries.length} countries (${renderedWithOwner} with owner, ${renderedWithoutOwner} without owner, ${culledCount} culled)`
       );
     }
 

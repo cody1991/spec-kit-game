@@ -22,11 +22,22 @@ export class WorldScene extends Phaser.Scene {
     super({ key: 'WorldScene' });
   }
 
-  async preload(): Promise<void> {
-    console.log('🗺️  Loading map data...');
+  preload(): void {
+    console.log('🗺️  WorldScene.preload() called - starting async map data load...');
 
     // Initialize map data loader
     this.mapDataLoader = new MapDataLoader();
+
+    // Start async loading (will complete in create() or later)
+    this.loadMapDataAsync();
+  }
+
+  /**
+   * Async helper to load map data
+   * Called from preload(), completes in create() phase
+   */
+  private async loadMapDataAsync(): Promise<void> {
+    console.log('🗺️  Starting async map data load...');
 
     try {
       // Load map data with caching
@@ -53,6 +64,13 @@ export class WorldScene extends Phaser.Scene {
       }
 
       console.log(`✅ Loaded ${this.countries.length} countries`);
+
+      // Trigger initialization if create() already ran
+      if (this.scene.isActive()) {
+        console.log('🎨 Scene active, initializing map renderer now...');
+        this.initializeMapRenderer();
+        this.renderWorld();
+      }
     } catch (error) {
       console.error('❌ Failed to load map data:', error);
 
@@ -69,6 +87,12 @@ export class WorldScene extends Phaser.Scene {
 
         this.registry.set('countries', this.countries);
         console.log(`✅ Loaded simplified map with ${this.countries.length} countries`);
+
+        // Trigger initialization
+        if (this.scene.isActive()) {
+          this.initializeMapRenderer();
+          this.renderWorld();
+        }
       } catch (fallbackError) {
         console.error('❌ Fallback map load also failed:', fallbackError);
         // Continue with empty map - old territory system will be used
@@ -77,7 +101,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   create(): void {
-    console.log('🎬 WorldScene.create() called, countries loaded:', this.countries.length);
+    console.log('🎬 WorldScene.create() called');
 
     this.territoriesGroup = this.add.group();
     this.commandersGroup = this.add.group();
@@ -100,33 +124,46 @@ export class WorldScene extends Phaser.Scene {
       viewport: { width: camera.width, height: camera.height },
     });
 
-    // Initialize map renderer if countries loaded
-    // Note: countries might still be loading if this is called before preload completes
-    if (this.countries.length > 0) {
-      this.initializeMapRenderer();
-    } else {
-      console.warn('⚠️  Countries not loaded yet in create(), will initialize when loaded');
-      // Set up a delayed check
-      this.time.delayedCall(100, () => {
-        if (this.countries.length > 0) {
-          console.log('✅ Countries loaded, initializing map renderer now');
-          this.initializeMapRenderer();
-          this.renderWorld();
-        }
-      });
-    }
+    // Wait for map data to load (async operation from preload)
+    // Check periodically until countries are loaded
+    const checkInterval = 100; // Check every 100ms
+    const maxWaitTime = 5000; // Max wait 5 seconds
+    let elapsedTime = 0;
 
+    const waitForMapData = () => {
+      elapsedTime += checkInterval;
+
+      if (this.countries.length > 0) {
+        console.log(`✅ Map data ready (waited ${elapsedTime}ms), initializing renderer...`);
+        this.initializeMapRenderer();
+        this.initializeCameraController();
+        this.setupStateSubscription();
+        this.renderWorld();
+        this.events.on('postupdate', this.onUpdate, this);
+      } else if (elapsedTime < maxWaitTime) {
+        console.log(`⏳ Waiting for map data... (${elapsedTime}ms)`);
+        this.time.delayedCall(checkInterval, waitForMapData);
+      } else {
+        console.warn('⚠️  Map data not loaded after 5s, falling back to old system');
+        this.initializeCameraController();
+        this.setupStateSubscription();
+        this.renderWorld();
+        this.events.on('postupdate', this.onUpdate, this);
+      }
+    };
+
+    // Start waiting
+    this.time.delayedCall(checkInterval, waitForMapData);
+  }
+
+  private initializeCameraController(): void {
     // 初始化相机控制
     this.cameraController = new CameraController(this);
+  }
 
-    // 订阅状态变化
-    this.setupStateSubscription();
-
-    // 初始渲染
-    this.renderWorld();
-
-    // 更新循环
-    this.events.on('postupdate', this.onUpdate, this);
+  private setupStateSubscription(): void {
+    // 在实际应用中，这里应该订阅 Zustand store 的变化
+    // 由于 Phaser 场景的生命周期，我们在 update 中轮询状态
   }
 
   private initializeMapRenderer(): void {
@@ -150,11 +187,6 @@ export class WorldScene extends Phaser.Scene {
       console.error('❌ Failed to initialize MapRenderer:', error);
       this.mapRenderer = null as any;
     }
-  }
-
-  private setupStateSubscription(): void {
-    // 在实际应用中，这里应该订阅 Zustand store 的变化
-    // 由于 Phaser 场景的生命周期，我们在 update 中轮询状态
   }
 
   /**
@@ -332,7 +364,8 @@ export class WorldScene extends Phaser.Scene {
       this.renderTerritory(territory);
     });
 
-    // 渲染指挥官标记
+    // 渲染指挥官标记 (清除之前的标记)
+    this.commandersGroup.clear(true, true);
     commanders
       .filter((c) => c.status === 'active')
       .forEach((commander) => {
@@ -384,6 +417,63 @@ export class WorldScene extends Phaser.Scene {
   private renderCommander(commander: HistoricalCommander, territories: Territory[]): void {
     if (commander.controlledTerritories.length === 0) return;
 
+    // NEW: Use new map system if available
+    if (this.countries.length > 0) {
+      // Find all countries controlled by this commander
+      const controlledCountries = this.countries.filter((country) => {
+        return commander.controlledTerritories.some((regionId) => {
+          // Check if this country is in this region
+          const regionCountryMap = createRegionCountryMap();
+          const countryIds = regionCountryMap.get(regionId);
+          return countryIds?.includes(country.id);
+        });
+      });
+
+      if (controlledCountries.length === 0) return;
+
+      // Use the first country's centroid as commander position
+      const firstCountry = controlledCountries[0];
+      const { centroid } = firstCountry;
+
+      // Transform geographic coordinates to screen coordinates
+      if (!this.mapRenderer) return;
+      const transformer = (this.mapRenderer as any).transformer;
+      if (!transformer) return;
+
+      // centroid uses x=lon, y=lat
+      const screenPos = transformer.geoToScreen(centroid.x, centroid.y);
+
+      // Get commander color
+      const state = useGameStore.getState();
+      const colorMapping = state.colorMappings.get(commander.id);
+      const color = colorMapping ? colorMapping.primary : 0xff0000;
+
+      // 指挥官标记 (圆形 + 国旗图标)
+      const circle = this.add.circle(screenPos.x, screenPos.y, 12, color, 1);
+      circle.setStrokeStyle(2, 0xffffff);
+      circle.setInteractive();
+
+      circle.on('pointerdown', () => {
+        useGameStore.getState().selectCommander(commander.id);
+      });
+
+      this.commandersGroup.add(circle);
+
+      // 指挥官名称
+      const nameText = this.add.text(screenPos.x, screenPos.y - 20, commander.name, {
+        fontSize: '14px',
+        color: '#ffff00',
+        stroke: '#000000',
+        strokeThickness: 3,
+        fontStyle: 'bold',
+      });
+      nameText.setOrigin(0.5);
+      this.commandersGroup.add(nameText);
+
+      return;
+    }
+
+    // FALLBACK: Use old territory system
     const firstTerritory = territories.find((t) => t.id === commander.controlledTerritories[0]);
     if (!firstTerritory) return;
 

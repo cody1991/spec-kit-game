@@ -18,14 +18,24 @@ export class CoordinateTransformer {
     this.worldWidth = worldWidth;
     this.worldHeight = worldHeight;
 
-    // Create Mercator projection
+    // Create Mercator projection with proper scale for world map
+    // Scale calculation: width / (2 * PI) gives proper world coverage
+    // Increase scale to fill the screen better
+    const scale = (worldWidth / (2 * Math.PI)) * 2.2; // 增加到 2.2 倍使地图填充屏幕
+
     this.projection = geoMercator()
-      .scale(worldWidth / (2 * Math.PI))
+      .scale(scale)
       .translate([worldWidth / 2, worldHeight / 2])
-      .center([0, 0]);
+      .center([0, 0]); // 使用 [0, 0] 作为中心，标准墨卡托投影
 
     // Create path generator
     this.path = geoPath().projection(this.projection);
+
+    console.log('🗺️  Projection configured:', {
+      scale,
+      translate: [worldWidth / 2, worldHeight / 2],
+      center: [0, 0],
+    });
   }
 
   /**

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地图渲染测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 5px;
+            max-width: 400px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        #canvas-container {
+            margin-top: 120px;
+            border: 2px solid #444;
+        }
+        canvas {
+            display: block;
+            border: 1px solid #666;
+        }
+        .log-item {
+            margin: 5px 0;
+            padding: 3px;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+    </style>
+</head>
+<body>
+    <div id="status">
+        <h3>🔍 地图渲染诊断</h3>
+        <div id="logs"></div>
+    </div>
+    <div id="canvas-container">
+        <canvas id="test-canvas" width="1200" height="600"></canvas>
+    </div>
+
+    <script type="module">
+        const logs = document.getElementById('logs');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log-item ${type}`;
+            div.textContent = message;
+            logs.appendChild(div);
+            console.log(message);
+        }
+
+        async function testMapRendering() {
+            try {
+                log('📦 开始加载地图数据...', 'info');
+                
+                // 加载 TopoJSON 数据
+                const response = await fetch('/maps/world-countries.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const topoData = await response.json();
+                log(`✅ 地图数据加载成功`, 'success');
+                log(`   数据类型: ${topoData.type}`, 'info');
+                log(`   对象数: ${Object.keys(topoData.objects).length}`, 'info');
+                
+                // 检查是否有 topojson 库
+                if (typeof topojson === 'undefined') {
+                    log('⚠️  需要 topojson-client 库', 'warning');
+                    log('   使用原始 TopoJSON 数据测试', 'info');
+                    
+                    // 显示原始数据结构
+                    const countries = topoData.objects.countries;
+                    log(`   国家数: ${countries.geometries.length}`, 'info');
+                    
+                    const sample = countries.geometries[0];
+                    log(`   示例国家: ${sample.properties.name} (ID: ${sample.id})`, 'info');
+                    
+                    // 绘制简单测试
+                    const canvas = document.getElementById('test-canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 背景
+                    ctx.fillStyle = '#1a1a2e';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 测试矩形 - 确认 canvas 工作
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(50, 50, 200, 100);
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.fillRect(50, 50, 200, 100);
+                    
+                    log('✅ Canvas 渲染测试通过 (粉色矩形)', 'success');
+                    log('⚠️  TopoJSON 转换需要在 Phaser 场景中完成', 'warning');
+                    
+                } else {
+                    log('✅ topojson-client 可用', 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ 错误: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // 启动测试
+        testMapRendering();
+    </script>
+</body>
+</html>
