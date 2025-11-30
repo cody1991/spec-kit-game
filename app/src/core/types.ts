@@ -1,5 +1,5 @@
 export interface HistoricalCommander {
-  id: string;
+  id: string; // 与 Country.id 对齐，作为国家级占领键
   name: string;
   originRegion: 'africa' | 'americas' | 'asia' | 'europe' | 'oceania';
   portraitAsset: string;
@@ -11,7 +11,7 @@ export interface HistoricalCommander {
   };
   skillCards: SkillCard[];
   currentPower: number;
-  controlledTerritories: string[]; // Runtime: country IDs, Initial: region IDs
+  controlledTerritories: string[]; // Runtime: Country.id 列表，初始化阶段可从区域 ID 映射而来
   initialRegions?: string[]; // NEW: Store original region IDs for debugging
   alliances: string[];
   hostilities: string[];
@@ -21,7 +21,7 @@ export interface HistoricalCommander {
 }
 
 export interface SkillCard {
-  id: string;
+  id: string; // 与 Country.id 对齐，作为国家级占领键
   name: string;
   trigger: string;
   modifier: string;
@@ -31,7 +31,7 @@ export interface SkillCard {
 }
 
 export interface Territory {
-  id: string;
+  id: string; // 与 Country.id 对齐，作为国家级占领键
   name: string;
   polygon: number[][];
   adjacentIds: string[];
@@ -43,12 +43,12 @@ export interface Territory {
 }
 
 export interface BattleEvent {
-  id: string;
+  id: string; // 与 Country.id 对齐，作为国家级占领键
   timestamp: string;
   type: 'attack' | 'alliance' | 'betrayal' | 'cataclysm' | 'victory' | 'elimination';
   attackerId?: string;
   defenderId?: string;
-  territoryId?: string;
+  territoryId?: string; // 运行时为单个 Country.id，不再接受区域 ID
   result: 'success' | 'fail' | 'pending';
   delta: Record<string, number>;
   narrative: string;
@@ -70,9 +70,10 @@ export interface WorldState {
 }
 
 export interface TelemetrySignal {
-  type: 'fps' | 'tick' | 'stasis' | 'error';
-  value: number;
+  type: 'fps' | 'tick' | 'stasis' | 'error' | 'territory:conquered';
   timestamp: string;
+  value?: number;
+  payload?: Record<string, unknown>;
 }
 
 // ============================================================================

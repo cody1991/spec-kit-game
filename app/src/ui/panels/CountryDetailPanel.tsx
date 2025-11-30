@@ -49,9 +49,9 @@ export function CountryDetailPanel() {
       </div>
 
       <div className="panel-content">
-        {/* Owner Info */}
+        {/* Current owner (single, country-level) */}
         <div className="info-section">
-          <div className="info-label">统治者</div>
+          <div className="info-label">当前占领者</div>
           {owner ? (
             <div className="info-value commander-info">
               {colorMapping && (

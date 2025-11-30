@@ -8,6 +8,9 @@ import type { Country, HistoricalCommander } from '@/core/types';
 /**
  * Map a single region ID to country IDs
  *
+ * 仅用于“世界初始化阶段”，根据历史区域 ID 找到对应的国家。
+ * 运行时攻占与展示逻辑必须直接使用 Country.id，而不是 regionId。
+ *
  * @param regionId - Legacy region ID (e.g., 'china', 'western-europe')
  * @returns Array of ISO 3166-1 numeric country IDs
  */

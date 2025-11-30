@@ -53,7 +53,7 @@ export function BattleTimeline() {
   return (
     <div className="battle-timeline">
       <div className="timeline-header">
-        <h3>战报</h3>
+        <h3>战报（历史记录）</h3>
         <button className="pause-btn" onClick={() => setPaused(!isPaused)}>
           {isPaused ? '▶️ 继续' : '⏸️ 暂停'}
         </button>

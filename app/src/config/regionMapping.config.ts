@@ -1,6 +1,12 @@
 /**
  * Region-to-Country Mapping Configuration
  *
+ * 用于“初始化阶段”将历史区域 ID 映射为国家 ID 列表，
+ * 例如根据指挥官配置的区域生成其初始控制的国家。
+ *
+ * 运行时攻占与展示逻辑必须只使用 Country.id，
+ * 不得再直接依赖区域 ID 触发批量占领或展示。
+ *
  * Maps legacy region IDs to ISO 3166-1 numeric country codes.
  * Reference: https://www.iso.org/iso-3166-country-codes.html
  */

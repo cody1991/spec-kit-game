@@ -5,9 +5,7 @@ import { MapDataLoader } from './data/MapDataLoader';
 import { MapRenderer } from './rendering/MapRenderer';
 import { PerformanceMonitor } from './utils/PerformanceMonitor';
 import type { Country } from './types/mapTypes';
-import { createRegionCountryMap } from '@/config/regionMapping.config';
-import { MappingValidator } from '@/core/validation/mappingValidator';
-import { REGION_COUNTRY_MAPPINGS } from '@/config/regionMapping.config';
+import { startSession } from '@core/session/startSession';
 
 export class WorldScene extends Phaser.Scene {
   private territoriesGroup!: Phaser.GameObjects.Group;
@@ -66,6 +64,9 @@ export class WorldScene extends Phaser.Scene {
 
       console.log(`✅ Loaded ${this.countries.length} countries`);
 
+      // 🔑 关键：地图加载完成后，检查游戏是否已启动但缺少国家数据
+      this.initializeGameWorldIfNeeded();
+
       // Trigger initialization if create() already ran
       if (this.scene.isActive()) {
         console.log('🎨 Scene active, initializing map renderer now...');
@@ -88,6 +89,9 @@ export class WorldScene extends Phaser.Scene {
 
         this.registry.set('countries', this.countries);
         console.log(`✅ Loaded simplified map with ${this.countries.length} countries`);
+
+        // 初始化游戏世界（如果需要）
+        this.initializeGameWorldIfNeeded();
 
         // Trigger initialization
         if (this.scene.isActive()) {
@@ -166,6 +170,55 @@ export class WorldScene extends Phaser.Scene {
     this.cameraController = new CameraController(this);
   }
 
+  /**
+   * 检查游戏是否需要初始化世界数据
+   * 
+   * 当地图数据加载完成后调用。如果游戏已通过StartScreen启动但缺少国家数据，
+   * 此方法将使用真实国家数据重新初始化游戏世界。
+   */
+  private initializeGameWorldIfNeeded(): void {
+    const store = useGameStore.getState();
+    const { gameStarted, seed, commanders, territories } = store;
+
+    // 检查是否需要初始化：游戏已启动但指挥官/领土为空或使用旧区域系统
+    const needsInit = gameStarted && 
+                      this.countries.length > 0 &&
+                      (commanders.length === 0 || territories.length === 0 || 
+                       this.isUsingOldRegionSystem(territories));
+
+    if (needsInit) {
+      console.log('🔄 Reinitializing game world with country data...');
+      console.log(`   Current state: commanders=${commanders.length}, territories=${territories.length}`);
+      console.log(`   Countries available: ${this.countries.length}`);
+      
+      // 使用真实国家数据重新启动会话
+      startSession(seed, this.countries);
+      
+      console.log('✅ Game world reinitialized with country-based territories');
+    } else if (!gameStarted && this.countries.length > 0) {
+      console.log('⚠️  Map data loaded but game not started yet');
+    }
+  }
+
+  /**
+   * 检测是否仍在使用旧的区域系统
+   * 
+   * 通过检查territory ID是否为旧的区域ID（如'western-europe'）来判断
+   */
+  private isUsingOldRegionSystem(territories: Territory[]): boolean {
+    if (territories.length === 0) return false;
+    
+    // 旧系统使用如'western-europe'这样的ID，新系统使用ISO数字码如'840'
+    const sampleId = territories[0].id;
+    const isOldSystem = sampleId.includes('-') || isNaN(Number(sampleId));
+    
+    if (isOldSystem) {
+      console.log(`⚠️  Detected old region system (sample ID: "${sampleId}")`);
+    }
+    
+    return isOldSystem;
+  }
+
   private setupStateSubscription(): void {
     // 在实际应用中，这里应该订阅 Zustand store 的变化
     // 由于 Phaser 场景的生命周期，我们在 update 中轮询状态
@@ -195,92 +248,41 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /**
-   * Map real-world countries to commanders based on region configuration
+   * 同步地图国家与指挥官占领状态
    *
-   * This method performs the core mapping logic:
-   * 1. Loads region-to-country mappings from configuration
-   * 2. Validates mappings (dev mode only)
-   * 3. Creates territory states for each mapped country
-   * 4. Updates the global store with new states
+   * 现在commanders.controlledTerritories直接包含国家ID，不再需要区域映射。
+   * 此方法仅用于确保territoryStates与实际占领情况同步。
    *
    * @performance
-   * - Target: < 50ms for 200 countries
+   * - Target: < 10ms for 200 countries（比之前更快，因为不需要区域映射）
    * - Uses Map data structure for O(1) lookups
-   * - Includes performance.mark/measure instrumentation
-   *
-   * @sideEffects
-   * - Updates `useGameStore.territoryStates`
-   * - Logs mapping details to console
-   * - Triggers map re-render
-   *
-   * @see {@link createRegionCountryMap} for mapping configuration
-   * @see {@link MappingValidator} for validation logic
    */
   private mapCountriesToCommanders(): void {
     performance.mark('mapping-start');
 
     const state = useGameStore.getState();
-    const { commanders } = state;
+    const { commanders, territories } = state;
 
-    console.log('🔍 Starting country-to-commander mapping...');
+    console.log('🔍 Syncing country ownership from game state...');
     console.log(
       '   Commanders:',
-      commanders.map((c) => `${c.name} (${c.id}): ${c.controlledTerritories.join(', ')}`)
+      commanders.map((c) => `${c.name} (${c.id}): ${c.controlledTerritories.slice(0, 3).join(', ')}${c.controlledTerritories.length > 3 ? '...' : ''}`
+      )
     );
 
-    // Use new mapping configuration
-    const regionCountryMap = createRegionCountryMap();
-
-    // Validate mappings in development mode
-    if (process.env.NODE_ENV === 'development') {
-      const validator = new MappingValidator();
-      const validationResult = validator.validate(REGION_COUNTRY_MAPPINGS, this.countries);
-
-      if (!validationResult.valid) {
-        console.error('❌ Mapping validation failed:', validationResult.errors);
-      }
-
-      if (validationResult.warnings.length > 0) {
-        console.warn('⚠️  Mapping warnings:', validationResult.warnings);
-      }
-
-      console.log('   Validation summary:', validationResult.summary);
-    }
-
-    // Create a map of which countries belong to which commander
-    const countryOwnership = new Map<string, string>();
-
-    commanders.forEach((commander) => {
-      commander.controlledTerritories.forEach((regionId) => {
-        // Get the list of countries for this region using new config
-        const countryIds = regionCountryMap.get(regionId);
-
-        if (countryIds) {
-          console.log(`   Mapping ${regionId} -> [${countryIds.join(', ')}]`);
-          countryIds.forEach((countryId) => {
-            countryOwnership.set(countryId, commander.id);
-          });
-        } else {
-          console.warn(`⚠️  Region "${regionId}" not found in mapping table`);
-        }
-      });
-    });
-
-    console.log(`   Country ownership map size: ${countryOwnership.size}`);
-
-    // Create territory states for real countries
+    // 直接从territories获取所有权信息（Territory.id现在就是国家ID）
     const territoryStates = new Map();
-    this.countries.forEach((country) => {
-      const ownerId = countryOwnership.get(country.id);
-
-      if (ownerId) {
-        territoryStates.set(country.id, {
-          countryId: country.id,
-          countryName: country.name, // NEW: Add country name for display
-          ownerId,
-          troops: 50,
+    territories.forEach((territory) => {
+      if (territory.ownerId) {
+        const country = this.countries.find(c => c.id === territory.id);
+        
+        territoryStates.set(territory.id, {
+          countryId: territory.id, // 现在是真实国家ID
+          countryName: country?.name || territory.name, // 优先使用真实国家名
+          ownerId: territory.ownerId,
+          troops: territory.garrison,
           resources: 0,
-          defense: 70,
+          defense: territory.stability,
           updatedAt: Date.now(),
           conqueredAt: Date.now(),
           previousOwnerId: null,
@@ -290,15 +292,15 @@ export class WorldScene extends Phaser.Scene {
       }
     });
 
-    // Update the store with country-based territory states
+    // 更新store中的territoryStates（确保地图渲染层有正确数据）
     state.setTerritoryStates(territoryStates);
 
     performance.mark('mapping-end');
     performance.measure('mapping-duration', 'mapping-start', 'mapping-end');
     const duration = performance.getEntriesByName('mapping-duration')[0]?.duration || 0;
 
-    console.log(`🗺️  Mapped ${territoryStates.size} countries to ${commanders.length} commanders`);
-    console.log(`⏱️  Mapping completed in ${duration.toFixed(2)}ms`);
+    console.log(`🗺️  Synced ${territoryStates.size} countries with ${commanders.length} commanders`);
+    console.log(`⏱️  Sync completed in ${duration.toFixed(2)}ms`);
 
     // Log mapping details
     if (process.env.NODE_ENV === 'development') {
@@ -387,9 +389,36 @@ export class WorldScene extends Phaser.Scene {
 
         // Check if ownerId changed
         if (!prevState || prevState.ownerId !== newState.ownerId) {
-          console.log(`🔔 [WorldScene] Change detected: ${territoryId} ${prevState?.ownerId || 'null'} → ${newState.ownerId}`);
+          console.log(
+            `🔔 [WorldScene] Change detected: ${territoryId} ${prevState?.ownerId || 'null'} → ${newState.ownerId}`
+          );
           changesDetected++;
           this.handleTerritoryOwnershipChange(territoryId, newState);
+        }
+      });
+
+      // Also handle territories that disappeared from the map (e.g. after reset)
+      previousTerritoryStates.forEach((prevState: TerritoryState, territoryId: string) => {
+        if (!newStates.has(territoryId)) {
+          const neutralState: TerritoryState = {
+            countryId: prevState.countryId,
+            countryName: prevState.countryName,
+            ownerId: null,
+            troops: prevState.troops,
+            resources: prevState.resources,
+            defense: prevState.defense,
+            updatedAt: Date.now(),
+            conqueredAt: prevState.conqueredAt,
+            previousOwnerId: prevState.ownerId,
+            transitionProgress: null,
+            isHighlighted: false,
+          };
+
+          console.log(
+            `🔔 [WorldScene] Territory removed from state, resetting to neutral: ${territoryId} ${prevState.ownerId} → null`
+          );
+          changesDetected++;
+          this.handleTerritoryOwnershipChange(territoryId, neutralState);
         }
       });
 
@@ -550,15 +579,19 @@ export class WorldScene extends Phaser.Scene {
 
     // NEW: Use new map system if available
     if (this.countries.length > 0) {
-      // Find all countries controlled by this commander
-      const controlledCountries = this.countries.filter((country) => {
-        return commander.controlledTerritories.some((regionId) => {
-          // Check if this country is in this region
-          const regionCountryMap = createRegionCountryMap();
-          const countryIds = regionCountryMap.get(regionId);
-          return countryIds?.includes(country.id);
-        });
+      const state = useGameStore.getState();
+
+      // Find all countries currently owned by this commander based on TerritoryState (Country.id)
+      const ownedCountryIds: string[] = [];
+      state.territoryStates.forEach((territoryState, countryId) => {
+        if (territoryState.ownerId === commander.id) {
+          ownedCountryIds.push(countryId);
+        }
       });
+
+      const controlledCountries = this.countries.filter((country) =>
+        ownedCountryIds.includes(country.id)
+      );
 
       if (controlledCountries.length === 0) return;
 
@@ -575,7 +608,6 @@ export class WorldScene extends Phaser.Scene {
       const screenPos = transformer.geoToScreen(centroid.x, centroid.y);
 
       // Get commander color
-      const state = useGameStore.getState();
       const colorMapping = state.colorMappings.get(commander.id);
       const color = colorMapping ? colorMapping.primary : 0xff0000;
 

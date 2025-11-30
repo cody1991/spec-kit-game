@@ -10,7 +10,6 @@ import type {
   MapRenderState,
 } from '../types';
 import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
-import { createRegionCountryMap } from '@/config/regionMapping.config';
 
 /**
  * Helper function to update territory ownership and sync state
@@ -22,108 +21,55 @@ function updateTerritoryOwnership(
   newTerritories: Territory[]
 ) {
   console.log(`🔄 [updateTerritoryOwnership] Processing ${id}, ownerId: ${updates.ownerId}`);
-  
+
   const newStates = new Map(state.territoryStates);
 
-  // Treat incoming id as a region ID if it exists in the mapping table
-  const regionCountryMap = createRegionCountryMap();
-  const mappedCountryIds = regionCountryMap.get(id);
+  // Runtime path: treat incoming id strictly as a Country.id
+  const existingState = newStates.get(id);
 
-  if (mappedCountryIds && mappedCountryIds.length > 0) {
+  console.log(
+    `🔄 [updateTerritoryOwnership] Treating ${id} as Country.id. Existing:`,
+    existingState ? `${existingState.ownerId}` : 'NOT FOUND'
+  );
+
+  if (existingState) {
+    const updatedState = {
+      ...existingState,
+      previousOwnerId: existingState.ownerId,
+      ownerId: updates.ownerId!,
+      troops: updates.garrison ?? existingState.troops,
+      defense: updates.stability ?? existingState.defense,
+      conqueredAt: Date.now(),
+      updatedAt: Date.now(),
+      transitionProgress: 0,
+    };
+
+    newStates.set(id, updatedState);
+
     console.log(
-      `🗺️  [updateTerritoryOwnership] Region detected: ${id}, updating ${mappedCountryIds.length} countries`,
-      mappedCountryIds
+      `🔄 [Territory] Ownership changed: ${id} ${existingState.ownerId} → ${updates.ownerId}`
     );
-
-    mappedCountryIds.forEach((countryId) => {
-      const existingCountryState = newStates.get(countryId);
-
-      if (existingCountryState) {
-        const updatedState = {
-          ...existingCountryState,
-          previousOwnerId: existingCountryState.ownerId,
-          ownerId: updates.ownerId!,
-          troops: updates.garrison ?? existingCountryState.troops,
-          defense: updates.stability ?? existingCountryState.defense,
-          conqueredAt: Date.now(),
-          updatedAt: Date.now(),
-          transitionProgress: 0,
-        };
-
-        newStates.set(countryId, updatedState);
-        console.log(
-          `  ✅ [updateTerritoryOwnership] Country ${countryId}: ${existingCountryState.ownerId} → ${updates.ownerId}`
-        );
-      } else {
-        // Country state doesn't exist yet, create it
-        const newCountryState = {
-          countryId,
-          countryName: countryId, // Will be updated when countries load
-          ownerId: updates.ownerId!,
-          troops: updates.garrison ?? 50,
-          resources: 0,
-          defense: updates.stability ?? 50,
-          updatedAt: Date.now(),
-          conqueredAt: Date.now(),
-          previousOwnerId: null,
-          transitionProgress: null,
-          isHighlighted: false,
-        };
-
-        newStates.set(countryId, newCountryState);
-        console.log(
-          `  🆕 [updateTerritoryOwnership] Created state for ${countryId} → ${updates.ownerId}`
-        );
-      }
-    });
+    console.log(`🔄 [updateTerritoryOwnership] Updated state:`, updatedState);
   } else {
-    // No region mapping, treat id as direct country ID
-    const existingState = newStates.get(id);
+    const territory = state.territories.find((t) => t.id === id);
+    const newState = {
+      countryId: id,
+      countryName: territory?.name || id,
+      ownerId: updates.ownerId!,
+      troops: updates.garrison ?? 0,
+      resources: 0,
+      defense: updates.stability ?? 50,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    };
 
-    console.log(
-      `🔄 [updateTerritoryOwnership] No region mapping for ${id}, treating as direct country. Existing:`,
-      existingState ? `${existingState.ownerId}` : 'NOT FOUND'
-    );
+    newStates.set(id, newState);
 
-    if (existingState) {
-      const updatedState = {
-        ...existingState,
-        previousOwnerId: existingState.ownerId,
-        ownerId: updates.ownerId!,
-        troops: updates.garrison ?? existingState.troops,
-        defense: updates.stability ?? existingState.defense,
-        conqueredAt: Date.now(),
-        updatedAt: Date.now(),
-        transitionProgress: 0,
-      };
-
-      newStates.set(id, updatedState);
-
-      console.log(
-        `🔄 [Territory] Ownership changed: ${id} ${existingState.ownerId} → ${updates.ownerId}`
-      );
-      console.log(`🔄 [updateTerritoryOwnership] Updated state:`, updatedState);
-    } else {
-      const territory = state.territories.find((t) => t.id === id);
-      const newState = {
-        countryId: id,
-        countryName: territory?.name || id,
-        ownerId: updates.ownerId!,
-        troops: updates.garrison ?? 0,
-        resources: 0,
-        defense: updates.stability ?? 50,
-        updatedAt: Date.now(),
-        conqueredAt: Date.now(),
-        previousOwnerId: null,
-        transitionProgress: null,
-        isHighlighted: false,
-      };
-
-      newStates.set(id, newState);
-
-      console.log(`🆕 [Territory] Created new state: ${id} → ${updates.ownerId}`);
-      console.log(`🆕 [updateTerritoryOwnership] New state:`, newState);
-    }
+    console.log(`🆕 [Territory] Created new state: ${id} → ${updates.ownerId}`);
+    console.log(`🆕 [updateTerritoryOwnership] New state:`, newState);
   }
 
   console.log(`🔄 [updateTerritoryOwnership] Returning updated states map with ${newStates.size} entries`);

@@ -2,6 +2,7 @@ import type { System } from '../tickScheduler';
 import { useGameStore } from '../../state/store';
 import type { BattleEvent, HistoricalCommander, Territory } from '../../types';
 import { globalEventBus } from '../../events/eventTypes';
+import { createCountryConquestTelemetry } from '@/services/telemetry/countryConquestTelemetry';
 
 /**
  * Global battle event counter for generating unique IDs
@@ -176,11 +177,9 @@ export class BattleSystem implements System {
         stability: Math.max(20, territory.stability - 30),
       });
 
-      // Add telemetry for territory ownership change
-      store.addTelemetry({
-        type: 'territory:conquered',
-        timestamp: new Date().toISOString(),
-        payload: {
+      // Add telemetry for territory ownership change (single-country conquest)
+      store.addTelemetry(
+        createCountryConquestTelemetry({
           territoryId: territory.id,
           territoryName: territory.name,
           previousOwnerId: defender.id,
@@ -188,8 +187,8 @@ export class BattleSystem implements System {
           attackPower,
           defensePower,
           battleDuration: 1,
-        },
-      });
+        })
+      );
 
       console.log(
         `📍 Territory Update: ${territory.name} conquered by ${attacker.name} from ${defender.name}`
