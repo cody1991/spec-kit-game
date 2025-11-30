@@ -1,0 +1,178 @@
+.commander-panel {
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  width: 320px;
+  max-height: 80vh;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.panel-header {
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.panel-content {
+  padding: 16px;
+  max-height: calc(80vh - 64px);
+  overflow-y: auto;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #4ecdc4;
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.stats-section,
+.info-section,
+.alliances-section,
+.skills-section {
+  margin-bottom: 20px;
+}
+
+.stats-section h4,
+.alliances-section h4,
+.skills-section h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #b0b0b0;
+  text-transform: uppercase;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stat-row > span:first-child {
+  width: 50px;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+.stat-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.stat-fill.attack { background: #ff6b6b; }
+.stat-fill.defense { background: #4ecdc4; }
+.stat-fill.mobility { background: #ffd700; }
+.stat-fill.leadership { background: #a29bfe; }
+
+.stat-row > span:last-child {
+  width: 30px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.info-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.info-label {
+  font-size: 11px;
+  color: #b0b0b0;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #4ecdc4;
+}
+
+.alliance-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ally-tag {
+  padding: 6px 12px;
+  background: rgba(78, 205, 196, 0.2);
+  border: 1px solid #4ecdc4;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #4ecdc4;
+}
+
+.skill-card {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.skill-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #ffd700;
+}
+
+.skill-desc {
+  font-size: 13px;
+  color: #b0b0b0;
+}

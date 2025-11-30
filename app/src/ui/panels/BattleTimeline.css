@@ -1,0 +1,148 @@
+.battle-timeline {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  width: 360px;
+  max-height: 80vh;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.timeline-header {
+  padding: 16px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.pause-btn {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pause-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.timeline-content {
+  padding: 12px;
+  max-height: calc(80vh - 64px);
+  overflow-y: auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.event-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.event-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(-2px);
+}
+
+.event-item.event-attack {
+  border-left-color: #ff6b6b;
+}
+
+.event-item.event-alliance {
+  border-left-color: #4ecdc4;
+}
+
+.event-item.event-elimination {
+  border-left-color: #ff00ff;
+}
+
+.event-item.event-victory {
+  border-left-color: #ffd700;
+}
+
+.event-item.event-cataclysm {
+  border-left-color: #ff8c00;
+}
+
+.event-time {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.event-narrative {
+  font-size: 14px;
+  color: #e0e0e0;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.event-participants {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.attacker {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.vs {
+  color: #666;
+}
+
+.defender {
+  color: #4ecdc4;
+  font-weight: 600;
+}
+
+.event-result {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.result-success {
+  background: rgba(78, 205, 196, 0.2);
+  color: #4ecdc4;
+}
+
+.result-fail {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+.result-pending {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+}
