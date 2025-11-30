@@ -1,0 +1,163 @@
+openapi: 3.0.0
+info:
+  title: Country Conquest API
+  version: 1.0.0
+  description: >-
+    API contracts for the "国家攻占规则调整" feature. All conquest and
+    ownership operations are expressed at the country level; region-level
+    identifiers are not accepted in runtime requests.
+
+paths:
+  /world/countries:
+    get:
+      summary: List all countries with current ownership state
+      description: >-
+        Returns the current world map at country granularity, including the
+        owning commander for each country and basic defensive state.
+      responses:
+        '200':
+          description: List of countries and their current owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CountryState'
+
+  /countries/{countryId}:
+    get:
+      summary: Get details for a single country
+      parameters:
+        - name: countryId
+          in: path
+          required: true
+          description: ISO 3166-1 alpha-3 country code
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Country state and basic metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryState'
+        '404':
+          description: Country not found
+
+  /countries/{countryId}/conquests:
+    post:
+      summary: Perform a single-country conquest attempt
+      description: >-
+        Triggers a battle simulation for the specified country. The result is
+        recorded as a BattleEvent and, on success, updates both the
+        TerritoryState and commander-controlled territories. The operation
+        always targets exactly one country.
+      parameters:
+        - name: countryId
+          in: path
+          required: true
+          description: Target country ID (ISO 3166-1 alpha-3)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConquestCommand'
+      responses:
+        '200':
+          description: Conquest simulation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConquestResult'
+        '400':
+          description: Invalid request (e.g., region ID provided instead of country ID)
+        '404':
+          description: Country or commander not found
+
+  /commanders/{commanderId}/countries:
+    get:
+      summary: List countries controlled by a commander
+      parameters:
+        - name: commanderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of country IDs currently controlled by the commander
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  commanderId:
+                    type: string
+                  controlledCountryIds:
+                    type: array
+                    items:
+                      type: string
+
+components:
+  schemas:
+    CountryState:
+      type: object
+      description: Runtime state for a single country on the world map
+      properties:
+        countryId:
+          type: string
+          description: ISO 3166-1 alpha-3 ID
+        countryName:
+          type: string
+        ownerId:
+          type: string
+          nullable: true
+          description: Current owning commander ID
+        ownerName:
+          type: string
+          nullable: true
+        previousOwnerId:
+          type: string
+          nullable: true
+        troops:
+          type: integer
+        defense:
+          type: integer
+        conqueredAt:
+          type: integer
+          format: int64
+          nullable: true
+        updatedAt:
+          type: integer
+          format: int64
+    ConquestCommand:
+      type: object
+      description: Request payload to attempt conquest of a single country
+      required:
+        - attackerId
+      properties:
+        attackerId:
+          type: string
+          description: Commander ID initiating the conquest
+        defenderId:
+          type: string
+          nullable: true
+          description: Optional defender commander ID; may be inferred from state
+        seed:
+          type: string
+          nullable: true
+          description: Optional seed for deterministic battle simulation
+    ConquestResult:
+      type: object
+      description: Outcome of a single-country conquest attempt
+      properties:
+        success:
+          type: boolean
+        battleEvent:
+          type: object
+          description: Serialized BattleEvent for this conquest
+        updatedCountry:
+          $ref: '#/components/schemas/CountryState'
