@@ -372,19 +372,30 @@ export class WorldScene extends Phaser.Scene {
     const state = useGameStore.getState();
     let previousTerritoryStates = new Map(state.territoryStates);
 
+    console.log(`🔔 [WorldScene] Setting up subscription with ${previousTerritoryStates.size} initial states`);
+
     // Subscribe to all state changes
     this.territorySubscription = useGameStore.subscribe((newState) => {
       const newStates = newState.territoryStates;
 
+      console.log(`🔔 [WorldScene] Subscription triggered, checking ${newStates.size} states`);
+
       // Check for changes in territory ownership
+      let changesDetected = 0;
       newStates.forEach((newState: TerritoryState, territoryId: string) => {
         const prevState = previousTerritoryStates.get(territoryId);
 
         // Check if ownerId changed
         if (!prevState || prevState.ownerId !== newState.ownerId) {
+          console.log(`🔔 [WorldScene] Change detected: ${territoryId} ${prevState?.ownerId || 'null'} → ${newState.ownerId}`);
+          changesDetected++;
           this.handleTerritoryOwnershipChange(territoryId, newState);
         }
       });
+
+      if (changesDetected === 0) {
+        console.log(`🔔 [WorldScene] No ownership changes detected in this update`);
+      }
 
       // Update reference for next comparison
       previousTerritoryStates = new Map(newStates);
