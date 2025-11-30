@@ -1,0 +1,385 @@
+openapi: 3.1.0
+info:
+  title: Historic World Conquest Simulator API
+  version: 0.1.0
+  description: |
+    Contracts supporting world-state bootstrapping, persistence and sharing for the Historic World Conquest browser experience.
+servers:
+  - url: https://api.historic-conquest.local
+    description: Local dev reverse proxy
+paths:
+  /sessions:
+    post:
+      summary: Start a new conquest session
+      description: Bootstrap a new world map, commander roster and seed, returning the first WorldState used by the client.
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartSessionRequest'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionBootstrap'
+  /sessions/{sessionId}/state:
+    get:
+      summary: Fetch latest persisted world state
+      description: Used to restore a game when the page reloads or to inspect live progress.
+      operationId: getWorldState
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - in: query
+          name: includeEvents
+          schema:
+            type: boolean
+            default: true
+          description: Whether to include the latest battle events payload.
+      responses:
+        '200':
+          description: Current world state snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldStateEnvelope'
+        '404':
+          description: Session not found
+  /sessions/{sessionId}/timeline:
+    get:
+      summary: Paginate battle events for war log
+      operationId: listBattleEvents
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - in: query
+          name: after
+          schema:
+            type: string
+            format: uuid
+          description: Event ID cursor; omit for latest events.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 200
+            default: 50
+      responses:
+        '200':
+          description: Page of battle events ordered by timestamp DESC
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events]
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BattleEvent'
+                  nextCursor:
+                    type: string
+                    nullable: true
+  /sessions/{sessionId}/restart:
+    post:
+      summary: Restart the session with a new seed or from saved seed
+      operationId: restartSession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  type: string
+                  description: Optional user-provided seed to recreate the same roster.
+              additionalProperties: false
+      responses:
+        '200':
+          description: Restarted session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionBootstrap'
+  /sessions/{sessionId}/share:
+    post:
+      summary: Generate shareable battle summary text block
+      operationId: getSessionShare
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Share payload
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [clipboardPayload, summary]
+                properties:
+                  clipboardPayload:
+                    type: string
+                    description: Plaintext report ready for copy-to-clipboard.
+                  summary:
+                    $ref: '#/components/schemas/SessionSummary'
+
+components:
+  parameters:
+    SessionId:
+      in: path
+      name: sessionId
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    StartSessionRequest:
+      type: object
+      required: [playerId]
+      properties:
+        playerId:
+          type: string
+        maxCommanders:
+          type: integer
+          minimum: 8
+          maximum: 16
+          default: 10
+        victoryThreshold:
+          type: number
+          minimum: 0.7
+          maximum: 1
+          default: 0.9
+        accessibilityFlags:
+          type: object
+          properties:
+            highContrast:
+              type: boolean
+            reducedMotion:
+              type: boolean
+        seed:
+          type: string
+          nullable: true
+      additionalProperties: false
+    SessionBootstrap:
+      type: object
+      required: [sessionId, seed, worldState]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        seed:
+          type: string
+        worldState:
+          $ref: '#/components/schemas/WorldState'
+    WorldStateEnvelope:
+      type: object
+      required: [sessionId, snapshot]
+      properties:
+        sessionId:
+          type: string
+        snapshot:
+          $ref: '#/components/schemas/WorldState'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BattleEvent'
+    WorldState:
+      type: object
+      required: [tick, commanders, territories, eventLog, victoryThreshold, elapsedMs]
+      properties:
+        tick:
+          type: integer
+        commanders:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoricalCommander'
+        territories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Territory'
+        eventLog:
+          type: array
+          items:
+            $ref: '#/components/schemas/BattleEvent'
+        stasisTimerMs:
+          type: integer
+        performanceMetrics:
+          type: object
+          properties:
+            fps:
+              type: number
+            tickMs:
+              type: number
+        victoryThreshold:
+          type: number
+        elapsedMs:
+          type: integer
+    HistoricalCommander:
+      type: object
+      required:
+        [id,name,originRegion,baseAttributes,skillCards,currentPower,controlledTerritories,morale,status]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        originRegion:
+          type: string
+          enum: [africa, americas, asia, europe, oceania]
+        portraitAsset:
+          type: string
+        baseAttributes:
+          $ref: '#/components/schemas/CommanderAttributes'
+        skillCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillCard'
+        currentPower:
+          type: number
+        controlledTerritories:
+          type: array
+          items:
+            type: string
+        alliances:
+          type: array
+          items:
+            type: string
+        hostilities:
+          type: array
+          items:
+            type: string
+        morale:
+          type: number
+          minimum: 0
+          maximum: 100
+        nextActionEta:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [active, eliminated]
+    CommanderAttributes:
+      type: object
+      required: [attack, defense, mobility, leadership]
+      properties:
+        attack:
+          type: integer
+        defense:
+          type: integer
+        mobility:
+          type: integer
+        leadership:
+          type: integer
+    SkillCard:
+      type: object
+      required: [id, name, trigger, modifier]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        trigger:
+          type: string
+          enum: [battle_start, defense, offense, alliance, stasis]
+        modifier:
+          type: object
+          additionalProperties: true
+        cooldownMs:
+          type: integer
+        durationMs:
+          type: integer
+    Territory:
+      type: object
+      required:
+        [id,name,polygon,adjacentIds,terrain,resourceYield,ownerId,garrison,stability]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        polygon:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+        adjacentIds:
+          type: array
+          items:
+            type: string
+        terrain:
+          type: string
+          enum: [plains, mountain, desert, forest, water]
+        resourceYield:
+          type: object
+          properties:
+            food:
+              type: number
+            industry:
+              type: number
+        ownerId:
+          type: string
+          nullable: true
+        garrison:
+          type: number
+        stability:
+          type: number
+    BattleEvent:
+      type: object
+      required: [id,timestamp,type,territoryId,result]
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum: [attack, alliance, betrayal, cataclysm, victory, elimination]
+        attackerId:
+          type: string
+          nullable: true
+        defenderId:
+          type: string
+          nullable: true
+        territoryId:
+          type: string
+        result:
+          type: string
+          enum: [success, fail, pending]
+        delta:
+          type: object
+          additionalProperties: true
+        narrative:
+          type: string
+        seed:
+          type: string
+    SessionSummary:
+      type: object
+      required: [winner, durationMinutes, defeatedCommanders, topBattles]
+      properties:
+        winner:
+          type: string
+        durationMinutes:
+          type: number
+        defeatedCommanders:
+          type: array
+          items:
+            type: string
+        topBattles:
+          type: array
+          items:
+            type: object
+            required: [territoryId, result]
+            properties:
+              territoryId:
+                type: string
+              result:
+                type: string
