@@ -2,6 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
 **Created**: 2025-12-01  
+**Last Updated**: 2025-12-01 (Post-clarification)  
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -29,16 +30,27 @@
 - [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
+## Clarification Session Summary
+
+| Date | Questions Asked | Questions Answered |
+| ---- | --------------- | ------------------ |
+| 2025-12-01 | 2 | 2 |
+
+### Clarifications Applied
+
+1. **进度衰减机制**: 自动衰减，每分钟无战斗进度下降5%，直到归零
+2. **多势力攻击处理**: 独立追踪，每个攻击方有独立进度，谁先达100%谁占领
+
 ## Validation Summary
 
 | Category | Status | Notes |
 | -------- | ------ | ----- |
 | Content Quality | ✅ Pass | 所有内容聚焦于用户价值，无技术实现细节 |
-| Requirement Completeness | ✅ Pass | 15个功能需求均可测试，无待澄清项 |
+| Requirement Completeness | ✅ Pass | 16个功能需求均可测试，无待澄清项 |
 | Feature Readiness | ✅ Pass | 5个用户故事覆盖核心流程，边界情况已识别 |
 
 ## Notes
 
-- 规格说明书已完成，可进入 `/speckit.clarify` 或 `/speckit.plan` 阶段
-- 本功能与现有 009-unification-balance 功能有协同效应，决战模式下蚕食速度加快
-- 视觉反馈部分可能需要与 UI 团队进一步讨论渐变色实现方案
+- 规格说明书已完成澄清，可进入 `/speckit.plan` 阶段
+- 新增 FR-016 进度衰减机制
+- 数据模型已更新支持多攻击方独立追踪
