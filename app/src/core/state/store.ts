@@ -418,9 +418,10 @@ export const useGameStore = create<GameState>((set) => ({
   addBattleEvent: (event) =>
     set((state) => {
       // 使用 RingBuffer 存储事件（O(1) 操作）
+      // 注意：RingBuffer 是可变对象，但我们通过返回新的 eventLog 数组来触发更新
       state.eventLogBuffer.push(event);
       
-      // 同时更新 eventLog 数组以保持向后兼容
+      // 返回新的 eventLog 数组以触发订阅者更新
       return {
         eventLog: state.eventLogBuffer.toArray(),
       };
@@ -428,10 +429,14 @@ export const useGameStore = create<GameState>((set) => ({
 
   addBattleEvents: (events) =>
     set((state) => {
+      if (events.length === 0) return {};
+      
       // 批量添加事件
       for (const event of events) {
         state.eventLogBuffer.push(event);
       }
+      
+      // 返回新的 eventLog 数组以触发订阅者更新
       return {
         eventLog: state.eventLogBuffer.toArray(),
       };

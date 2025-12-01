@@ -1,15 +1,20 @@
-import { useMemo, useRef, memo } from 'react';
+import { useMemo } from 'react';
 import { useGameStore } from '@core/state/store';
 import './BattleTimeline.css';
 
-// 单个事件项组件，使用 memo 避免不必要的重渲染
-const EventItem = memo(function EventItem({ 
+// 单个事件项组件
+function EventItem({ 
   event, 
-  getCommanderName 
+  commanderNames
 }: { 
   event: any; 
-  getCommanderName: (id?: string) => string;
+  commanderNames: Map<string, string>;
 }) {
+  const getCommanderName = (id?: string) => {
+    if (!id) return '未知';
+    return commanderNames.get(id) || id;
+  };
+
   return (
     <div className={`event-item event-${event.type}`}>
       <div className="event-time">{new Date(event.timestamp).toLocaleTimeString()}</div>
@@ -24,38 +29,30 @@ const EventItem = memo(function EventItem({
       <div className={`event-result result-${event.result}`}>{event.result}</div>
     </div>
   );
-});
+}
 
 export function BattleTimeline() {
-  // 只订阅 eventLog 的长度变化，而不是整个数组
-  const eventLogLength = useGameStore((state) => state.eventLog.length);
+  // 订阅 eventLog - 每次更新都会是新数组
   const eventLog = useGameStore((state) => state.eventLog);
   const commanders = useGameStore((state) => state.commanders);
   const isPaused = useGameStore((state) => state.isPaused);
   const setPaused = useGameStore((state) => state.setPaused);
   
-  // 缓存指挥官名称映射
-  const commanderNameMap = useRef(new Map<string, string>());
-  
-  // 更新指挥官名称缓存
-  useMemo(() => {
-    commanderNameMap.current.clear();
+  // 构建指挥官名称映射
+  const commanderNameMap = useMemo(() => {
+    const map = new Map<string, string>();
     for (const c of commanders) {
-      commanderNameMap.current.set(c.id, c.name);
+      map.set(c.id, c.name);
     }
+    return map;
   }, [commanders]);
 
-  const getCommanderName = (id?: string) => {
-    if (!id) return '未知';
-    return commanderNameMap.current.get(id) || id;
-  };
-
-  // 获取最新的 10 条事件（减少数量以提高性能）
+  // 获取最新的 10 条事件，最新的在最上面
+  // 使用 eventLog.length 作为额外依赖确保更新
   const recentEvents = useMemo(() => {
-    // 直接取最后 10 条，不需要去重和排序（RingBuffer 已经保证顺序）
-    const events = eventLog.slice(-10).reverse();
-    return events;
-  }, [eventLog, eventLogLength]);
+    // 取最后 10 条并反转，使最新的显示在顶部
+    return eventLog.slice(-10).reverse();
+  }, [eventLog]);
 
   return (
     <div className="battle-timeline">
@@ -74,7 +71,7 @@ export function BattleTimeline() {
             <EventItem 
               key={event.id} 
               event={event} 
-              getCommanderName={getCommanderName}
+              commanderNames={commanderNameMap}
             />
           ))
         )}
