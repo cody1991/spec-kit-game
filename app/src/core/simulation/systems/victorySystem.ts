@@ -19,16 +19,23 @@ export class VictorySystem implements System {
 
   update(_deltaMs: number): void {
     const state = useGameStore.getState();
-    const { commanders, territories } = state;
+    const { commanders, countries } = state;
     const config = DEFAULT_VICTORY_CONFIG;
 
     const activeCommanders = commanders.filter((c) => c.status === 'active');
-    const totalTerritories = territories.length;
+    
+    // 使用 countries.length 作为总领土数（地图上的实际国家数量）
+    const totalTerritories = countries.length;
+    
+    // 如果国家数据还没加载，跳过检查
+    if (totalTerritories === 0) {
+      return;
+    }
 
     // 检查是否有指挥官占领了所有领土
     for (const commander of activeCommanders) {
       const controlledCount = commander.controlledTerritories.length;
-      const controlRatio = totalTerritories > 0 ? controlledCount / totalTerritories : 0;
+      const controlRatio = controlledCount / totalTerritories;
       
       // 胜利条件：占领 100% 领土
       if (controlRatio >= config.territoryVictoryThreshold) {

@@ -465,8 +465,8 @@ export class WorldScene extends Phaser.Scene {
       performanceConfig,
     } = state;
 
-    // Guard: 确保 territoryStates 已初始化
-    if (!territoryStates || !dirtyFlags) {
+    // Guard: 确保 territoryStates 和 dirtyFlags 已初始化
+    if (!territoryStates || !dirtyFlags || !dirtyFlags.territories) {
       return;
     }
 
