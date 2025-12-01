@@ -487,12 +487,16 @@ export class WorldScene extends Phaser.Scene {
         !dirtyFlags.fullRedraw &&
         dirtyFlags.territories.size > 0;
 
+      // 获取占领进度状态（用于渐进式蚕食视觉效果）
+      const conquestProgressStates = state.conquestProgressStates;
+
       const stats = this.mapRenderer.render(
         this.countries,
         territoryStates,
         colorMappings,
         commanders,
-        shouldIncrementalRender ? dirtyFlags.territories : undefined
+        shouldIncrementalRender ? dirtyFlags.territories : undefined,
+        conquestProgressStates
       );
 
       this.performanceMonitor.endMeasure('mapRender');

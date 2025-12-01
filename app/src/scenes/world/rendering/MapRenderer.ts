@@ -17,6 +17,7 @@ import type {
   RenderConfig,
   RenderStats,
 } from '../types/mapTypes';
+import type { TerritoryConquestState } from '@core/types';
 import { GraphicsPool } from './GraphicsPool';
 import { CoordinateTransformer } from '../utils/CoordinateTransformer';
 import { ColorTransitionManager, type IColorTransitionManager } from './ColorTransitionManager';
@@ -30,6 +31,7 @@ export class MapRenderer {
   private transitionManager!: IColorTransitionManager;
   private countryGraphics: Map<string, Phaser.GameObjects.Graphics> = new Map();
   private countryLabels: Map<string, Phaser.GameObjects.Text> = new Map();
+  private conquestOverlayGraphics: Map<string, Phaser.GameObjects.Graphics> = new Map();
   private previousColors: Map<string, number> = new Map();
   private commanders: Array<{ id: string; name: string }> = [];
   private stats: RenderStats = {
@@ -94,13 +96,15 @@ export class MapRenderer {
    * @param colorMappings - 颜色映射
    * @param commanders - 指挥官列表
    * @param dirtyTerritories - 可选：只渲染这些脏领土（增量渲染）
+   * @param conquestProgressStates - 可选：占领进度状态（用于渐进式蚕食视觉效果）
    */
   render(
     countries: Country[],
     territoryStates: Map<string, TerritoryState>,
     colorMappings: Map<string, CommanderColor>,
     commanders: Array<{ id: string; name: string }> = [],
-    dirtyTerritories?: Set<string>
+    dirtyTerritories?: Set<string>,
+    conquestProgressStates?: Map<string, TerritoryConquestState>
   ): RenderStats {
     // Guard: ensure scene is fully initialized
     if (!this.scene || !this.scene.add || !this.transformer) {
@@ -127,6 +131,11 @@ export class MapRenderer {
 
         this.renderCountry(country, state, colorMapping);
         this.renderCountryLabel(country, state, commanders);
+        
+        // 渲染占领进度覆盖层
+        const conquestState = conquestProgressStates?.get(country.id);
+        this.renderConquestOverlay(country, conquestState, colorMappings);
+        
         this.stats.countriesRendered++;
       });
 
@@ -145,6 +154,11 @@ export class MapRenderer {
 
       this.renderCountry(country, state, colorMapping);
       this.renderCountryLabel(country, state, commanders);
+      
+      // 渲染占领进度覆盖层
+      const conquestState = conquestProgressStates?.get(country.id);
+      this.renderConquestOverlay(country, conquestState, colorMappings);
+      
       this.stats.countriesRendered++;
     });
 
@@ -362,6 +376,139 @@ export class MapRenderer {
   }
 
   /**
+   * 渲染占领进度覆盖层
+   * 使用边界高亮 + 攻击方颜色渐变填充，表示领土正在被蚕食
+   */
+  private renderConquestOverlay(
+    country: Country,
+    conquestState: TerritoryConquestState | undefined,
+    colorMappings: Map<string, CommanderColor>
+  ): void {
+    // Guard: ensure scene is initialized
+    if (!this.scene || !this.transformer) {
+      return;
+    }
+
+    // 如果没有占领进度或不处于争夺状态，清除覆盖层
+    if (!conquestState || !conquestState.isContested || conquestState.progressMap.size === 0) {
+      const existingOverlay = this.conquestOverlayGraphics.get(country.id);
+      if (existingOverlay) {
+        existingOverlay.clear();
+      }
+      return;
+    }
+
+    // 获取或创建覆盖层图形对象
+    let overlayGraphics = this.conquestOverlayGraphics.get(country.id);
+    if (!overlayGraphics) {
+      overlayGraphics = this.scene.add.graphics();
+      overlayGraphics.setDepth(500); // 在国家图形之上，标签之下
+      this.conquestOverlayGraphics.set(country.id, overlayGraphics);
+    }
+
+    overlayGraphics.clear();
+
+    // 获取领先的攻击方
+    const leadingAttackerId = conquestState.leadingAttackerId;
+    if (!leadingAttackerId) return;
+
+    const leadingProgress = conquestState.leadingProgress ?? 0;
+    if (leadingProgress <= 0) return;
+
+    // 获取攻击方颜色
+    const attackerColor = colorMappings.get(leadingAttackerId);
+    if (!attackerColor) return;
+
+    const progressRatio = leadingProgress / 100;
+    const centroid = this.transformer.geoToScreen(country.centroid.x, country.centroid.y);
+
+    // 绘制攻击方颜色的填充层（从边界向中心收缩，表示"侵入"的部分）
+    country.geometry.coordinates.forEach((polygon) => {
+      polygon.forEach((ring) => {
+        const innerScale = 1 - progressRatio;
+        
+        // 只有当进度 > 5% 时才显示填充效果
+        if (progressRatio > 0.05) {
+          // 使用攻击方颜色填充边界区域
+          overlayGraphics!.fillStyle(attackerColor.primary, 0.7);
+          overlayGraphics!.beginPath();
+
+          // 画外圈（原始边界）
+          ring.forEach(([lon, lat], index) => {
+            const point = this.transformer.geoToScreen(lon, lat);
+            if (index === 0) {
+              overlayGraphics!.moveTo(point.x, point.y);
+            } else {
+              overlayGraphics!.lineTo(point.x, point.y);
+            }
+          });
+          overlayGraphics!.closePath();
+          overlayGraphics!.fillPath();
+
+          // 用防守方颜色覆盖内部区域，形成"环形"效果
+          if (innerScale > 0.1) {
+            const ownerColor = conquestState.currentOwnerId 
+              ? colorMappings.get(conquestState.currentOwnerId) 
+              : null;
+            const innerColor = ownerColor?.primary ?? 0x3a3a3a;
+            
+            overlayGraphics!.fillStyle(innerColor, 0.95);
+            overlayGraphics!.beginPath();
+
+            ring.forEach(([lon, lat], index) => {
+              const point = this.transformer.geoToScreen(lon, lat);
+              const scaledX = centroid.x + (point.x - centroid.x) * innerScale;
+              const scaledY = centroid.y + (point.y - centroid.y) * innerScale;
+              if (index === 0) {
+                overlayGraphics!.moveTo(scaledX, scaledY);
+              } else {
+                overlayGraphics!.lineTo(scaledX, scaledY);
+              }
+            });
+            overlayGraphics!.closePath();
+            overlayGraphics!.fillPath();
+          }
+
+          // 绘制进度分界线（白色虚线效果）
+          if (innerScale > 0.1) {
+            overlayGraphics!.lineStyle(2, 0xffffff, 0.9);
+            overlayGraphics!.beginPath();
+
+            ring.forEach(([lon, lat], index) => {
+              const point = this.transformer.geoToScreen(lon, lat);
+              const scaledX = centroid.x + (point.x - centroid.x) * innerScale;
+              const scaledY = centroid.y + (point.y - centroid.y) * innerScale;
+              if (index === 0) {
+                overlayGraphics!.moveTo(scaledX, scaledY);
+              } else {
+                overlayGraphics!.lineTo(scaledX, scaledY);
+              }
+            });
+            overlayGraphics!.closePath();
+            overlayGraphics!.strokePath();
+          }
+        }
+
+        // 绘制攻击方颜色的粗边框（表示正在被攻击）
+        overlayGraphics!.lineStyle(4, attackerColor.primary, 0.9);
+        overlayGraphics!.beginPath();
+
+        ring.forEach(([lon, lat], index) => {
+          const point = this.transformer.geoToScreen(lon, lat);
+          if (index === 0) {
+            overlayGraphics!.moveTo(point.x, point.y);
+          } else {
+            overlayGraphics!.lineTo(point.x, point.y);
+          }
+        });
+
+        overlayGraphics!.closePath();
+        overlayGraphics!.strokePath();
+      });
+    });
+  }
+
+  /**
    * Draw country border
    */
   private drawCountryBorder(
@@ -483,6 +630,12 @@ export class MapRenderer {
       label.destroy();
     });
     this.countryLabels.clear();
+
+    // Clear conquest overlay graphics
+    this.conquestOverlayGraphics.forEach((graphics) => {
+      graphics.destroy();
+    });
+    this.conquestOverlayGraphics.clear();
   }
 
   /**
