@@ -146,3 +146,34 @@
   background: rgba(255, 215, 0, 0.2);
   color: #ffd700;
 }
+
+/* Feature: 010-gradual-conquest - 占领进度条样式 */
+.conquest-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.conquest-progress .progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.conquest-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b 0%, #ffd700 50%, #4ecdc4 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.conquest-progress .progress-text {
+  font-size: 11px;
+  color: #ffd700;
+  font-weight: 600;
+  min-width: 35px;
+  text-align: right;
+}

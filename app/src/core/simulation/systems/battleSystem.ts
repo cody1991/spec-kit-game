@@ -7,6 +7,7 @@ import { logger } from '@/config/debug.config';
 import { selectTarget } from './targetSelector';
 import { getConquestConfig } from '@/config/conquest.config';
 import { DEFAULT_POWER_RECOVERY_CONFIG } from '@/config/powerRecovery.config';
+import { conquestProgressSystem } from './conquestProgressSystem';
 
 /**
  * Global battle event counter for generating unique IDs
@@ -198,6 +199,7 @@ export class BattleSystem implements System {
   /**
    * 队列：战斗
    * Feature: 008-territory-bonus - 应用领土加成到战斗计算
+   * Feature: 010-gradual-conquest - 使用渐进式占领系统
    * @param attackType - 攻击类型（相邻/远程）
    */
   private queueBattle(
@@ -244,7 +246,22 @@ export class BattleSystem implements System {
     const attackerPowerLoss = Math.floor(baseAttackerPowerLoss * powerLossMultiplier);
     const defenderPowerLoss = Math.floor(baseDefenderPowerLoss * powerLossMultiplier);
 
+    // Feature: 010-gradual-conquest - 使用渐进式占领系统
+    const isConquered = conquestProgressSystem.updateProgress(
+      territory.id,
+      attacker.id,
+      defender.id,
+      attackerWins,
+      attackPower,
+      defensePower
+    );
+
+    // 获取当前进度用于叙事
+    const currentProgress = store.getConquestProgress(territory.id, attacker.id);
+
     const narrativePrefix = attackType === 'remote' ? '远程' : '';
+    const progressText = isConquered ? '' : ` (占领进度: ${currentProgress}%)`;
+    
     const event: BattleEvent = {
       id: generateBattleEventId(),
       timestamp: new Date().toISOString(),
@@ -253,10 +270,12 @@ export class BattleSystem implements System {
       defenderId: defender.id,
       territoryId: territory.id,
       result: attackerWins ? 'success' : 'fail',
-      delta: { attackerPowerLoss, defenderPowerLoss },
+      delta: { attackerPowerLoss, defenderPowerLoss, conquestProgress: currentProgress },
       narrative: attackerWins
-        ? `${attacker.name} ${narrativePrefix}成功占领了 ${territory.name}!`
-        : `${defender.name} 成功守住了 ${territory.name}!`,
+        ? isConquered
+          ? `${attacker.name} ${narrativePrefix}完全占领了 ${territory.name}!`
+          : `${attacker.name} ${narrativePrefix}在 ${territory.name} 取得进展${progressText}`
+        : `${defender.name} 成功守住了 ${territory.name}${progressText}`,
       seed: Math.random().toString(36),
     };
 
@@ -276,7 +295,8 @@ export class BattleSystem implements System {
       ...defender.controlledTerritories,
     ];
 
-    if (attackerWins) {
+    // Feature: 010-gradual-conquest - 只有在完全占领时才转移领土
+    if (isConquered) {
       // 更新领土
       this.batch.territories.set(territory.id, {
         ownerId: attacker.id,
@@ -313,6 +333,8 @@ export class BattleSystem implements System {
       // 检查淘汰
       if (newDefenderTerritories.length === 0) {
         this.batch.eliminations.push(defender.id);
+        // 清除被淘汰指挥官的所有占领进度
+        conquestProgressSystem.onCommanderEliminated(defender.id);
         this.batch.events.push({
           ...event,
           type: 'elimination',
@@ -333,20 +355,36 @@ export class BattleSystem implements System {
         })
       );
     } else {
-      // 失败 - Feature: 009-unification-balance - 应用力量边界约束
+      // 未完全占领 - 只更新力量消耗和士气
       const minPower = DEFAULT_POWER_RECOVERY_CONFIG.minPower;
       
-      this.batch.commanders.set(attacker.id, {
-        ...attackerUpdate,
-        morale: Math.max(0, attackerMorale - 5),
-        currentPower: Math.max(minPower, attackerCurrentPower - attackerPowerLoss),
-      });
+      if (attackerWins) {
+        // 攻击胜利但未完全占领
+        this.batch.commanders.set(attacker.id, {
+          ...attackerUpdate,
+          morale: Math.min(100, attackerMorale + 2),
+          currentPower: Math.max(minPower, attackerCurrentPower - attackerPowerLoss),
+        });
 
-      this.batch.commanders.set(defender.id, {
-        ...defenderUpdate,
-        morale: Math.min(100, defenderMorale + 5),
-        currentPower: Math.max(minPower, defenderCurrentPower - defenderPowerLoss),
-      });
+        this.batch.commanders.set(defender.id, {
+          ...defenderUpdate,
+          morale: Math.max(0, defenderMorale - 3),
+          currentPower: Math.max(minPower, defenderCurrentPower - defenderPowerLoss),
+        });
+      } else {
+        // 防守成功
+        this.batch.commanders.set(attacker.id, {
+          ...attackerUpdate,
+          morale: Math.max(0, attackerMorale - 5),
+          currentPower: Math.max(minPower, attackerCurrentPower - attackerPowerLoss),
+        });
+
+        this.batch.commanders.set(defender.id, {
+          ...defenderUpdate,
+          morale: Math.min(100, defenderMorale + 5),
+          currentPower: Math.max(minPower, defenderCurrentPower - defenderPowerLoss),
+        });
+      }
     }
 
     this.batch.events.push(event);

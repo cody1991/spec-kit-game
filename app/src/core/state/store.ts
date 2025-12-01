@@ -13,12 +13,16 @@ import type {
   DirtyFlags,
   TerritoryBonusConfig,
   TerritoryBonus,
+  TerritoryConquestState,
+  ConquestProgressConfig,
+  ConquestProgressEntry,
 } from '../types';
 import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
 import { RingBuffer } from '@/utils/RingBuffer';
 import { DEFAULT_PERFORMANCE_CONFIG, type PerformanceConfig } from '@/config/performance.config';
 import { DEFAULT_TERRITORY_BONUS_CONFIG } from '@/config/territoryBonus.config';
 import { DEFAULT_ENDGAME_CONFIG, type EndgameConfig } from '@/config/endgame.config';
+import { DEFAULT_CONQUEST_PROGRESS_CONFIG } from '@/config/conquestProgress.config';
 import { logger } from '@/config/debug.config';
 
 /**
@@ -223,6 +227,21 @@ export interface GameState {
   // Endgame Mode Actions (Feature: 009-unification-balance)
   setEndgameMode: (active: boolean) => void;
   setEndgameConfig: (config: Partial<EndgameConfig>) => void;
+
+  // Conquest Progress State & Actions (Feature: 010-gradual-conquest)
+  conquestProgressStates: Map<string, TerritoryConquestState>;
+  conquestProgressConfig: ConquestProgressConfig;
+  updateConquestProgress: (
+    territoryId: string,
+    attackerId: string,
+    delta: number,
+    isDecay?: boolean
+  ) => void;
+  clearConquestProgress: (territoryId: string, attackerId: string) => void;
+  completeConquest: (territoryId: string, attackerId: string) => void;
+  getConquestProgress: (territoryId: string, attackerId: string) => number;
+  getContestedTerritories: () => string[];
+  setConquestProgressConfig: (config: Partial<ConquestProgressConfig>) => void;
 }
 
 /**
@@ -292,6 +311,10 @@ export const useGameStore = create<GameState>((set) => ({
   endgameTriggerTick: null,
   endgameConfig: { ...DEFAULT_ENDGAME_CONFIG },
 
+  // Conquest Progress State (Feature: 010-gradual-conquest)
+  conquestProgressStates: new Map(),
+  conquestProgressConfig: { ...DEFAULT_CONQUEST_PROGRESS_CONFIG },
+
   // Actions
   startGame: (seed: string) =>
     set((state) => ({
@@ -306,6 +329,7 @@ export const useGameStore = create<GameState>((set) => ({
       showVictoryModal: false,
       victorCommanderId: null,
       dirtyFlags: createInitialDirtyFlags(),
+      conquestProgressStates: new Map(), // Reset conquest progress on new game
     })),
 
   setCommanders: (commanders) => set({ commanders }),
@@ -561,6 +585,7 @@ export const useGameStore = create<GameState>((set) => ({
       factionStats: new Map(),
       isEndgameMode: false,
       endgameTriggerTick: null,
+      conquestProgressStates: new Map(), // Reset conquest progress
     }));
   },
 
@@ -706,5 +731,168 @@ export const useGameStore = create<GameState>((set) => ({
   setEndgameConfig: (config) =>
     set((state) => ({
       endgameConfig: { ...state.endgameConfig, ...config },
+    })),
+
+  // Conquest Progress Actions (Feature: 010-gradual-conquest)
+  updateConquestProgress: (territoryId, attackerId, delta, isDecay = false) =>
+    set((state) => {
+      const newStates = new Map(state.conquestProgressStates);
+      let conquestState = newStates.get(territoryId);
+
+      if (!conquestState) {
+        // Create new conquest state for this territory
+        const territoryState = state.territoryStates.get(territoryId);
+        conquestState = {
+          territoryId,
+          currentOwnerId: territoryState?.ownerId ?? null,
+          progressMap: new Map(),
+          isContested: false,
+          leadingAttackerId: null,
+          leadingProgress: 0,
+        };
+      }
+
+      // Get or create progress entry for this attacker
+      let entry = conquestState.progressMap.get(attackerId);
+      if (!entry) {
+        entry = {
+          attackerId,
+          progress: 0,
+          lastBattleTime: Date.now(),
+          battleCount: 0,
+        };
+      }
+
+      // Update progress
+      const newProgress = Math.max(0, Math.min(100, entry.progress + delta));
+      entry = {
+        ...entry,
+        progress: newProgress,
+        lastBattleTime: isDecay ? entry.lastBattleTime : Date.now(),
+        battleCount: isDecay ? entry.battleCount : entry.battleCount + 1,
+      };
+
+      // Update progress map
+      const newProgressMap = new Map(conquestState.progressMap);
+      if (newProgress <= 0) {
+        newProgressMap.delete(attackerId);
+      } else {
+        newProgressMap.set(attackerId, entry);
+      }
+
+      // Recalculate leading attacker
+      let leadingAttackerId: string | null = null;
+      let leadingProgress = 0;
+      newProgressMap.forEach((e, id) => {
+        if (e.progress > leadingProgress) {
+          leadingProgress = e.progress;
+          leadingAttackerId = id;
+        }
+      });
+
+      const updatedState: TerritoryConquestState = {
+        ...conquestState,
+        progressMap: newProgressMap,
+        isContested: newProgressMap.size > 0,
+        leadingAttackerId,
+        leadingProgress,
+      };
+
+      newStates.set(territoryId, updatedState);
+
+      // Mark territory as dirty for rendering
+      const newDirtyFlags = { ...state.dirtyFlags };
+      newDirtyFlags.territories.add(territoryId);
+
+      logger.log(
+        'CONQUEST_PROGRESS',
+        `📊 [store] Progress update: ${territoryId} | ${attackerId} | ${delta > 0 ? '+' : ''}${delta}% → ${newProgress}%`
+      );
+
+      return {
+        conquestProgressStates: newStates,
+        dirtyFlags: newDirtyFlags,
+      };
+    }),
+
+  clearConquestProgress: (territoryId, attackerId) =>
+    set((state) => {
+      const newStates = new Map(state.conquestProgressStates);
+      const conquestState = newStates.get(territoryId);
+
+      if (!conquestState) return {};
+
+      const newProgressMap = new Map(conquestState.progressMap);
+      newProgressMap.delete(attackerId);
+
+      // Recalculate leading attacker
+      let leadingAttackerId: string | null = null;
+      let leadingProgress = 0;
+      newProgressMap.forEach((e, id) => {
+        if (e.progress > leadingProgress) {
+          leadingProgress = e.progress;
+          leadingAttackerId = id;
+        }
+      });
+
+      const updatedState: TerritoryConquestState = {
+        ...conquestState,
+        progressMap: newProgressMap,
+        isContested: newProgressMap.size > 0,
+        leadingAttackerId,
+        leadingProgress,
+      };
+
+      newStates.set(territoryId, updatedState);
+
+      return { conquestProgressStates: newStates };
+    }),
+
+  completeConquest: (territoryId, attackerId) =>
+    set((state) => {
+      const newStates = new Map(state.conquestProgressStates);
+
+      // Clear all conquest progress for this territory
+      const clearedState: TerritoryConquestState = {
+        territoryId,
+        currentOwnerId: attackerId,
+        progressMap: new Map(),
+        isContested: false,
+        leadingAttackerId: null,
+        leadingProgress: 0,
+      };
+
+      newStates.set(territoryId, clearedState);
+
+      logger.log(
+        'CONQUEST_PROGRESS',
+        `🏆 [store] Conquest complete: ${territoryId} → ${attackerId}`
+      );
+
+      return { conquestProgressStates: newStates };
+    }),
+
+  getConquestProgress: (territoryId, attackerId) => {
+    const state = useGameStore.getState();
+    const conquestState = state.conquestProgressStates.get(territoryId);
+    if (!conquestState) return 0;
+    const entry = conquestState.progressMap.get(attackerId);
+    return entry?.progress ?? 0;
+  },
+
+  getContestedTerritories: () => {
+    const state = useGameStore.getState();
+    const contested: string[] = [];
+    state.conquestProgressStates.forEach((conquestState, territoryId) => {
+      if (conquestState.isContested) {
+        contested.push(territoryId);
+      }
+    });
+    return contested;
+  },
+
+  setConquestProgressConfig: (config) =>
+    set((state) => ({
+      conquestProgressConfig: { ...state.conquestProgressConfig, ...config },
     })),
 }));

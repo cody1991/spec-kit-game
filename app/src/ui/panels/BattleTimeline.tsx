@@ -9,6 +9,10 @@ function EventItem({
   event: any;
   getCommanderName: (id?: string) => string;
 }) {
+  // Feature: 010-gradual-conquest - 显示占领进度
+  const conquestProgress = event.delta?.conquestProgress;
+  const hasProgress = typeof conquestProgress === 'number' && conquestProgress > 0;
+
   return (
     <div className={`event-item event-${event.type}`}>
       <div className="event-time">{new Date(event.timestamp).toLocaleTimeString()}</div>
@@ -18,6 +22,18 @@ function EventItem({
           <span className="attacker">{getCommanderName(event.attackerId)}</span>
           <span className="vs">VS</span>
           <span className="defender">{getCommanderName(event.defenderId)}</span>
+        </div>
+      )}
+      {/* Feature: 010-gradual-conquest - 显示占领进度条 */}
+      {hasProgress && (
+        <div className="conquest-progress">
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${conquestProgress}%` }}
+            />
+          </div>
+          <span className="progress-text">{conquestProgress}%</span>
         </div>
       )}
       <div className={`event-result result-${event.result}`}>{event.result}</div>

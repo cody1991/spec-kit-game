@@ -3,6 +3,7 @@
  *
  * Displays detailed information about a selected country/territory
  * Shows: country name, owner (commander), troops, resources, defense
+ * Feature: 010-gradual-conquest - 显示占领进度
  */
 
 import { useGameStore } from '@core/state/store';
@@ -30,6 +31,8 @@ export function CountryDetailPanel() {
   const territories = useGameStore((state) => state.territories);
   const territoryStates = useGameStore((state) => state.territoryStates);
   const colorMappings = useGameStore((state) => state.colorMappings);
+  // Feature: 010-gradual-conquest - 获取占领进度状态
+  const conquestProgressStates = useGameStore((state) => state.conquestProgressStates);
 
   if (!selectedTerritoryId) {
     return null;
@@ -52,6 +55,14 @@ export function CountryDetailPanel() {
   const owner = ownerId ? commanders.find((c) => c.id === ownerId) : null;
 
   const colorMapping = ownerId ? colorMappings.get(ownerId) : null;
+
+  // Feature: 010-gradual-conquest - 获取占领进度
+  const conquestState = conquestProgressStates.get(selectedTerritoryId);
+  const isContested = conquestState?.isContested ?? false;
+  const leadingAttacker = conquestState?.leadingAttackerId
+    ? commanders.find((c) => c.id === conquestState.leadingAttackerId)
+    : null;
+  const leadingProgress = conquestState?.leadingProgress ?? 0;
 
   return (
     <div className="country-detail-panel">
@@ -93,6 +104,33 @@ export function CountryDetailPanel() {
           <div className="info-section">
             <div className="info-label">国土面积</div>
             <div className="info-value area-value">{formatArea(countryArea)}</div>
+          </div>
+        )}
+
+        {/* Feature: 010-gradual-conquest - 占领进度显示 */}
+        {isContested && (
+          <div className="info-section conquest-progress-section">
+            <div className="info-label">占领进度</div>
+            <div className="info-value">
+              {leadingAttacker && (
+                <div className="leading-attacker">
+                  <span className="attacker-name">{leadingAttacker.name}</span>
+                  <span className="attacker-label">正在蚕食</span>
+                </div>
+              )}
+              <div className="conquest-progress-bar">
+                <div 
+                  className="conquest-progress-fill" 
+                  style={{ width: `${leadingProgress}%` }}
+                />
+              </div>
+              <span className="conquest-progress-value">{leadingProgress}%</span>
+            </div>
+            {conquestState && conquestState.progressMap.size > 1 && (
+              <div className="multiple-attackers-hint">
+                ⚔️ {conquestState.progressMap.size} 个势力争夺中
+              </div>
+            )}
           </div>
         )}
 

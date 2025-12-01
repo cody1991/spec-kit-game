@@ -5,6 +5,7 @@ import { AllianceSystem } from './systems/allianceSystem';
 import { VictorySystem } from './systems/victorySystem';
 import { PowerRecoverySystem } from './systems/powerRecoverySystem';
 import { EndgameManager } from './systems/endgameManager';
+import { ConquestProgressSystem } from './systems/conquestProgressSystem';
 import { logger } from '@/config/debug.config';
 
 export interface System {
@@ -34,6 +35,7 @@ export class TickScheduler {
     this.systems = [
       new EndgameManager(), // Feature: 009-unification-balance - 先检测决战模式
       new BattleSystem(),
+      new ConquestProgressSystem(), // Feature: 010-gradual-conquest - 进度衰减检查
       new LogisticsSystem(),
       new AllianceSystem(),
       new PowerRecoverySystem(), // Feature: 009-unification-balance

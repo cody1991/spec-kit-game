@@ -121,7 +121,7 @@ private getContestedColor(
 ### 单元测试
 
 ```bash
-pnpm test tests/unit/conquestProgress.test.ts
+pnpm vitest run tests/unit/conquestProgress.spec.ts
 ```
 
 ### 手动测试

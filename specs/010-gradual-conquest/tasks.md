@@ -26,10 +26,10 @@
 
 **Purpose**: 配置文件和类型定义，为所有用户故事提供基础
 
-- [ ] T001 [P] 创建占领进度配置文件 `app/src/config/conquestProgress.config.ts`
-- [ ] T002 [P] 扩展 Territory 类型定义，添加 conquestState 字段 `app/src/core/types.ts`
-- [ ] T003 [P] 添加 ConquestProgressEntry、TerritoryConquestState、ConquestProgressConfig 类型 `app/src/core/types.ts`
-- [ ] T004 [P] 添加 ConquestProgressEvent 事件类型 `app/src/core/events/eventTypes.ts`
+- [X] T001 [P] 创建占领进度配置文件 `app/src/config/conquestProgress.config.ts`
+- [X] T002 [P] 扩展 Territory 类型定义，添加 conquestState 字段 `app/src/core/types.ts`
+- [X] T003 [P] 添加 ConquestProgressEntry、TerritoryConquestState、ConquestProgressConfig 类型 `app/src/core/types.ts`
+- [X] T004 [P] 添加 ConquestProgressEvent 事件类型 `app/src/core/events/eventTypes.ts`
 
 ---
 
@@ -39,11 +39,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 扩展 Zustand store，添加 conquestProgressStates Map 和相关 actions `app/src/core/state/store.ts`
-- [ ] T006 实现 ConquestProgressSystem 基础框架（System 接口） `app/src/core/simulation/systems/conquestProgressSystem.ts`
-- [ ] T007 实现进度计算核心函数 calculateProgressDelta() `app/src/core/simulation/systems/conquestProgressSystem.ts`
-- [ ] T008 在 tickScheduler 中注册 ConquestProgressSystem `app/src/core/simulation/tickScheduler.ts`
-- [ ] T009 [P] 编写进度计算单元测试 `tests/unit/conquestProgress.test.ts`
+- [X] T005 扩展 Zustand store，添加 conquestProgressStates Map 和相关 actions `app/src/core/state/store.ts`
+- [X] T006 实现 ConquestProgressSystem 基础框架（System 接口） `app/src/core/simulation/systems/conquestProgressSystem.ts`
+- [X] T007 实现进度计算核心函数 calculateProgressDelta() `app/src/core/simulation/systems/conquestProgressSystem.ts`
+- [X] T008 在 tickScheduler 中注册 ConquestProgressSystem `app/src/core/simulation/tickScheduler.ts`
+- [X] T009 [P] 编写进度计算单元测试 `tests/unit/conquestProgress.test.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -57,13 +57,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] 实现 updateProgress() 方法 - 战斗胜利时增加进度 `app/src/core/simulation/systems/conquestProgressSystem.ts`
-- [ ] T011 [US1] 实现 completeConquest() 方法 - 进度达100%时转移领土 `app/src/core/simulation/systems/conquestProgressSystem.ts`
-- [ ] T012 [US1] 修改 BattleSystem.queueBattle() - 调用进度系统而非直接更换所有者 `app/src/core/simulation/systems/battleSystem.ts`
-- [ ] T013 [US1] 实现防守成功时减少进度的逻辑 `app/src/core/simulation/systems/conquestProgressSystem.ts`
-- [ ] T014 [US1] 添加进度变化事件发射 globalEventBus.emit('conquest:progress-changed') `app/src/core/simulation/systems/conquestProgressSystem.ts`
-- [ ] T015 [US1] 更新战斗日志显示进度变化 `app/src/ui/panels/BattleTimeline.tsx`
-- [ ] T016 [P] [US1] 编写 US1 集成测试 - 验证进度增加和领土转移 `tests/integration/gradualConquest.test.ts`
+- [X] T010 [US1] 实现 updateProgress() 方法 - 战斗胜利时增加进度 `app/src/core/simulation/systems/conquestProgressSystem.ts`
+- [X] T011 [US1] 实现 completeConquest() 方法 - 进度达100%时转移领土 `app/src/core/simulation/systems/conquestProgressSystem.ts`
+- [X] T012 [US1] 修改 BattleSystem.queueBattle() - 调用进度系统而非直接更换所有者 `app/src/core/simulation/systems/battleSystem.ts`
+- [X] T013 [US1] 实现防守成功时减少进度的逻辑 `app/src/core/simulation/systems/conquestProgressSystem.ts`
+- [X] T014 [US1] 添加进度变化事件发射 globalEventBus.emit('conquest:progress-changed') `app/src/core/simulation/systems/conquestProgressSystem.ts`
+- [X] T015 [US1] 更新战斗日志显示进度变化 `app/src/ui/panels/BattleTimeline.tsx`
+- [X] T016 [P] [US1] 编写 US1 集成测试 - 验证进度增加和领土转移 `tests/unit/conquestProgress.spec.ts`
 
 **Checkpoint**: User Story 1 完成 - 可独立测试渐进式占领机制
 

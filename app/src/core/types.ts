@@ -331,3 +331,120 @@ export interface ContiguityAnalysis {
   /** 最大连通分量占比 */
   largestRatio: number;
 }
+
+// ============================================================================
+// Conquest Progress Types (Feature: 010-gradual-conquest)
+// ============================================================================
+
+/**
+ * 单个攻击方对单个领土的占领进度记录
+ */
+export interface ConquestProgressEntry {
+  /** 攻击方指挥官ID */
+  attackerId: string;
+  /** 当前进度 (0-100) */
+  progress: number;
+  /** 最后战斗时间戳 (ms) */
+  lastBattleTime: number;
+  /** 累计战斗次数 */
+  battleCount: number;
+}
+
+/**
+ * 领土的完整占领状态
+ */
+export interface TerritoryConquestState {
+  /** 领土ID */
+  territoryId: string;
+  /** 当前所有者ID */
+  currentOwnerId: string | null;
+  /** 各攻击方的进度映射 */
+  progressMap: Map<string, ConquestProgressEntry>;
+  /** 是否处于争夺状态 */
+  isContested: boolean;
+  /** 最高进度的攻击方ID */
+  leadingAttackerId: string | null;
+  /** 最高进度值 */
+  leadingProgress: number;
+}
+
+/**
+ * 占领进度配置
+ */
+export interface ConquestProgressConfig {
+  /** 小国面积阈值 (km²) */
+  smallCountryThreshold: number;
+  /** 大国面积阈值 (km²) */
+  largeCountryThreshold: number;
+
+  /** 小国进度增量 (攻击胜利) */
+  smallCountryProgressGain: number;
+  /** 中国进度增量 */
+  mediumCountryProgressGain: number;
+  /** 大国进度增量 */
+  largeCountryProgressGain: number;
+
+  /** 小国进度减量 (防守成功) */
+  smallCountryProgressLoss: number;
+  /** 中国进度减量 */
+  mediumCountryProgressLoss: number;
+  /** 大国进度减量 */
+  largeCountryProgressLoss: number;
+
+  /** 实力优势乘数 (攻击方实力 ≥ 2x 防守方) */
+  powerAdvantageMultiplier: number;
+  /** 实力劣势乘数 (攻击方实力 ≤ 0.5x 防守方) */
+  powerDisadvantageMultiplier: number;
+
+  /** 决战模式进度乘数 */
+  endgameModeMultiplier: number;
+
+  /** 进度衰减速率 (每分钟) */
+  decayRatePerMinute: number;
+  /** 衰减检查间隔 (tick数) */
+  decayCheckInterval: number;
+}
+
+/**
+ * 进度计算结果
+ */
+export interface ProgressCalculationResult {
+  /** 基础进度变化量 */
+  baseProgress: number;
+  /** 应用乘数后的进度变化量 */
+  finalProgress: number;
+  /** 应用的乘数 */
+  multiplier: number;
+  /** 领土大小分类 */
+  sizeCategory: 'small' | 'medium' | 'large';
+}
+
+/**
+ * 进度变化事件
+ */
+export interface ConquestProgressEvent {
+  /** 事件类型 */
+  type: 'progress_increase' | 'progress_decrease' | 'progress_decay' | 'conquest_complete';
+  /** 领土ID */
+  territoryId: string;
+  /** 领土名称 */
+  territoryName: string;
+  /** 攻击方ID */
+  attackerId: string;
+  /** 攻击方名称 */
+  attackerName: string;
+  /** 防守方ID */
+  defenderId: string | null;
+  /** 防守方名称 */
+  defenderName: string | null;
+  /** 变化前进度 */
+  previousProgress: number;
+  /** 变化后进度 */
+  newProgress: number;
+  /** 变化量 */
+  delta: number;
+  /** 时间戳 */
+  timestamp: string;
+  /** 叙事文本 */
+  narrative: string;
+}

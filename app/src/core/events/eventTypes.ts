@@ -8,7 +8,11 @@ export type GameEventType =
   | 'territory:captured'
   | 'commander:eliminated'
   | 'alliance:formed'
-  | 'alliance:broken';
+  | 'alliance:broken'
+  // Feature: 010-gradual-conquest - 占领进度事件
+  | 'conquest:progress-changed'
+  | 'conquest:territory-transferred'
+  | 'conquest:decay-applied';
 
 export interface GameEvent<T = unknown> {
   type: GameEventType;
