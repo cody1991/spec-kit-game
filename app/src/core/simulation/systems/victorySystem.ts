@@ -10,9 +10,9 @@ import { logger } from '@/config/debug.config';
  *
  * 胜利条件：
  * 1. 领土胜利：统一所有国家（100% 领土）
- * 2. 消灭胜利：消灭所有对手 且 占领所有领土
+ * 2. 消灭胜利：消灭所有对手（等同于占领所有领土）
  * 
- * 注意：必须占领所有领土才能胜利，包括中立国家
+ * 注意：游戏开始时所有领土都已分配给指挥官，没有中立领土
  */
 export class VictorySystem implements System {
   name = 'VictorySystem';
@@ -30,7 +30,7 @@ export class VictorySystem implements System {
       const controlledCount = commander.controlledTerritories.length;
       const controlRatio = totalTerritories > 0 ? controlledCount / totalTerritories : 0;
       
-      // 胜利条件：占领 100% 领土（包括所有中立国家）
+      // 胜利条件：占领 100% 领土
       if (controlRatio >= config.territoryVictoryThreshold) {
         const victoryType = activeCommanders.length === 1 ? 'elimination' : 'territory';
         logger.log(
@@ -42,8 +42,7 @@ export class VictorySystem implements System {
       }
     }
 
-    // 注意：即使只剩1个活跃势力，如果还有中立领土未占领，也不算胜利
-    // 这确保了必须真正统一所有国家才能获胜
+    // 当只剩1个活跃势力时，他必然占领了所有领土
   }
 
   private declareVictory(commanderId: string, victoryType: 'territory' | 'elimination'): void {

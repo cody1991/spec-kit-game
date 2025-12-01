@@ -98,16 +98,91 @@ export function createInitialWorld(options: InitialWorldOptions) {
     console.warn(`⚠️ Excluded ${excludedCount} commanders without territories`);
   }
 
+  // 🔧 分配所有中立领土给指挥官，确保没有中立领土
+  distributeNeutralTerritories(territories, validCommanders, seed);
+
   console.log(`✅ Created ${validCommanders.length} commanders with country-based territories`);
   console.log(
     `   Sample commander territories:`,
     validCommanders.slice(0, 3).map((c) => `${c.name}: ${c.controlledTerritories.join(', ')}`)
   );
 
+  // 验证没有中立领土
+  const neutralCount = territories.filter((t) => !t.ownerId).length;
+  if (neutralCount > 0) {
+    console.warn(`⚠️ Warning: ${neutralCount} neutral territories remaining`);
+  } else {
+    console.log(`✅ All territories assigned - no neutral territories`);
+  }
+
   return {
     commanders: validCommanders,
     territories,
   };
+}
+
+/**
+ * 将所有中立领土分配给指挥官
+ * 优先分配给相邻领土的拥有者，否则随机分配
+ */
+function distributeNeutralTerritories(
+  territories: Territory[],
+  commanders: HistoricalCommander[],
+  seed: number
+): void {
+  const rng = seedRandom(seed + 9999);
+  
+  // 循环直到没有中立领土
+  let iterations = 0;
+  const maxIterations = territories.length * 2; // 防止无限循环
+  
+  while (iterations < maxIterations) {
+    const neutralTerritories = territories.filter((t) => !t.ownerId);
+    if (neutralTerritories.length === 0) break;
+    
+    let assigned = false;
+    
+    for (const neutral of neutralTerritories) {
+      // 查找相邻的已占领领土
+      const adjacentOwners = new Set<string>();
+      for (const adjId of neutral.adjacentIds) {
+        const adjTerritory = territories.find((t) => t.id === adjId);
+        if (adjTerritory?.ownerId) {
+          adjacentOwners.add(adjTerritory.ownerId);
+        }
+      }
+      
+      let newOwner: string | null = null;
+      
+      if (adjacentOwners.size > 0) {
+        // 随机选择一个相邻的拥有者
+        const owners = Array.from(adjacentOwners);
+        newOwner = owners[Math.floor(rng() * owners.length)];
+      } else {
+        // 没有相邻拥有者，随机分配给一个指挥官
+        if (commanders.length > 0) {
+          const randomCommander = commanders[Math.floor(rng() * commanders.length)];
+          newOwner = randomCommander.id;
+        }
+      }
+      
+      if (newOwner) {
+        neutral.ownerId = newOwner;
+        neutral.garrison = 20 + Math.floor(rng() * 30); // 20-50
+        neutral.stability = 40 + Math.floor(rng() * 30); // 40-70
+        
+        // 更新指挥官的控制领土列表
+        const commander = commanders.find((c) => c.id === newOwner);
+        if (commander && !commander.controlledTerritories.includes(neutral.id)) {
+          commander.controlledTerritories.push(neutral.id);
+        }
+        assigned = true;
+      }
+    }
+    
+    if (!assigned) break; // 无法分配更多领土
+    iterations++;
+  }
 }
 
 /**

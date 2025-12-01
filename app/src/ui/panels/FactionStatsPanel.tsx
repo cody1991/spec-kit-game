@@ -17,11 +17,17 @@ function formatArea(area: number): string {
 }
 
 /**
- * 格式化胜率显示
+ * 格式化战斗胜率显示
  * @param winRate 胜率 (0-1之间的数)
- * @returns 格式化字符串（例如：\"75.5%\"）
+ * @param wins 战胜次数
+ * @param losses 战败次数
+ * @returns 格式化字符串（例如："75.5%" 或 "-" 如果没有战斗）
  */
-function formatWinRate(winRate: number): string {
+function formatWinRate(winRate: number, wins: number, losses: number): string {
+  const total = wins + losses;
+  if (total === 0) {
+    return '-'; // 没有战斗记录
+  }
   return `${(winRate * 100).toFixed(1)}%`;
 }
 
@@ -93,7 +99,7 @@ export function FactionStatsPanel() {
               <th>面积</th>
               <th>攻击加成</th>
               <th>防御加成</th>
-              <th>胜率</th>
+              <th>战斗胜率</th>
             </tr>
           </thead>
           <tbody>
@@ -134,7 +140,7 @@ export function FactionStatsPanel() {
                         ? `+${(faction.territoryBonus.totalDefenseBonus * 100).toFixed(1)}%`
                         : '-'}
                     </td>
-                    <td className="win-rate">{formatWinRate(faction.winRate)}</td>
+                    <td className="win-rate">{formatWinRate(faction.winRate, faction.wins, faction.losses)}</td>
                   </tr>
                 );
               })
