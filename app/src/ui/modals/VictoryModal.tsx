@@ -2,10 +2,40 @@ import { useGameStore } from '@core/state/store';
 import { restartSession } from '@core/session/startSession';
 import './VictoryModal.css';
 
+/**
+ * 获取胜利类型信息
+ * Feature: 009-unification-balance
+ */
+function getVictoryTypeInfo(eventLog: any[], victorCommanderId: string, territories: any[], controlledCount: number) {
+  // 查找胜利事件
+  const victoryEvent = eventLog.find(
+    (e) => e.type === 'victory' && e.attackerId === victorCommanderId
+  );
+  
+  const victoryType = victoryEvent?.delta?.victoryType;
+  const totalTerritories = territories.length || 1;
+  const ratio = ((controlledCount / totalTerritories) * 100).toFixed(1);
+  
+  if (victoryType === 'territory') {
+    return {
+      type: '领土胜利',
+      emoji: '🗺️',
+      description: `占领了 ${ratio}% 的领土`,
+    };
+  } else {
+    return {
+      type: '消灭胜利',
+      emoji: '⚔️',
+      description: '消灭了所有对手',
+    };
+  }
+}
+
 export function VictoryModal() {
   const showVictoryModal = useGameStore((state) => state.showVictoryModal);
   const victorCommanderId = useGameStore((state) => state.victorCommanderId);
   const commanders = useGameStore((state) => state.commanders);
+  const territories = useGameStore((state) => state.territories);
   const eventLog = useGameStore((state) => state.eventLog);
   const elapsedMs = useGameStore((state) => state.elapsedMs);
   const seed = useGameStore((state) => state.seed);
@@ -24,11 +54,21 @@ export function VictoryModal() {
   const elapsedMinutes = Math.floor(elapsedMs / 60000);
   const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000);
 
+  // Feature: 009-unification-balance - 胜利类型信息
+  const victoryInfo = getVictoryTypeInfo(
+    eventLog,
+    victorCommanderId,
+    territories,
+    victor.controlledTerritories.length
+  );
+
   const handleCopyReport = () => {
     const report = `
 历史征服模拟器 - 战局报告
 
 🏆 胜利者: ${victor.name}
+${victoryInfo.emoji} 胜利类型: ${victoryInfo.type}
+📝 ${victoryInfo.description}
 ⏱️ 用时: ${elapsedMinutes}分${elapsedSeconds}秒
 ⚔️ 总战役数: ${totalBattles}
 🎯 胜利战役: ${victorBattles}
@@ -45,7 +85,7 @@ export function VictoryModal() {
   };
 
   return (
-    <div className="victory-modal-overlay" onClick={closeVictoryModal}>
+    <div className="victory-modal-overlay" onClick={closeVictoryModal} data-testid="victory-modal">
       <div className="victory-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={closeVictoryModal} aria-label="关闭">
           ✕
@@ -57,6 +97,13 @@ export function VictoryModal() {
         <div className="victory-content">
           <div className="victor-name">{victor.name}</div>
           <div className="victor-subtitle">统一了世界！</div>
+          
+          {/* Feature: 009-unification-balance - 显示胜利类型 */}
+          <div className="victory-type">
+            <span className="victory-type-emoji">{victoryInfo.emoji}</span>
+            <span className="victory-type-text">{victoryInfo.type}</span>
+            <span className="victory-type-desc">{victoryInfo.description}</span>
+          </div>
 
           <div className="stats-grid">
             <div className="stat-box">

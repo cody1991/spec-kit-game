@@ -6,6 +6,7 @@ import { createCountryConquestTelemetry } from '@/services/telemetry/countryConq
 import { logger } from '@/config/debug.config';
 import { selectTarget } from './targetSelector';
 import { getConquestConfig } from '@/config/conquest.config';
+import { DEFAULT_POWER_RECOVERY_CONFIG } from '@/config/powerRecovery.config';
 
 /**
  * Global battle event counter for generating unique IDs
@@ -96,8 +97,13 @@ export class BattleSystem implements System {
       }
     }
 
-    // 限制每 tick 最多处理的战斗数量（增加到 20，因为有 50 个指挥官）
-    const MAX_BATTLES_PER_TICK = 20;
+    // 限制每 tick 最多处理的战斗数量
+    // Feature: 009-unification-balance - 决战模式下战斗频率翻倍
+    const { isEndgameMode, endgameConfig } = state;
+    const baseMaxBattles = 20;
+    const MAX_BATTLES_PER_TICK = isEndgameMode 
+      ? Math.floor(baseMaxBattles * endgameConfig.battleFrequencyMultiplier)
+      : baseMaxBattles;
     let battlesThisTick = 0;
 
     // 🔧 Feature 007: 使用概率化目标选择（85% 相邻，15% 远程）
@@ -201,7 +207,9 @@ export class BattleSystem implements System {
     attackType: 'adjacent' | 'remote' = 'adjacent'
   ): void {
     // Feature: 008-territory-bonus - 获取领土加成
+    // Feature: 009-unification-balance - 决战模式状态
     const store = useGameStore.getState();
+    const { isEndgameMode, endgameConfig } = store;
     const attackerStats = store.factionStats.get(attacker.id);
     const defenderStats = store.factionStats.get(defender.id);
 
@@ -227,8 +235,14 @@ export class BattleSystem implements System {
     );
 
     const attackerWins = attackPower > defensePower * (0.8 + Math.random() * 0.4);
-    const attackerPowerLoss = Math.floor(Math.random() * 10) + 5;
-    const defenderPowerLoss = Math.floor(Math.random() * 15) + 10;
+    
+    // Feature: 009-unification-balance - 决战模式下力量消耗减半
+    const powerLossMultiplier = isEndgameMode ? endgameConfig.powerLossMultiplier : 1;
+    
+    const baseAttackerPowerLoss = Math.floor(Math.random() * 10) + 5;
+    const baseDefenderPowerLoss = Math.floor(Math.random() * 15) + 10;
+    const attackerPowerLoss = Math.floor(baseAttackerPowerLoss * powerLossMultiplier);
+    const defenderPowerLoss = Math.floor(baseDefenderPowerLoss * powerLossMultiplier);
 
     const narrativePrefix = attackType === 'remote' ? '远程' : '';
     const event: BattleEvent = {
@@ -270,19 +284,29 @@ export class BattleSystem implements System {
         stability: Math.max(20, territory.stability - 30),
       });
 
-      // 更新攻击方
+      // Feature: 009-unification-balance - 胜利额外恢复力量
+      const victoryBonus = DEFAULT_POWER_RECOVERY_CONFIG.victoryBonus;
+      const maxPower = DEFAULT_POWER_RECOVERY_CONFIG.maxPower;
+      const minPower = DEFAULT_POWER_RECOVERY_CONFIG.minPower;
+
+      // 更新攻击方（胜利额外恢复）
+      const newAttackerPower = Math.min(
+        maxPower,
+        Math.max(minPower, attackerCurrentPower - attackerPowerLoss + victoryBonus)
+      );
       this.batch.commanders.set(attacker.id, {
         ...attackerUpdate,
         controlledTerritories: [...attackerTerritories, territory.id],
-        currentPower: Math.max(0, attackerCurrentPower - attackerPowerLoss),
+        currentPower: newAttackerPower,
       });
 
       // 更新防守方
       const newDefenderTerritories = defenderTerritories.filter((t) => t !== territory.id);
+      const newDefenderPower = Math.max(minPower, defenderCurrentPower - defenderPowerLoss);
       this.batch.commanders.set(defender.id, {
         ...defenderUpdate,
         controlledTerritories: newDefenderTerritories,
-        currentPower: Math.max(0, defenderCurrentPower - defenderPowerLoss),
+        currentPower: newDefenderPower,
         ...(newDefenderTerritories.length === 0 ? { status: 'eliminated' as const } : {}),
       });
 
@@ -309,17 +333,19 @@ export class BattleSystem implements System {
         })
       );
     } else {
-      // 失败
+      // 失败 - Feature: 009-unification-balance - 应用力量边界约束
+      const minPower = DEFAULT_POWER_RECOVERY_CONFIG.minPower;
+      
       this.batch.commanders.set(attacker.id, {
         ...attackerUpdate,
         morale: Math.max(0, attackerMorale - 5),
-        currentPower: Math.max(0, attackerCurrentPower - attackerPowerLoss),
+        currentPower: Math.max(minPower, attackerCurrentPower - attackerPowerLoss),
       });
 
       this.batch.commanders.set(defender.id, {
         ...defenderUpdate,
         morale: Math.min(100, defenderMorale + 5),
-        currentPower: Math.max(0, defenderCurrentPower - defenderPowerLoss),
+        currentPower: Math.max(minPower, defenderCurrentPower - defenderPowerLoss),
       });
     }
 

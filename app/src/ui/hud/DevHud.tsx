@@ -1,6 +1,20 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useGameStore } from '@core/state/store';
 import './DevHud.css';
+
+/**
+ * 计算游戏阶段
+ * Feature: 009-unification-balance
+ */
+function getGamePhase(activeCount: number, isEndgameMode: boolean): { phase: string; color: string; emoji: string } {
+  if (isEndgameMode || activeCount <= 3) {
+    return { phase: '决战', color: '#ef4444', emoji: '⚔️' };
+  } else if (activeCount <= 10) {
+    return { phase: '中期', color: '#facc15', emoji: '🏹' };
+  } else {
+    return { phase: '早期', color: '#4ade80', emoji: '🌱' };
+  }
+}
 
 export function DevHud() {
   const performanceMetrics = useGameStore((state) => state.performanceMetrics);
@@ -8,7 +22,9 @@ export function DevHud() {
   const setPerformanceConfig = useGameStore((state) => state.setPerformanceConfig);
   const tick = useGameStore((state) => state.tick);
   const commanders = useGameStore((state) => state.commanders);
+  const territories = useGameStore((state) => state.territories);
   const eventLog = useGameStore((state) => state.eventLog);
+  const isEndgameMode = useGameStore((state) => state.isEndgameMode);
   const [show, setShow] = useState(false);
   const [memoryUsage, setMemoryUsage] = useState(0);
 
@@ -55,6 +71,31 @@ export function DevHud() {
   }
 
   const activeCommanders = commanders.filter((c) => c.status === 'active').length;
+
+  // Feature: 009-unification-balance - 游戏阶段
+  const gamePhase = useMemo(
+    () => getGamePhase(activeCommanders, isEndgameMode),
+    [activeCommanders, isEndgameMode]
+  );
+
+  // 计算领先势力信息
+  const leadingFaction = useMemo(() => {
+    const active = commanders.filter((c) => c.status === 'active');
+    if (active.length === 0) return null;
+    
+    const sorted = [...active].sort(
+      (a, b) => b.controlledTerritories.length - a.controlledTerritories.length
+    );
+    const leader = sorted[0];
+    const totalTerritories = territories.length || 1;
+    const ratio = (leader.controlledTerritories.length / totalTerritories) * 100;
+    
+    return {
+      name: leader.name,
+      territories: leader.controlledTerritories.length,
+      ratio: ratio.toFixed(1),
+    };
+  }, [commanders, territories]);
 
   // FPS 状态颜色
   const fpsColor =
@@ -108,6 +149,13 @@ export function DevHud() {
           <div className="hud-section-title">游戏状态</div>
 
           <div className="hud-row">
+            <span className="hud-label">游戏阶段:</span>
+            <span className="hud-value" style={{ color: gamePhase.color }} data-testid="game-phase-indicator">
+              {gamePhase.emoji} {gamePhase.phase}
+            </span>
+          </div>
+
+          <div className="hud-row">
             <span className="hud-label">Tick:</span>
             <span className="hud-value">{tick}</span>
           </div>
@@ -121,6 +169,22 @@ export function DevHud() {
             <span className="hud-label">事件数:</span>
             <span className="hud-value">{eventLog.length}</span>
           </div>
+
+          {leadingFaction && (
+            <div className="hud-row">
+              <span className="hud-label">领先势力:</span>
+              <span className="hud-value">
+                {leadingFaction.name} ({leadingFaction.ratio}%)
+              </span>
+            </div>
+          )}
+
+          {isEndgameMode && (
+            <div className="hud-row">
+              <span className="hud-label">决战模式:</span>
+              <span className="hud-value" style={{ color: '#ef4444' }}>⚔️ 已激活</span>
+            </div>
+          )}
         </div>
 
         <div className="hud-section">

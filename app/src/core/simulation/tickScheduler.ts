@@ -3,6 +3,8 @@ import { BattleSystem } from './systems/battleSystem';
 import { LogisticsSystem } from './systems/logisticsSystem';
 import { AllianceSystem } from './systems/allianceSystem';
 import { VictorySystem } from './systems/victorySystem';
+import { PowerRecoverySystem } from './systems/powerRecoverySystem';
+import { EndgameManager } from './systems/endgameManager';
 import { logger } from '@/config/debug.config';
 
 export interface System {
@@ -30,9 +32,11 @@ export class TickScheduler {
 
   constructor() {
     this.systems = [
+      new EndgameManager(), // Feature: 009-unification-balance - 先检测决战模式
       new BattleSystem(),
       new LogisticsSystem(),
       new AllianceSystem(),
+      new PowerRecoverySystem(), // Feature: 009-unification-balance
       new VictorySystem(),
     ];
   }

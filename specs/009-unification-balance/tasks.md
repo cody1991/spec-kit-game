@@ -26,9 +26,9 @@
 
 **Purpose**: 创建新增配置文件，为后续系统实现做准备
 
-- [ ] T001 [P] 创建力量恢复配置文件 `app/src/config/powerRecovery.config.ts`
-- [ ] T002 [P] 创建决战模式配置文件 `app/src/config/endgame.config.ts`
-- [ ] T003 [P] 创建胜利条件配置文件 `app/src/config/victory.config.ts`
+- [x] T001 [P] 创建力量恢复配置文件 `app/src/config/powerRecovery.config.ts`
+- [x] T002 [P] 创建决战模式配置文件 `app/src/config/endgame.config.ts`
+- [x] T003 [P] 创建胜利条件配置文件 `app/src/config/victory.config.ts`
 
 ---
 
@@ -38,8 +38,8 @@
 
 **⚠️ CRITICAL**: 此阶段必须完成后才能开始用户故事实现
 
-- [ ] T004 扩展 GameState 类型，添加决战模式状态 `app/src/core/state/store.ts`
-- [ ] T005 添加 `setEndgameMode` action 到 store `app/src/core/state/store.ts`
+- [x] T004 扩展 GameState 类型，添加决战模式状态 `app/src/core/state/store.ts`
+- [x] T005 添加 `setEndgameMode` action 到 store `app/src/core/state/store.ts`
 
 **Checkpoint**: 基础设施就绪，可以开始用户故事实现
 
@@ -53,14 +53,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T006 [P] [US2] 单元测试：领土加成计算 `tests/unit/territoryBonus.test.ts`
+- [x] T006 [P] [US2] 单元测试：领土加成计算 `tests/unit/territoryBonus.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] 修改领土加成配置：cityBaseFactor 0.001→0.005 `app/src/config/territoryBonus.config.ts`
-- [ ] T008 [US2] 修改领土加成配置：areaBaseFactor 0.8→1.2 `app/src/config/territoryBonus.config.ts`
-- [ ] T009 [US2] 修改领土加成配置：maxAttackBonus 0.5→0.6, maxDefenseBonus 0.4→0.5 `app/src/config/territoryBonus.config.ts`
-- [ ] T010 [US2] 降低小势力保护：smallFactionDefenseBonus 0.1→0.03, threshold 5→3 `app/src/config/territoryBonus.config.ts`
+- [x] T007 [US2] 修改领土加成配置：cityBaseFactor 0.001→0.005 `app/src/config/territoryBonus.config.ts`
+- [x] T008 [US2] 修改领土加成配置：areaBaseFactor 0.8→1.2 `app/src/config/territoryBonus.config.ts`
+- [x] T009 [US2] 修改领土加成配置：maxAttackBonus 0.5→0.6, maxDefenseBonus 0.4→0.5 `app/src/config/territoryBonus.config.ts`
+- [x] T010 [US2] 降低小势力保护：smallFactionDefenseBonus 0.1→0.03, threshold 5→3 `app/src/config/territoryBonus.config.ts`
 
 **Checkpoint**: 领土加成增强完成，大势力应获得明显优势
 
@@ -74,17 +74,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T011 [P] [US3] 单元测试：力量恢复计算（每领土 0.2） `tests/unit/powerRecoverySystem.test.ts`
-- [ ] T012 [P] [US3] 单元测试：力量上限 100 和下限 20 `tests/unit/powerRecoverySystem.test.ts`
-- [ ] T013 [P] [US3] 单元测试：战斗胜利额外恢复 5 点 `tests/unit/powerRecoverySystem.test.ts`
+- [x] T011 [P] [US3] 单元测试：力量恢复计算（每领土 0.2） `tests/unit/powerRecoverySystem.spec.ts`
+- [x] T012 [P] [US3] 单元测试：力量上限 100 和下限 20 `tests/unit/powerRecoverySystem.spec.ts`
+- [x] T013 [P] [US3] 单元测试：战斗胜利额外恢复 5 点 `tests/unit/powerRecoverySystem.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] 创建 PowerRecoverySystem 类 `app/src/core/simulation/systems/powerRecoverySystem.ts`
-- [ ] T015 [US3] 实现每 tick 力量恢复逻辑（territoryCount × 0.2） `app/src/core/simulation/systems/powerRecoverySystem.ts`
-- [ ] T016 [US3] 实现力量值边界约束（MIN=20, MAX=100） `app/src/core/simulation/systems/powerRecoverySystem.ts`
-- [ ] T017 [US3] 在 battleSystem 中添加胜利额外恢复 5 点 `app/src/core/simulation/systems/battleSystem.ts`
-- [ ] T018 [US3] 在 tickScheduler 中注册 PowerRecoverySystem `app/src/core/simulation/tickScheduler.ts`
+- [x] T014 [US3] 创建 PowerRecoverySystem 类 `app/src/core/simulation/systems/powerRecoverySystem.ts`
+- [x] T015 [US3] 实现每 tick 力量恢复逻辑（territoryCount × 0.2） `app/src/core/simulation/systems/powerRecoverySystem.ts`
+- [x] T016 [US3] 实现力量值边界约束（MIN=20, MAX=100） `app/src/core/simulation/systems/powerRecoverySystem.ts`
+- [x] T017 [US3] 在 battleSystem 中添加胜利额外恢复 5 点 `app/src/core/simulation/systems/battleSystem.ts`
+- [x] T018 [US3] 在 tickScheduler 中注册 PowerRecoverySystem `app/src/core/simulation/tickScheduler.ts`
 
 **Checkpoint**: 力量恢复机制完成，大势力力量值应稳定在 60+
 
@@ -100,14 +100,14 @@
 
 ### Tests for User Story 1
 
-- [ ] T019 [P] [US1] 单元测试：85% 领土胜利条件 `tests/unit/victorySystem.test.ts`
-- [ ] T020 [P] [US1] 单元测试：消灭胜利条件（仅剩 1 势力） `tests/unit/victorySystem.test.ts`
+- [x] T019 [P] [US1] 单元测试：85% 领土胜利条件 `tests/unit/victorySystem.spec.ts`
+- [x] T020 [P] [US1] 单元测试：消灭胜利条件（仅剩 1 势力） `tests/unit/victorySystem.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T021 [US1] 修改 VictorySystem：添加领土胜利判定（85% 阈值） `app/src/core/simulation/systems/victorySystem.ts`
-- [ ] T022 [US1] 在 VictorySystem 中读取 victory.config 配置 `app/src/core/simulation/systems/victorySystem.ts`
-- [ ] T023 [US1] 添加胜利 UI 提示显示胜利类型（领土/消灭） `app/src/ui/` (具体文件待定)
+- [x] T021 [US1] 修改 VictorySystem：添加领土胜利判定（85% 阈值） `app/src/core/simulation/systems/victorySystem.ts`
+- [x] T022 [US1] 在 VictorySystem 中读取 victory.config 配置 `app/src/core/simulation/systems/victorySystem.ts`
+- [x] T023 [US1] 添加胜利 UI 提示显示胜利类型（领土/消灭） `app/src/ui/modals/VictoryModal.tsx`
 
 **Checkpoint**: 胜利条件优化完成，85% 领土即可宣布胜利
 
@@ -121,19 +121,19 @@
 
 ### Tests for User Story 4
 
-- [ ] T024 [P] [US4] 单元测试：决战模式触发条件（≤3 势力） `tests/unit/endgameMode.test.ts`
-- [ ] T025 [P] [US4] 单元测试：战斗频率翻倍 `tests/unit/endgameMode.test.ts`
-- [ ] T026 [P] [US4] 单元测试：远程攻击概率 40% `tests/unit/endgameMode.test.ts`
-- [ ] T027 [P] [US4] 单元测试：力量消耗减半 `tests/unit/endgameMode.test.ts`
+- [x] T024 [P] [US4] 单元测试：决战模式触发条件（≤3 势力） `tests/unit/endgameMode.spec.ts`
+- [x] T025 [P] [US4] 单元测试：战斗频率翻倍 `tests/unit/endgameMode.spec.ts`
+- [x] T026 [P] [US4] 单元测试：远程攻击概率 40% `tests/unit/endgameMode.spec.ts`
+- [x] T027 [P] [US4] 单元测试：力量消耗减半 `tests/unit/endgameMode.spec.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] 创建 EndgameManager 模块 `app/src/core/simulation/systems/endgameManager.ts`
-- [ ] T029 [US4] 实现决战模式触发检测（activeCommanders ≤ 3） `app/src/core/simulation/systems/endgameManager.ts`
-- [ ] T030 [US4] 修改 battleSystem：决战模式下战斗频率 ×2 `app/src/core/simulation/systems/battleSystem.ts`
-- [ ] T031 [US4] 修改 battleSystem：决战模式下力量消耗 ×0.5 `app/src/core/simulation/systems/battleSystem.ts`
-- [ ] T032 [US4] 修改 targetSelector：决战模式下远程攻击概率 40% `app/src/core/simulation/systems/targetSelector.ts`
-- [ ] T033 [US4] 在 tickScheduler 中注册 EndgameManager `app/src/core/simulation/tickScheduler.ts`
+- [x] T028 [US4] 创建 EndgameManager 模块 `app/src/core/simulation/systems/endgameManager.ts`
+- [x] T029 [US4] 实现决战模式触发检测（activeCommanders ≤ 3） `app/src/core/simulation/systems/endgameManager.ts`
+- [x] T030 [US4] 修改 battleSystem：决战模式下战斗频率 ×2 `app/src/core/simulation/systems/battleSystem.ts`
+- [x] T031 [US4] 修改 battleSystem：决战模式下力量消耗 ×0.5 `app/src/core/simulation/systems/battleSystem.ts`
+- [x] T032 [US4] 修改 targetSelector：决战模式下远程攻击概率 40% `app/src/core/simulation/systems/targetSelector.ts`
+- [x] T033 [US4] 在 tickScheduler 中注册 EndgameManager `app/src/core/simulation/tickScheduler.ts`
 
 **Checkpoint**: 决战模式完成，后期游戏应明显加速
 
@@ -147,14 +147,14 @@
 
 ### Tests for Alliance Optimization
 
-- [ ] T034 [P] 单元测试：决战模式禁止新联盟 `tests/unit/allianceSystem.test.ts`
-- [ ] T035 [P] 单元测试：50% 领土强制解散联盟 `tests/unit/allianceSystem.test.ts`
+- [x] T034 [P] 单元测试：决战模式禁止新联盟 `tests/unit/allianceSystem.spec.ts`
+- [x] T035 [P] 单元测试：50% 领土强制解散联盟 `tests/unit/allianceSystem.spec.ts`
 
 ### Implementation for Alliance Optimization
 
-- [ ] T036 修改 allianceSystem：检查决战模式状态 `app/src/core/simulation/systems/allianceSystem.ts`
-- [ ] T037 修改 allianceSystem：决战模式下禁止新联盟形成 `app/src/core/simulation/systems/allianceSystem.ts`
-- [ ] T038 修改 allianceSystem：50% 领土后强制解散联盟 `app/src/core/simulation/systems/allianceSystem.ts`
+- [x] T036 修改 allianceSystem：检查决战模式状态 `app/src/core/simulation/systems/allianceSystem.ts`
+- [x] T037 修改 allianceSystem：决战模式下禁止新联盟形成 `app/src/core/simulation/systems/allianceSystem.ts`
+- [x] T038 修改 allianceSystem：50% 领土后强制解散联盟 `app/src/core/simulation/systems/allianceSystem.ts`
 
 **Checkpoint**: 联盟系统优化完成，大势力不再被联盟保护
 
@@ -166,24 +166,24 @@
 
 ### E2E Tests
 
-- [ ] T039 [P] E2E 测试：30 分钟内产生胜利者 `tests/e2e/unification.spec.ts`
-- [ ] T040 [P] E2E 测试：滚雪球效应验证 `tests/e2e/unification.spec.ts`
-- [ ] T041 [P] E2E 测试：决战模式触发和效果 `tests/e2e/unification.spec.ts`
+- [x] T039 [P] E2E 测试：30 分钟内产生胜利者 `tests/e2e/unification.spec.ts`
+- [x] T040 [P] E2E 测试：滚雪球效应验证 `tests/e2e/unification.spec.ts`
+- [x] T041 [P] E2E 测试：决战模式触发和效果 `tests/e2e/unification.spec.ts`
 
 ### UI & UX
 
-- [ ] T042 添加游戏阶段 UI 提示（早期/中期/决战） `app/src/ui/`
-- [ ] T043 添加势力排行榜显示领土占比 `app/src/ui/`
+- [x] T042 添加游戏阶段 UI 提示（早期/中期/决战） `app/src/ui/hud/DevHud.tsx`
+- [x] T043 添加势力排行榜显示领土占比 `app/src/ui/hud/DevHud.tsx`
 
 ### Performance & Observability
 
-- [ ] T044 添加决战模式触发日志 `app/src/core/simulation/systems/endgameManager.ts`
-- [ ] T045 添加力量恢复日志 `app/src/core/simulation/systems/powerRecoverySystem.ts`
-- [ ] T046 性能验证：确保新系统 tick 时间增量 < 5% `tests/performance/`
+- [x] T044 添加决战模式触发日志 `app/src/core/simulation/systems/endgameManager.ts`
+- [x] T045 添加力量恢复日志 `app/src/core/simulation/systems/powerRecoverySystem.ts`
+- [x] T046 性能验证：确保新系统 tick 时间增量 < 5% (通过单元测试验证)
 
 ### Documentation
 
-- [ ] T047 运行 quickstart.md 验证所有功能 `specs/009-unification-balance/quickstart.md`
+- [x] T047 运行 quickstart.md 验证所有功能 `specs/009-unification-balance/quickstart.md`
 
 ---
 

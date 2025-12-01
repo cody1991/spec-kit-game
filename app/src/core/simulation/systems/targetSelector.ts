@@ -1,14 +1,15 @@
 /**
  * 目标选择器
- * Feature: 007-conquest-logic-fix
+ * Feature: 007-conquest-logic-fix (updated in 009-unification-balance)
  *
  * 实现领主攻击目标选择的概率逻辑：
- * - 85% 概率选择相邻国家
- * - 15% 概率允许远程攻击
+ * - 正常模式：85% 概率选择相邻国家，15% 概率允许远程攻击
+ * - 决战模式：60% 概率选择相邻国家，40% 概率允许远程攻击
  */
 
 import type { HistoricalCommander, Territory } from '../../types';
 import { DEFAULT_CONQUEST_CONFIG, type ConquestConfig } from '@/config/conquest.config';
+import { useGameStore } from '../../state/store';
 import { logger } from '@/config/debug.config';
 
 /**
@@ -114,6 +115,13 @@ export function selectTarget(
   const roll = Math.random();
   let selectAdjacent: boolean;
 
+  // Feature: 009-unification-balance - 决战模式下远程攻击概率提升
+  const state = useGameStore.getState();
+  const { isEndgameMode, endgameConfig } = state;
+  const effectiveAdjacentProbability = isEndgameMode
+    ? 1 - endgameConfig.remoteAttackProbability // 决战模式：60% 相邻
+    : config.adjacentTargetProbability; // 正常模式：85% 相邻
+
   if (!hasAdjacentTargets) {
     // 没有相邻目标，只能选择远程
     selectAdjacent = false;
@@ -122,7 +130,7 @@ export function selectTarget(
     selectAdjacent = true;
   } else {
     // 根据概率决定
-    selectAdjacent = roll < config.adjacentTargetProbability;
+    selectAdjacent = roll < effectiveAdjacentProbability;
   }
 
   let targetId: string;
@@ -144,7 +152,7 @@ export function selectTarget(
 
   logger.log(
     'TARGET_SELECTION',
-    `🎯 [selectTarget] ${attacker.name} 选择${selectionType === 'adjacent' ? '相邻' : '远程'}目标: ${targetId} (roll: ${roll.toFixed(3)}, threshold: ${config.adjacentTargetProbability})`
+    `🎯 [selectTarget] ${attacker.name} 选择${selectionType === 'adjacent' ? '相邻' : '远程'}目标: ${targetId} (roll: ${roll.toFixed(3)}, threshold: ${effectiveAdjacentProbability.toFixed(2)}${isEndgameMode ? ' [决战模式]' : ''})`
   );
 
   return {

@@ -18,6 +18,7 @@ import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
 import { RingBuffer } from '@/utils/RingBuffer';
 import { DEFAULT_PERFORMANCE_CONFIG, type PerformanceConfig } from '@/config/performance.config';
 import { DEFAULT_TERRITORY_BONUS_CONFIG } from '@/config/territoryBonus.config';
+import { DEFAULT_ENDGAME_CONFIG, type EndgameConfig } from '@/config/endgame.config';
 import { logger } from '@/config/debug.config';
 
 /**
@@ -168,6 +169,11 @@ export interface GameState {
   // 领土加成配置 (Feature: 008-territory-bonus)
   territoryBonusConfig: TerritoryBonusConfig;
 
+  // 决战模式状态 (Feature: 009-unification-balance)
+  isEndgameMode: boolean;
+  endgameTriggerTick: number | null;
+  endgameConfig: EndgameConfig;
+
   // Actions
   startGame: (seed: string) => void;
   setCommanders: (commanders: HistoricalCommander[]) => void;
@@ -213,6 +219,10 @@ export interface GameState {
   // Territory Bonus Actions (Feature: 008-territory-bonus)
   updateTerritoryBonus: (commanderId: string, bonus: TerritoryBonus) => void;
   setTerritoryBonusConfig: (config: Partial<TerritoryBonusConfig>) => void;
+
+  // Endgame Mode Actions (Feature: 009-unification-balance)
+  setEndgameMode: (active: boolean) => void;
+  setEndgameConfig: (config: Partial<EndgameConfig>) => void;
 }
 
 /**
@@ -276,6 +286,11 @@ export const useGameStore = create<GameState>((set) => ({
 
   // Territory Bonus Config (Feature: 008-territory-bonus)
   territoryBonusConfig: { ...DEFAULT_TERRITORY_BONUS_CONFIG },
+
+  // Endgame Mode State (Feature: 009-unification-balance)
+  isEndgameMode: false,
+  endgameTriggerTick: null,
+  endgameConfig: { ...DEFAULT_ENDGAME_CONFIG },
 
   // Actions
   startGame: (seed: string) =>
@@ -544,6 +559,8 @@ export const useGameStore = create<GameState>((set) => ({
       mapRenderState: null,
       dirtyFlags: createInitialDirtyFlags(),
       factionStats: new Map(),
+      isEndgameMode: false,
+      endgameTriggerTick: null,
     }));
   },
 
@@ -677,5 +694,17 @@ export const useGameStore = create<GameState>((set) => ({
   setTerritoryBonusConfig: (config) =>
     set((state) => ({
       territoryBonusConfig: { ...state.territoryBonusConfig, ...config },
+    })),
+
+  // Endgame Mode Actions (Feature: 009-unification-balance)
+  setEndgameMode: (active) =>
+    set((state) => ({
+      isEndgameMode: active,
+      endgameTriggerTick: active && state.endgameTriggerTick === null ? state.tick : state.endgameTriggerTick,
+    })),
+
+  setEndgameConfig: (config) =>
+    set((state) => ({
+      endgameConfig: { ...state.endgameConfig, ...config },
     })),
 }));
