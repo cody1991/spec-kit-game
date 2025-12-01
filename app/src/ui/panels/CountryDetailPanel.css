@@ -104,6 +104,11 @@
   flex-shrink: 0;
 }
 
+.area-value {
+  color: #2196f3;
+  font-weight: 600;
+}
+
 .stat-bar {
   position: relative;
   width: 100%;

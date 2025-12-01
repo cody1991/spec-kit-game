@@ -12,6 +12,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-30
 - TypeScript 5.4.5 + React 18.2, Phaser 3.80, Zustand 4.4.7, Vite 5.0 (006-performance-optimization)
 - N/A (内存状态管理) (006-performance-optimization)
 - TypeScript 5.4.5 + React 18.2, Phaser 3.80, Zustand 4.4, d3-geo 3.1 (007-conquest-logic-fix)
+- TypeScript 5.x, React 18.x + Phaser 3, Zustand, D3-geo, TopoJSON (007-conquest-logic-fix)
+- IndexedDB (地图缓存), Zustand store (游戏状态) (007-conquest-logic-fix)
 
 - TypeScript 5.4.5 (ES2020 target) (003-country-map-alignment)
 
@@ -33,9 +35,9 @@ npm test && npm run lint
 TypeScript 5.4（ESM，strictNullChecks on）: Follow standard conventions
 
 ## Recent Changes
+- 007-conquest-logic-fix: Added TypeScript 5.x, React 18.x + Phaser 3, Zustand, D3-geo, TopoJSON
 - 007-conquest-logic-fix: Added TypeScript 5.4.5 + React 18.2, Phaser 3.80, Zustand 4.4, d3-geo 3.1
 - 006-performance-optimization: Added TypeScript 5.4.5 + React 18.2, Phaser 3.80, Zustand 4.4.7, Vite 5.0
-- 005-faction-stats: Added TypeScript 5.x + React 18
 
 
 

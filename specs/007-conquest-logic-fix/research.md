@@ -1,98 +1,128 @@
-# Research: 领主占领逻辑修复
+# Research: 真实领土面积数据
 
+**Date**: 2025-12-01  
 **Feature**: 007-conquest-logic-fix  
-**Date**: 2025-12-01
+**Focus**: 获取并集成真实的国家领土面积数据
 
-## 研究任务
+## 问题背景
 
-### 1. 现有初始化逻辑分析
+当前游戏中的国家面积数据是通过 `calculateArea()` 函数基于 Shoelace 公式计算的多边形面积，返回的是**平方度数**而非真实的平方公里数。这导致面积显示不准确，影响游戏体验。
 
-**问题**: 领主初始化时如何分配国家？是否存在分配失败的情况？
+## 研究发现
 
-**发现**:
-- `createInitialWorld.ts` 中的 `getRandomCountryFromRegion` 函数负责为每个领主分配起始国家
-- 如果指定区域内所有国家都被占领，会从所有未占领国家中随机选择
-- 如果所有国家都被占领，函数返回 `undefined`
-- **问题点**: 当返回 `undefined` 时，领主仍被创建但 `controlledTerritories` 为空数组
+### 1. 当前数据结构
 
-**决策**: 在初始化完成后过滤掉 `controlledTerritories.length === 0` 的领主
+- **地图数据文件**: `app/public/maps/world-countries.json` (TopoJSON 格式)
+- **国家数量**: 241 个
+- **属性字段**: 只有 `name` 属性，没有面积数据
+- **面积计算**: `MapDataLoader.ts` 使用 `geoUtils.calculateArea()` 计算几何面积
 
-**理由**: 
-- 最小改动原则，不修改分配逻辑本身
-- 在最终结果处进行验证更可靠
+### 2. 真实面积数据源
 
-**替代方案**:
-- 修改 `getRandomCountryFromRegion` 抛出异常 → 拒绝，会中断整个初始化流程
-- 预先计算可用国家数量限制领主数量 → 可行但增加复杂度
+**选择**: [samayo/country-json](https://github.com/samayo/country-json)
 
-### 2. 现有战斗系统目标选择分析
+- **数据文件**: `country-by-surface-area.json`
+- **国家数量**: 240 个
+- **数据格式**: `{ "country": "China", "area": 9572900.00 }`
+- **单位**: 平方公里 (km²)
 
-**问题**: 当前战斗系统如何选择攻击目标？
+**替代方案考虑**:
+- REST Countries API - 需要网络请求，增加延迟
+- World Bank Data - 数据格式复杂
+- Natural Earth - 需要额外处理
 
-**发现**:
-- `BattleSystem.ts` 的 `update` 方法中，目标选择逻辑：
-  1. 遍历攻击方控制的所有领土
-  2. 收集所有相邻的敌对领土到 `targetSet`
-  3. 从 `targetSet` 中随机选择一个目标
-- **当前行为**: 100% 选择相邻领土，不存在远程攻击
+**选择理由**: 静态 JSON 数据，无网络依赖，数据完整，易于集成
 
-**决策**: 修改目标选择逻辑，85% 概率选择相邻目标，15% 概率选择任意非己方领土
+### 3. 名称匹配问题
 
-**理由**:
-- 符合规格要求的 85%/15% 概率分布
-- 远程攻击增加游戏戏剧性和策略多样性
+地图数据中的国家名称与面积数据源存在差异，需要建立映射关系：
 
-**替代方案**:
-- 仅选择相邻目标（当前行为）→ 拒绝，不符合规格要求
-- 基于距离的概率衰减 → 过于复杂，不必要
+| 地图名称 | 面积数据名称 |
+|---------|-------------|
+| United States of America | United States |
+| Dem. Rep. Congo | Congo, Democratic Republic of the |
+| Czech Rep. | Czech Republic |
+| Bosnia and Herz. | Bosnia and Herzegovina |
+| ... | ... |
 
-### 3. 领主数量控制分析
+**解决方案**: 创建 `name_mapping` 字典处理名称差异
 
-**问题**: 游戏运行中是否存在新增领主的代码路径？
+### 4. 特殊地区处理
 
-**发现**:
-- 搜索代码库，未发现在 `createInitialWorld` 之外创建新领主的逻辑
-- `store.ts` 中的 `addCommander` 方法存在但未被调用
-- 领主只能通过 `status: 'eliminated'` 退出，无复活机制
+部分地区在面积数据源中缺失，使用估计值：
 
-**决策**: 无需修改，但建议在 `store.ts` 中添加防护逻辑
+| 地区 | 面积 (km²) | 来源 |
+|-----|-----------|------|
+| Kosovo | 10,887 | Wikipedia |
+| Somaliland | 176,120 | Wikipedia |
+| Vatican | 0.44 | Official |
+| N. Cyprus | 3,355 | Wikipedia |
 
-**理由**:
-- 当前代码已符合要求
-- 添加显式检查可防止未来误用
+## 决策
 
-**替代方案**:
-- 删除 `addCommander` 方法 → 拒绝，可能破坏其他功能
-- 不做任何修改 → 可行但缺乏防护
+### Decision 1: 数据存储方式
 
-### 4. 相邻性数据准确性
-
-**问题**: `adjacentIds` 数据是否准确？
-
-**发现**:
-- 相邻关系数据来自 `Country.neighbors` 属性
-- 数据在 `MapDataLoader.ts` 中从 GeoJSON 加载
-- 现有验证器 `mappingValidator.ts` 可检查数据完整性
-
-**决策**: 信任现有数据，不在本次修改中验证
+**选择**: 静态 TypeScript 文件 (`countryAreas.ts`)
 
 **理由**:
-- 相邻性数据是地图数据的一部分，已经过验证
-- 本次修改聚焦于逻辑修复，不涉及数据层
+- 编译时类型检查
+- 无运行时网络请求
+- Tree-shaking 友好
+- 易于维护和更新
 
-## 技术决策摘要
+**替代方案**: 
+- JSON 文件 + 动态导入 - 增加异步复杂度
+- 嵌入 TopoJSON - 需要修改地图数据格式
 
-| 决策点 | 选择 | 理由 |
-|--------|------|------|
-| 初始化验证位置 | 创建后过滤 | 最小改动，可靠性高 |
-| 目标选择概率 | 85% 相邻 / 15% 远程 | 符合规格要求 |
-| 远程目标范围 | 任意非己方领土 | 简单实现，增加戏剧性 |
-| 领主数量控制 | 添加防护检查 | 防止未来误用 |
+### Decision 2: 面积数据使用位置
 
-## 风险与缓解
+**选择**: 
+1. `MapDataLoader.ts` - 加载时赋值给 `Country.area`
+2. `CountryDetailPanel.tsx` - 显示国家详情时展示面积
+3. `FactionStatsPanel.tsx` - 已有面积显示，使用 `Country.area`
 
-| 风险 | 概率 | 影响 | 缓解措施 |
-|------|------|------|----------|
-| 远程攻击导致游戏不平衡 | 低 | 中 | 15% 概率足够低，可通过配置调整 |
-| 初始化过滤导致领主过少 | 低 | 低 | 国家数量远多于领主数量 |
-| 性能影响 | 极低 | 低 | 概率检查为 O(1) 操作 |
+### Decision 3: 面积格式化
+
+**选择**: 
+- ≥ 1,000,000 km² → "X.XXM km²" (如 "9.57M km²")
+- ≥ 1,000 km² → "X.XK km²" (如 "18.3K km²")
+- < 1,000 km² → "X km²" (如 "444 km²")
+
+## 实现方案
+
+### 文件变更
+
+1. **新增**: `app/src/data/countryAreas.ts`
+   - 导出 `COUNTRY_AREAS: Record<string, number>`
+   - 包含 241 个国家的真实面积数据
+
+2. **修改**: `app/src/scenes/world/data/MapDataLoader.ts`
+   - 导入 `COUNTRY_AREAS`
+   - 使用真实面积替代计算面积
+
+3. **修改**: `app/src/ui/panels/CountryDetailPanel.tsx`
+   - 添加面积显示
+   - 添加 `formatArea()` 函数
+
+4. **修改**: `app/src/ui/panels/CountryDetailPanel.css`
+   - 添加 `.area-value` 样式
+
+### 数据生成脚本
+
+创建 `scripts/generate-country-areas.py`:
+- 读取地图数据获取国家列表
+- 下载面积数据源
+- 处理名称映射
+- 生成 TypeScript 文件
+
+## 验证计划
+
+1. **单元测试**: 验证所有地图国家都有面积数据
+2. **集成测试**: 验证 `FactionStatsPanel` 显示正确的总面积
+3. **视觉验证**: 检查 `CountryDetailPanel` 面积显示格式
+
+## 参考资料
+
+- [samayo/country-json](https://github.com/samayo/country-json)
+- [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1)
+- [World countries by area](https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_area)

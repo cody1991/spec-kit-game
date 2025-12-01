@@ -7,7 +7,22 @@
 
 import { useGameStore } from '@core/state/store';
 import type { Country, TerritoryState, CommanderColor } from '@core/types';
+import { COUNTRY_AREAS } from '../../data/countryAreas';
 import './CountryDetailPanel.css';
+
+/**
+ * Format area for display
+ * @param area Area in km²
+ * @returns Formatted string (e.g., "9.57M km²" or "18.3K km²")
+ */
+function formatArea(area: number): string {
+  if (area >= 1000000) {
+    return `${(area / 1000000).toFixed(2)}M km²`;
+  } else if (area >= 1000) {
+    return `${(area / 1000).toFixed(1)}K km²`;
+  }
+  return `${area.toFixed(0)} km²`;
+}
 
 export function CountryDetailPanel() {
   const selectedTerritoryId = useGameStore((state) => state.selectedTerritoryId);
@@ -29,6 +44,9 @@ export function CountryDetailPanel() {
   // Use country name from territoryState if available, otherwise use territory name
   const displayName = territoryState?.countryName || territory?.name || selectedTerritoryId;
   const ownerId = territoryState?.ownerId || territory?.ownerId;
+
+  // Get real area data
+  const countryArea = COUNTRY_AREAS[displayName] ?? 0;
 
   // Get owner info
   const owner = ownerId ? commanders.find((c) => c.id === ownerId) : null;
@@ -69,6 +87,14 @@ export function CountryDetailPanel() {
             <div className="info-value neutral">中立</div>
           )}
         </div>
+
+        {/* Country Area */}
+        {countryArea > 0 && (
+          <div className="info-section">
+            <div className="info-label">国土面积</div>
+            <div className="info-value area-value">{formatArea(countryArea)}</div>
+          </div>
+        )}
 
         {/* Territory Stats */}
         {territoryState && (

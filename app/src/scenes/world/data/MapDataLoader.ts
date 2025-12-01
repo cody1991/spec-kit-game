@@ -9,7 +9,8 @@ import * as topojson from 'topojson-client';
 import { geoCentroid } from 'd3-geo';
 import type { Country, LoadOptions } from '../types/mapTypes';
 import { MapDataCache } from './MapDataCache';
-import { calculateBbox, calculateArea } from '../utils/geoUtils';
+import { calculateBbox } from '../utils/geoUtils';
+import { COUNTRY_AREAS } from '../../../data/countryAreas';
 
 export class MapDataLoadError extends Error {
   code: 'FETCH_FAILED' | 'PARSE_ERROR' | 'INVALID_FORMAT' | 'TIMEOUT';
@@ -194,9 +195,6 @@ export class MapDataLoader {
     // Calculate bounding box
     const bbox = calculateBbox(multiPolygon);
 
-    // Calculate area (approximate)
-    const area = calculateArea(multiPolygon);
-
     // Extract country ID and name
     // Try feature.id first (set by TopoJSON), then properties
     const id = String(
@@ -209,6 +207,9 @@ export class MapDataLoader {
     );
     const name = properties.name || properties.NAME || id;
     const nameEn = properties.name_en || properties.NAME_EN || name;
+
+    // Use real area data from COUNTRY_AREAS, fallback to 0 if not found
+    const area = COUNTRY_AREAS[name] ?? 0;
 
     return {
       id,

@@ -21,6 +21,7 @@ export class MapDataCache {
   private storeName = 'countries';
   private db: IDBPDatabase | null = null;
   private readonly defaultCacheDuration = 7 * 24 * 60 * 60 * 1000; // 7 days
+  private readonly currentVersion = 'world-atlas-50m-v2-real-area'; // Updated for real area data
 
   /**
    * Initialize the IndexedDB database
@@ -81,6 +82,13 @@ export class MapDataCache {
         return null;
       }
 
+      // Check version - invalidate cache if version mismatch
+      if (entry.version !== this.currentVersion) {
+        console.log(`🔄 Cache version mismatch (${entry.version} vs ${this.currentVersion}), invalidating...`);
+        await this.db.delete(this.storeName, key);
+        return null;
+      }
+
       console.log(
         `✅ Map data loaded from cache (age: ${Math.round((Date.now() - entry.cachedAt) / 1000 / 60)} minutes)`
       );
@@ -105,7 +113,7 @@ export class MapDataCache {
         countries: data,
         cachedAt: now,
         expiresAt: expiresAt || now + this.defaultCacheDuration,
-        version: 'world-atlas-50m-v1',
+        version: this.currentVersion,
       };
 
       await this.db.put(this.storeName, entry);
