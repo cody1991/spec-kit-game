@@ -145,23 +145,23 @@
 
 ### 防抖优化实现
 
-- [ ] T050 [P] [US2] 创建 `app/src/utils/debounce.ts` - 实现通用 `debounce<T>()` 函数（wait 毫秒延迟，返回防抖版本函数）
-- [ ] T051 [US2] 在 `factionStatsService.ts` 中使用 `debounce()` 包装 `handleBattleResult` - 设置 1000ms 防抖间隔（research.md 策略2）
-- [ ] T052 [US2] 在 `factionStatsService.ts` 中使用 `requestIdleCallback` 或 `setTimeout` fallback 异步执行统计更新（research.md 策略1）
+- [x] T050 [P] [US2] 创建 `app/src/utils/debounce.ts` - 实现通用 `debounce<T>()` 函数（wait 毫秒延迟，返回防抖版本函数）
+- [x] T051 [US2] 在 `factionStatsService.ts` 中使用 `debounce()` 包装 `handleBattleResult` - 设置 1000ms 防抖间隔（research.md 策略2）
+- [x] T052 [US2] 在 `factionStatsService.ts` 中使用 `requestIdleCallback` 或 `setTimeout` fallback 异步执行统计更新（research.md 策略1）
 
 ### 自动更新集成
 
-- [ ] T053 [US2] 在 `FactionStatsPanel.tsx` 中验证 Zustand 的自动订阅机制 - 确保 `factionStats` 变化时组件自动重新渲染
-- [ ] T054 [US2] 在 `FactionStatsPanel.tsx` 中为数据行添加 `key={faction.commanderId}` - 确保 React 正确识别变化的行
+- [x] T053 [US2] 在 `FactionStatsPanel.tsx` 中验证 Zustand 的自动订阅机制 - 确保 `factionStats` 变化时组件自动重新渲染
+- [x] T054 [US2] 在 `FactionStatsPanel.tsx` 中为数据行添加 `key={faction.commanderId}` - 确保 React 正确识别变化的行
 
 ### 视觉反馈增强
 
-- [ ] T055 [US2] 在 `FactionStatsPanel.css` 中添加 `.row-updated` 类 - 1秒淡入动画 + 黄色边框高亮
-- [ ] T056 [US2] 在 `FactionStatsPanel.tsx` 中使用 `useEffect` 和 `useState` 追踪最近更新的势力 ID - 动态添加/移除 `.row-updated` 类
+- [x] T055 [US2] 在 `FactionStatsPanel.css` 中添加 `.row-updated` 类 - 1秒淡入动画 + 黄色边框高亮
+- [x] T056 [US2] 在 `FactionStatsPanel.tsx` 中使用 `useEffect` 和 `useState` 追踪最近更新的势力 ID - 动态添加/移除 `.row-updated` 类
 
 ### 性能监控 (Constitution - Observability)
 
-- [ ] T057 [US2] 在 `factionStatsService.ts` 中添加 `console.log` 记录每次统计更新事件（时间戳、涉及势力、更新类型）
+- [x] T057 [US2] 在 `factionStatsService.ts` 中添加 `console.log` 记录每次统计更新事件（时间戳、涉及势力、更新类型）
 - [ ] T058 [US2] 在浏览器控制台验证防抖生效 - 高频战斗时最多每1秒更新一次统计
 
 ### 质量保证
