@@ -15,11 +15,8 @@ export function startSession(seed?: string, countries?: Country[]): void {
   const numericSeed = seed ? parseInt(seed, 36) : Math.floor(Math.random() * 1000000);
   const seedString = seed || numericSeed.toString(36);
 
-  console.log(`🎮 Starting game session with seed: ${seedString}`);
-
   // 检查是否提供了国家数据
   if (!countries || countries.length === 0) {
-    console.warn('⚠️  Countries data not provided, deferring world creation');
     // 保存seed到store，等待地图加载完成后再初始化
     const store = useGameStore.getState();
     store.startGame(seedString);
@@ -33,8 +30,6 @@ export function startSession(seed?: string, countries?: Country[]): void {
     
     return;
   }
-
-  console.log(`📊 Creating world with ${countries.length} countries`);
 
   // 创建初始世界（现在基于真实国家数据）
   const { commanders, territories } = createInitialWorld({
@@ -103,9 +98,7 @@ export function startSession(seed?: string, countries?: Country[]): void {
   store.setColorMappings(colorMappings);
   store.setTerritoryStates(territoryStates);
 
-  console.log(`✅ Initialized ${colorMappings.size} commander color mappings`);
-  console.log(`✅ Initialized ${territoryStates.size} territory states`);
-  console.log(`✅ Set ${countries.length} countries to store`);
+  console.log('✅ Game session started');
 
   // 发送游戏开始事件
   store.addBattleEvent({

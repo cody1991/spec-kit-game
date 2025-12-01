@@ -140,10 +140,6 @@ export class MapRenderer {
     let renderedWithoutOwner = 0;
 
     countries.forEach((country) => {
-      // Transform bbox to screen coordinates for culling
-      const topLeft = this.transformer.geoToScreen(country.bbox.minX, country.bbox.maxY);
-      const bottomRight = this.transformer.geoToScreen(country.bbox.maxX, country.bbox.minY);
-
       // TEMPORARY: Disable viewport culling for debugging
       // TODO: Fix culling after coordinate system is verified
       const shouldRender = true;
@@ -186,10 +182,6 @@ export class MapRenderer {
             }
           : 'none',
       });
-    } else if (this.stats.countriesRendered > 0) {
-      console.log(
-        `🎨 Rendered ${this.stats.countriesRendered}/${countries.length} countries (${renderedWithOwner} with owner, ${renderedWithoutOwner} without owner, ${culledCount} culled)`
-      );
     }
 
     this.stats.renderTime = performance.now() - startTime;
@@ -208,7 +200,6 @@ export class MapRenderer {
     let graphics = this.countryGraphics.get(country.id);
 
     if (!graphics) {
-      console.log(`🆕 [renderCountry] Creating new graphics for ${country.id}`);
       graphics = this.config.useObjectPool
         ? this.graphicsPool.acquire()
         : this.scene.add.graphics();
@@ -217,16 +208,13 @@ export class MapRenderer {
     }
 
     graphics.clear();
-    console.log(`🎨 [renderCountry] Rendering ${country.name} (${country.id}), has owner: ${!!state?.ownerId}, colorMapping: ${!!colorMapping}`);
 
     // Draw filled polygon
     if (state?.ownerId && colorMapping) {
       // 有owner的国家：使用指挥官颜色
-      console.log(`  → Filling country ${country.id} with commander color ${colorMapping.primary.toString(16)}`);
       this.fillCountry(graphics, country, colorMapping);
     } else {
       // 中立国家：使用灰色填充，让它们可见
-      console.log(`  → Filling neutral country ${country.id} with gray color`);
       this.fillNeutralCountry(graphics, country);
     }
 
@@ -460,24 +448,19 @@ export class MapRenderer {
    * Update a single country's rendering
    */
   updateCountry(countryId: string, state: TerritoryState, colorMapping: CommanderColor): void {
-    console.log(`🔄 [MapRenderer.updateCountry] Called for ${countryId}, ownerId: ${state.ownerId}, color: ${colorMapping.primary.toString(16)}`);
-    
     // Re-render this country
     const countries = this.scene.registry.get('countries') as Country[] | undefined;
     const country = countries?.find((c) => c.id === countryId);
 
     if (!country) {
-      console.warn(`❌ [MapRenderer] Country ${countryId} not found in registry, available: ${countries?.length || 0}`);
+      console.warn(`❌ [MapRenderer] Country ${countryId} not found in registry`);
       return;
     }
 
-    console.log(`✅ [MapRenderer] Found country ${country.name} (${countryId}), calling renderCountry...`);
     this.renderCountry(country, state, colorMapping);
 
     // Also update label to reflect new owner
     this.renderCountryLabel(country, state, this.commanders);
-
-    console.log(`✅ [MapRenderer] renderCountry completed for ${countryId}`);
   }
 
   /**
@@ -631,7 +614,5 @@ export class MapRenderer {
         this.previousColors.set(countryId, neutralColor);
       }
     });
-
-    console.log(`💀 Fading ${countryIds.length} territories to neutral`);
   }
 }

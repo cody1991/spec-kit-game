@@ -45,9 +45,6 @@ export class MapDataLoader {
       // Check cache first
       const cached = await this.cache.get(dataUrl);
       if (cached) {
-        console.log(
-          `✅ Map data loaded from cache in ${Math.round(performance.now() - startTime)}ms`
-        );
         return cached;
       }
     }
@@ -92,7 +89,6 @@ export class MapDataLoader {
             country.nameEn.toLowerCase().includes('antarctica');
           
           if (isAntarctica) {
-            console.log(`🚫 Filtered out Antarctica (id: ${country.id}, name: ${country.name})`);
             return;
           }
           
@@ -112,9 +108,7 @@ export class MapDataLoader {
       }
 
       const loadTime = Math.round(performance.now() - startTime);
-      console.log(
-        `✅ Map data loaded from network in ${loadTime}ms (${countries.length} countries)`
-      );
+      console.log(`✅ Map loaded: ${countries.length} countries in ${loadTime}ms`);
 
       return processedCountries;
     } catch (error) {

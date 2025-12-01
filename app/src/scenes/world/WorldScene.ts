@@ -6,6 +6,7 @@ import { MapRenderer } from './rendering/MapRenderer';
 import { PerformanceMonitor } from './utils/PerformanceMonitor';
 import type { Country } from './types/mapTypes';
 import { startSession } from '@core/session/startSession';
+import { logger } from '@/config/debug.config';
 
 export class WorldScene extends Phaser.Scene {
   private territoriesGroup!: Phaser.GameObjects.Group;
@@ -22,8 +23,6 @@ export class WorldScene extends Phaser.Scene {
   }
 
   preload(): void {
-    console.log('🗺️  WorldScene.preload() called - starting async map data load...');
-
     // Initialize map data loader
     this.mapDataLoader = new MapDataLoader();
 
@@ -36,8 +35,6 @@ export class WorldScene extends Phaser.Scene {
    * Called from preload(), completes in create() phase
    */
   private async loadMapDataAsync(): Promise<void> {
-    console.log('🗺️  Starting async map data load...');
-
     try {
       // Load map data with caching
       this.countries = await this.mapDataLoader.loadMapData('/maps/world-countries.json', {
@@ -50,26 +47,13 @@ export class WorldScene extends Phaser.Scene {
       // Store in Phaser registry for renderer access
       this.registry.set('countries', this.countries);
 
-      // Log sample country data for debugging
-      if (this.countries.length > 0) {
-        const sample = this.countries[0];
-        console.log('📍 Sample country data:', {
-          id: sample.id,
-          name: sample.name,
-          bbox: sample.bbox,
-          centroid: sample.centroid,
-          coordinatesSample: sample.geometry.coordinates[0]?.[0]?.slice(0, 3),
-        });
-      }
-
-      console.log(`✅ Loaded ${this.countries.length} countries`);
+      logger.log('MAP_LOADING', `✅ Loaded ${this.countries.length} countries`);
 
       // 🔑 关键：地图加载完成后，检查游戏是否已启动但缺少国家数据
       this.initializeGameWorldIfNeeded();
 
       // Trigger initialization if create() already ran
       if (this.scene.isActive()) {
-        console.log('🎨 Scene active, initializing map renderer now...');
         this.initializeMapRenderer();
         this.renderWorld();
       }
@@ -78,7 +62,6 @@ export class WorldScene extends Phaser.Scene {
 
       // Try fallback to simplified map
       try {
-        console.log('Attempting fallback to simplified map...');
         this.countries = await this.mapDataLoader.loadMapData(
           '/maps/world-countries-simplified.json',
           {
@@ -88,7 +71,7 @@ export class WorldScene extends Phaser.Scene {
         );
 
         this.registry.set('countries', this.countries);
-        console.log(`✅ Loaded simplified map with ${this.countries.length} countries`);
+        logger.log('MAP_LOADING', `✅ Loaded simplified map with ${this.countries.length} countries`);
 
         // 初始化游戏世界（如果需要）
         this.initializeGameWorldIfNeeded();
@@ -475,13 +458,6 @@ export class WorldScene extends Phaser.Scene {
     const state = useGameStore.getState();
     const { territories, commanders, territoryStates, colorMappings } = state;
 
-    console.log('🔄 renderWorld() called:', {
-      hasMapRenderer: !!this.mapRenderer,
-      countriesCount: this.countries.length,
-      territoryStatesSize: territoryStates.size,
-      colorMappingsSize: colorMappings.size,
-    });
-
     // Use new map renderer if available
     if (this.mapRenderer && this.countries.length > 0 && territoryStates.size > 0) {
       this.performanceMonitor.startMeasure('mapRender');
@@ -495,14 +471,6 @@ export class WorldScene extends Phaser.Scene {
 
       this.performanceMonitor.endMeasure('mapRender');
 
-      // Log rendering stats for debugging
-      console.log('🗺️  Map render stats:', {
-        countries: this.countries.length,
-        rendered: stats.countriesRendered,
-        renderTime: Math.round(stats.renderTime * 100) / 100 + 'ms',
-        drawCalls: stats.drawCalls,
-      });
-
       // Update performance metrics
       useGameStore.getState().updatePerformance({
         fps: this.performanceMonitor.getAverageFps(),
@@ -511,8 +479,6 @@ export class WorldScene extends Phaser.Scene {
 
       return;
     }
-
-    console.log('⚠️  Falling back to old rendering system');
 
     // Fallback to old rendering system
     // 清空现有对象
