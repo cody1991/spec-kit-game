@@ -1,5 +1,5 @@
 import { useGameStore } from '../state/store';
-import type { BattleEvent, FactionStatistics } from '../types';
+import type { BattleEvent } from '../types';
 import { debounce } from '../../utils/debounce';
 
 /**
@@ -9,14 +9,13 @@ import { debounce } from '../../utils/debounce';
 export class FactionStatsService {
   private unsubscribeEventLog: (() => void) | null = null;
   private unsubscribeCommanders: (() => void) | null = null;
-  private debouncedHandleBattle: ((event: BattleEvent) => void) | null = null;
+  private debouncedHandleBattle: (event: BattleEvent) => void;
 
   constructor() {
     // 创建防抖版本的战斗处理函数（1秒防抖间隔）
-    this.debouncedHandleBattle = debounce(
-      this.handleBattleResultInternal.bind(this),
-      1000
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler: any = (event: BattleEvent) => this.handleBattleResultInternal(event);
+    this.debouncedHandleBattle = debounce(handler, 1000);
   }
 
   /**
@@ -27,27 +26,42 @@ export class FactionStatsService {
     
     // 初始化所有势力的统计数据
     store.initializeFactionStats();
+    
+    // 调试：检查初始化后的数据
+    console.log('📊 FactionStatsService started');
+    console.log(`   Commanders count: ${store.commanders.length}`);
+    console.log(`   Faction stats size: ${store.factionStats.size}`);
+    console.log('   Sample faction stats:', Array.from(store.factionStats.values()).slice(0, 3));
 
-    // 订阅战斗事件
-    this.unsubscribeEventLog = useGameStore.subscribe(
-      (state) => state.eventLog,
-      (eventLog) => {
-        if (eventLog.length > 0) {
-          const latestEvent = eventLog[eventLog.length - 1];
-          this.handleBattleResult(latestEvent);
-        }
+    // 记录之前的eventLog长度，用于检测新事件
+    let previousEventLogLength = 0;
+
+    // 订阅所有状态变化
+    this.unsubscribeEventLog = useGameStore.subscribe((state) => {
+      // 检查是否有新的战斗事件
+      if (state.eventLog.length > previousEventLogLength) {
+        const latestEvent = state.eventLog[state.eventLog.length - 1];
+        this.handleBattleResult(latestEvent);
+        previousEventLogLength = state.eventLog.length;
       }
-    );
+    });
 
     // 订阅指挥官变化（用于领土统计）
-    this.unsubscribeCommanders = useGameStore.subscribe(
-      (state) => state.commanders,
-      (commanders) => {
+    let previousCommandersLength = store.commanders.length;
+    this.unsubscribeCommanders = useGameStore.subscribe((state) => {
+      // 检查指挥官数量或领土变化
+      const hasChanges = 
+        state.commanders.length !== previousCommandersLength ||
+        state.commanders.some((cmd, idx) => {
+          const prev = store.commanders[idx];
+          return !prev || cmd.controlledTerritories.length !== prev.controlledTerritories.length;
+        });
+      
+      if (hasChanges) {
         this.handleTerritoryChange();
+        previousCommandersLength = state.commanders.length;
       }
-    );
-
-    console.log('📊 FactionStatsService started');
+    });
   }
 
   /**
@@ -75,7 +89,7 @@ export class FactionStatsService {
    * @param event 战斗事件
    */
   private handleBattleResult(event: BattleEvent): void {
-    this.debouncedHandleBattle?.(event);
+    this.debouncedHandleBattle(event);
   }
 
   /**

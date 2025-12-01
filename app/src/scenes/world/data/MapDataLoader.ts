@@ -80,6 +80,14 @@ export class MapDataLoader {
       featureCollection.features.forEach((feature) => {
         try {
           const country = this.featureToCountry(feature);
+          
+          // 🔧 过滤掉南极洲（Antarctica）
+          if (country.id === 'ATA' || country.id === '-99' || 
+              country.name === 'Antarctica' || country.nameEn === 'Antarctica') {
+            console.log(`🚫 Filtered out Antarctica (id: ${country.id})`);
+            return;
+          }
+          
           countries.push(country);
         } catch (error) {
           console.warn(`Failed to convert feature to country:`, error);

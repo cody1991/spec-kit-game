@@ -99,11 +99,13 @@ export function startSession(seed?: string, countries?: Country[]): void {
   store.startGame(seedString);
   store.setCommanders(commanders);
   store.setTerritories(territories);
+  store.setCountries(countries); // 🔧 关键：设置国家数据到store
   store.setColorMappings(colorMappings);
   store.setTerritoryStates(territoryStates);
 
   console.log(`✅ Initialized ${colorMappings.size} commander color mappings`);
   console.log(`✅ Initialized ${territoryStates.size} territory states`);
+  console.log(`✅ Set ${countries.length} countries to store`);
 
   // 发送游戏开始事件
   store.addBattleEvent({
