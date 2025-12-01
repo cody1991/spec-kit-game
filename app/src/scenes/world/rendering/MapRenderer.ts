@@ -292,18 +292,11 @@ export class MapRenderer {
     label.setText(commander.name);
     label.setVisible(true);
 
-    // Adjust visibility based on zoom level
+    // Adjust font size based on zoom level
     const camera = this.scene.cameras.main;
     const zoom = camera.zoom;
-    
-    // Only show labels when zoomed in enough (zoom > 0.6)
-    if (zoom < 0.6) {
-      label.setVisible(false);
-    } else {
-      // Adjust font size based on zoom
-      const fontSize = Math.max(10, Math.min(18, 12 * zoom));
-      label.setFontSize(fontSize);
-    }
+    const fontSize = Math.max(8, Math.min(18, 12 * zoom));
+    label.setFontSize(fontSize);
   }
 
   /**
