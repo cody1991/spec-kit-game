@@ -1,20 +1,14 @@
-import { useMemo } from 'react';
 import { useGameStore } from '@core/state/store';
 import './BattleTimeline.css';
 
 // 单个事件项组件
 function EventItem({ 
   event, 
-  commanderNames
+  getCommanderName
 }: { 
   event: any; 
-  commanderNames: Map<string, string>;
+  getCommanderName: (id?: string) => string;
 }) {
-  const getCommanderName = (id?: string) => {
-    if (!id) return '未知';
-    return commanderNames.get(id) || id;
-  };
-
   return (
     <div className={`event-item event-${event.type}`}>
       <div className="event-time">{new Date(event.timestamp).toLocaleTimeString()}</div>
@@ -32,27 +26,30 @@ function EventItem({
 }
 
 export function BattleTimeline() {
-  // 订阅 eventLog - 每次更新都会是新数组
+  // 订阅 eventLog
   const eventLog = useGameStore((state) => state.eventLog);
   const commanders = useGameStore((state) => state.commanders);
   const isPaused = useGameStore((state) => state.isPaused);
   const setPaused = useGameStore((state) => state.setPaused);
   
-  // 构建指挥官名称映射
-  const commanderNameMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const c of commanders) {
-      map.set(c.id, c.name);
-    }
-    return map;
-  }, [commanders]);
+  // 构建指挥官名称映射 - 每次渲染都重新构建（commanders 变化不频繁）
+  const commanderNameMap = new Map<string, string>();
+  for (const c of commanders) {
+    commanderNameMap.set(c.id, c.name);
+  }
+  
+  const getCommanderName = (id?: string) => {
+    if (!id) return '未知';
+    return commanderNameMap.get(id) || id;
+  };
 
-  // 获取最新的 10 条事件，最新的在最上面
-  // 使用 eventLog.length 作为额外依赖确保更新
-  const recentEvents = useMemo(() => {
-    // 取最后 10 条并反转，使最新的显示在顶部
-    return eventLog.slice(-10).reverse();
-  }, [eventLog]);
+  // 直接计算最新的 10 条事件，最新的在最上面
+  // 不使用 useMemo，确保每次 eventLog 变化都重新计算
+  const recentEvents: any[] = [];
+  const startIndex = Math.max(0, eventLog.length - 10);
+  for (let i = eventLog.length - 1; i >= startIndex; i--) {
+    recentEvents.push(eventLog[i]);
+  }
 
   return (
     <div className="battle-timeline">
@@ -63,15 +60,16 @@ export function BattleTimeline() {
         </button>
       </div>
 
-      <div className="timeline-content">
+      {/* 使用 eventLog.length 作为 key 强制整个列表重新渲染 */}
+      <div className="timeline-content" key={eventLog.length}>
         {recentEvents.length === 0 ? (
           <div className="empty-state">暂无战报</div>
         ) : (
           recentEvents.map((event) => (
             <EventItem 
-              key={event.id} 
+              key={event.id}
               event={event} 
-              commanderNames={commanderNameMap}
+              getCommanderName={getCommanderName}
             />
           ))
         )}
