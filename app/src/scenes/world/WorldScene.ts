@@ -465,6 +465,11 @@ export class WorldScene extends Phaser.Scene {
       performanceConfig,
     } = state;
 
+    // Guard: 确保 territoryStates 已初始化
+    if (!territoryStates || !dirtyFlags) {
+      return;
+    }
+
     // 检查是否需要渲染（节流）
     const now = performance.now();
     if (now - this.lastRenderTime < this.renderThrottleMs && !dirtyFlags.fullRedraw) {
