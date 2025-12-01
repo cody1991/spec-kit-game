@@ -37,7 +37,8 @@ export class WorldScene extends Phaser.Scene {
   private async loadMapDataAsync(): Promise<void> {
     try {
       // Load map data with caching
-      this.countries = await this.mapDataLoader.loadMapData('/maps/world-countries.json', {
+      const basePath = import.meta.env.BASE_URL || '/';
+      this.countries = await this.mapDataLoader.loadMapData(`${basePath}maps/world-countries.json`, {
         enableCache: true,
         cacheDuration: 7,
         useWorker: false, // Disable for now, can enable later
@@ -62,8 +63,9 @@ export class WorldScene extends Phaser.Scene {
 
       // Try fallback to simplified map
       try {
+        const basePath = import.meta.env.BASE_URL || '/';
         this.countries = await this.mapDataLoader.loadMapData(
-          '/maps/world-countries-simplified.json',
+          `${basePath}maps/world-countries-simplified.json`,
           {
             enableCache: false,
             timeout: 5000,

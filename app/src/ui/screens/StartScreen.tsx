@@ -3,14 +3,12 @@ import { startSession } from '@core/session/startSession';
 import './StartScreen.css';
 
 export function StartScreen() {
-  const [customSeed, setCustomSeed] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleStart = () => {
     setLoading(true);
-    const seed = customSeed.trim() || undefined;
     setTimeout(() => {
-      startSession(seed);
+      startSession();
       setLoading(false);
     }, 500);
   };
@@ -22,15 +20,6 @@ export function StartScreen() {
         <p className="subtitle">见证历史人物争霸世界</p>
 
         <div className="start-form">
-          <input
-            type="text"
-            className="seed-input"
-            placeholder="输入种子（可选）"
-            value={customSeed}
-            onChange={(e) => setCustomSeed(e.target.value)}
-            disabled={loading}
-          />
-
           <button className="start-button" onClick={handleStart} disabled={loading}>
             {loading ? '准备战局...' : '开始征服'}
           </button>
