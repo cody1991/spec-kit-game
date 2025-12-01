@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useGameStore } from '../../core/state/store';
 import { sortLeaderboard } from '../../utils/leaderboardSort';
 import './FactionStatsPanel.css';
@@ -35,10 +35,38 @@ export function FactionStatsPanel() {
   const showPanel = useGameStore((state) => state.showFactionStatsPanel);
   const closePanel = useGameStore((state) => state.closeFactionStatsPanel);
 
+  // 追踪最近更新的势力ID（用于视觉反馈）
+  const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState<Set<string>>(new Set());
+
   // 排序排行榜
   const leaderboard = useMemo(() => {
     const stats = Array.from(factionStats.values());
     return sortLeaderboard(stats);
+  }, [factionStats]);
+
+  // 监听 factionStats 变化，追踪更新的势力
+  useEffect(() => {
+    // 找出最近更新的势力（lastUpdatedAt 在最近2秒内）
+    const now = Date.now();
+    const recentThreshold = 2000; // 2秒
+    const updatedIds = new Set<string>();
+
+    factionStats.forEach((stats) => {
+      if (now - stats.lastUpdatedAt < recentThreshold) {
+        updatedIds.add(stats.commanderId);
+      }
+    });
+
+    if (updatedIds.size > 0) {
+      setRecentlyUpdatedIds(updatedIds);
+
+      // 1秒后移除高亮
+      const timer = setTimeout(() => {
+        setRecentlyUpdatedIds(new Set());
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
   }, [factionStats]);
 
   if (!showPanel) {
@@ -76,7 +104,10 @@ export function FactionStatsPanel() {
               </tr>
             ) : (
               leaderboard.map((faction) => (
-                <tr key={faction.commanderId} className="leaderboard-row">
+                <tr 
+                  key={faction.commanderId} 
+                  className={`leaderboard-row ${recentlyUpdatedIds.has(faction.commanderId) ? 'row-updated' : ''}`}
+                >
                   <td className="rank">{faction.rank}</td>
                   <td className="faction-name">{faction.commanderName}</td>
                   <td className="country-count">{faction.countryCount}</td>

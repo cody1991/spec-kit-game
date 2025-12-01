@@ -1,5 +1,6 @@
 import { useGameStore } from '../state/store';
 import type { BattleEvent, FactionStatistics } from '../types';
+import { debounce } from '../../utils/debounce';
 
 /**
  * 势力统计服务
@@ -8,6 +9,15 @@ import type { BattleEvent, FactionStatistics } from '../types';
 export class FactionStatsService {
   private unsubscribeEventLog: (() => void) | null = null;
   private unsubscribeCommanders: (() => void) | null = null;
+  private debouncedHandleBattle: ((event: BattleEvent) => void) | null = null;
+
+  constructor() {
+    // 创建防抖版本的战斗处理函数（1秒防抖间隔）
+    this.debouncedHandleBattle = debounce(
+      this.handleBattleResultInternal.bind(this),
+      1000
+    );
+  }
 
   /**
    * 启动服务，订阅游戏事件
@@ -61,12 +71,41 @@ export class FactionStatsService {
   }
 
   /**
-   * 处理战斗结果，更新战胜/战败统计
+   * 处理战斗结果，更新战胜/战败统计（防抖版本的入口）
    * @param event 战斗事件
    */
   private handleBattleResult(event: BattleEvent): void {
+    this.debouncedHandleBattle?.(event);
+  }
+
+  /**
+   * 处理战斗结果的实际逻辑（内部使用，已防抖）
+   * @param event 战斗事件
+   */
+  private handleBattleResultInternal(event: BattleEvent): void {
+    // 使用 requestIdleCallback 异步执行，避免阻塞主线程
+    const scheduleUpdate = () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => this.updateBattleStats(event));
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(() => this.updateBattleStats(event), 0);
+      }
+    };
+
+    scheduleUpdate();
+  }
+
+  /**
+   * 更新战斗统计数据
+   * @param event 战斗事件
+   */
+  private updateBattleStats(event: BattleEvent): void {
+    console.time('⚔️ Battle stats update');
+
     // 仅处理有防守方的attack事件（排除中立领土占领）
     if (event.type !== 'attack' || !event.defenderId) {
+      console.timeEnd('⚔️ Battle stats update');
       return;
     }
 
@@ -75,6 +114,7 @@ export class FactionStatsService {
     const defenderStats = store.factionStats.get(event.defenderId);
 
     if (!attackerStats || !defenderStats) {
+      console.timeEnd('⚔️ Battle stats update');
       return;
     }
 
@@ -93,9 +133,14 @@ export class FactionStatsService {
         winRate: this.calculateWinRate(defenderStats.wins, newDefenderLosses),
       });
 
-      console.log(`⚔️ Battle stats updated: ${attackerStats.commanderName} wins+1, ${defenderStats.commanderName} losses+1`);
+      console.log(
+        `⚔️ Battle stats updated: ${attackerStats.commanderName} wins+1, ${defenderStats.commanderName} losses+1`,
+        `(${new Date().toISOString()})`
+      );
     }
     // 进攻失败：不计入任何统计
+
+    console.timeEnd('⚔️ Battle stats update');
   }
 
   /**
