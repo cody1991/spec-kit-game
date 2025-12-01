@@ -213,8 +213,8 @@ export class BattleSystem implements System {
         currentPower: updatedDefenderPower,
       });
 
-      // 检查防守方是否被淘汰（使用更新后的值）
-      if (updatedDefenderTerritories.length === 0 || updatedDefenderPower <= 0) {
+      // 检查防守方是否被淘汰（失去所有领土）
+      if (updatedDefenderTerritories.length === 0) {
         // 清除该指挥官所有剩余领土的所有权
         updatedDefenderTerritories.forEach((territoryId) => {
           store.updateTerritory(territoryId, {
