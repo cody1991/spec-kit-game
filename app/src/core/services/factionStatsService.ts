@@ -1,6 +1,5 @@
 import { useGameStore } from '../state/store';
 import type { BattleEvent } from '../types';
-import { debounce } from '../../utils/debounce';
 import { territoryBonusService } from './territoryBonusService';
 
 /**
@@ -10,13 +9,11 @@ import { territoryBonusService } from './territoryBonusService';
 export class FactionStatsService {
   private unsubscribeEventLog: (() => void) | null = null;
   private unsubscribeCommanders: (() => void) | null = null;
-  private debouncedHandleBattle: (event: BattleEvent) => void;
+  // 用于追踪已处理的事件ID，避免重复处理
+  private processedEventIds: Set<string> = new Set();
 
   constructor() {
-    // 创建防抖版本的战斗处理函数（1秒防抖间隔）
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler: any = (event: BattleEvent) => this.handleBattleResultInternal(event);
-    this.debouncedHandleBattle = debounce(handler, 1000);
+    // 构造函数不再需要防抖
   }
 
   /**
@@ -58,8 +55,15 @@ export class FactionStatsService {
     this.unsubscribeEventLog = useGameStore.subscribe((state) => {
       // 检查是否有新的战斗事件
       if (state.eventLog.length > previousEventLogLength) {
-        const latestEvent = state.eventLog[state.eventLog.length - 1];
-        this.handleBattleResult(latestEvent);
+        // 处理所有新增的事件（批量添加时可能有多个）
+        const newEventsCount = state.eventLog.length - previousEventLogLength;
+        for (let i = 0; i < newEventsCount; i++) {
+          const eventIndex = previousEventLogLength + i;
+          const event = state.eventLog[eventIndex];
+          if (event) {
+            this.handleBattleResult(event);
+          }
+        }
         previousEventLogLength = state.eventLog.length;
       }
     });
@@ -88,6 +92,7 @@ export class FactionStatsService {
   stop(): void {
     this.unsubscribeEventLog?.();
     this.unsubscribeCommanders?.();
+    this.processedEventIds.clear();
     console.log('📊 FactionStatsService stopped');
   }
 
@@ -95,37 +100,32 @@ export class FactionStatsService {
    * 计算胜率
    * @param wins 战胜次数
    * @param losses 战败次数
-   * @returns 胜率 (0-1)，如果总数为0则返回-1表示N/A
+   * @returns 胜率 (0-1)，如果总数为0则返回0
    */
   private calculateWinRate(wins: number, losses: number): number {
     const total = wins + losses;
-    return total === 0 ? -1 : wins / total;
+    return total === 0 ? 0 : wins / total;
   }
 
   /**
-   * 处理战斗结果，更新战胜/战败统计（防抖版本的入口）
+   * 处理战斗结果，更新战胜/战败统计
    * @param event 战斗事件
    */
   private handleBattleResult(event: BattleEvent): void {
-    this.debouncedHandleBattle(event);
-  }
-
-  /**
-   * 处理战斗结果的实际逻辑（内部使用，已防抖）
-   * @param event 战斗事件
-   */
-  private handleBattleResultInternal(event: BattleEvent): void {
-    // 使用 requestIdleCallback 异步执行，避免阻塞主线程
-    const scheduleUpdate = () => {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => this.updateBattleStats(event));
-      } else {
-        // Fallback for browsers without requestIdleCallback
-        setTimeout(() => this.updateBattleStats(event), 0);
-      }
-    };
-
-    scheduleUpdate();
+    // 检查是否已处理过此事件
+    if (this.processedEventIds.has(event.id)) {
+      return;
+    }
+    this.processedEventIds.add(event.id);
+    
+    // 限制已处理事件集合大小，防止内存泄漏
+    if (this.processedEventIds.size > 1000) {
+      const idsArray = Array.from(this.processedEventIds);
+      this.processedEventIds = new Set(idsArray.slice(-500));
+    }
+    
+    // 直接处理，不再防抖
+    this.updateBattleStats(event);
   }
 
   /**
@@ -169,8 +169,26 @@ export class FactionStatsService {
         `⚔️ Battle stats updated: ${attackerStats.commanderName} wins+1, ${defenderStats.commanderName} losses+1`,
         `(${new Date().toISOString()})`
       );
+    } else if (event.result === 'fail') {
+      // 进攻失败：进攻方战败+1，防守方战胜+1
+      const newAttackerLosses = attackerStats.losses + 1;
+      const newDefenderWins = defenderStats.wins + 1;
+
+      store.updateFactionStats(event.attackerId!, {
+        losses: newAttackerLosses,
+        winRate: this.calculateWinRate(attackerStats.wins, newAttackerLosses),
+      });
+
+      store.updateFactionStats(event.defenderId, {
+        wins: newDefenderWins,
+        winRate: this.calculateWinRate(newDefenderWins, defenderStats.losses),
+      });
+
+      console.log(
+        `⚔️ Battle stats updated: ${attackerStats.commanderName} losses+1, ${defenderStats.commanderName} wins+1`,
+        `(${new Date().toISOString()})`
+      );
     }
-    // 进攻失败：不计入任何统计
 
     console.timeEnd('⚔️ Battle stats update');
   }

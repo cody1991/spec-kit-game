@@ -641,7 +641,7 @@ export const useGameStore = create<GameState>((set) => ({
           totalArea,
           wins: 0,
           losses: 0,
-          winRate: -1, // N/A initially
+          winRate: 0, // 0% initially
           lastUpdatedAt: Date.now(),
           territoryBonus: null, // Will be calculated by territoryBonusService
         });

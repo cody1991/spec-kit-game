@@ -217,7 +217,7 @@ export interface FactionStatistics {
   totalArea: number;
   wins: number;
   losses: number;
-  winRate: number; // -1 for N/A, otherwise [0, 1]
+  winRate: number; // [0, 1]
   lastUpdatedAt: number;
   /** 领土加成数据 (Feature: 008-territory-bonus) */
   territoryBonus: TerritoryBonus | null;

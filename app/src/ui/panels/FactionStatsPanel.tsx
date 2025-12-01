@@ -18,13 +18,10 @@ function formatArea(area: number): string {
 
 /**
  * 格式化胜率显示
- * @param winRate 胜率 (-1表示N/A，否则为0-1之间的数)
- * @returns 格式化字符串（例如："75.5%" 或 "N/A"）
+ * @param winRate 胜率 (0-1之间的数)
+ * @returns 格式化字符串（例如：\"75.5%\"）
  */
 function formatWinRate(winRate: number): string {
-  if (winRate < 0) {
-    return 'N/A';
-  }
   return `${(winRate * 100).toFixed(1)}%`;
 }
 
@@ -107,34 +104,40 @@ export function FactionStatsPanel() {
                 </td>
               </tr>
             ) : (
-              leaderboard.map((faction) => (
-                <tr
-                  key={faction.commanderId}
-                  className={`leaderboard-row ${recentlyUpdatedIds.has(faction.commanderId) ? 'row-updated' : ''} ${expandedFactionId === faction.commanderId ? 'row-expanded' : ''}`}
-                  onClick={() =>
-                    setExpandedFactionId(
-                      expandedFactionId === faction.commanderId ? null : faction.commanderId
-                    )
-                  }
-                  style={{ cursor: 'pointer' }}
-                >
-                  <td className="rank">{faction.rank}</td>
-                  <td className="faction-name">{faction.commanderName}</td>
-                  <td className="country-count">{faction.countryCount}</td>
-                  <td className="area">{formatArea(faction.totalArea)}</td>
-                  <td className="attack-bonus">
-                    {faction.territoryBonus
-                      ? `+${(faction.territoryBonus.totalAttackBonus * 100).toFixed(1)}%`
-                      : '-'}
-                  </td>
-                  <td className="defense-bonus">
-                    {faction.territoryBonus
-                      ? `+${(faction.territoryBonus.totalDefenseBonus * 100).toFixed(1)}%`
-                      : '-'}
-                  </td>
-                  <td className="win-rate">{formatWinRate(faction.winRate)}</td>
-                </tr>
-              ))
+              leaderboard.map((faction) => {
+                const isEliminated = faction.countryCount === 0;
+                return (
+                  <tr
+                    key={faction.commanderId}
+                    className={`leaderboard-row ${recentlyUpdatedIds.has(faction.commanderId) ? 'row-updated' : ''} ${expandedFactionId === faction.commanderId ? 'row-expanded' : ''} ${isEliminated ? 'row-eliminated' : ''}`}
+                    onClick={() =>
+                      setExpandedFactionId(
+                        expandedFactionId === faction.commanderId ? null : faction.commanderId
+                      )
+                    }
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td className="rank">{faction.rank}</td>
+                    <td className="faction-name">
+                      {faction.commanderName}
+                      {isEliminated && <span className="eliminated-tag">已淘汰</span>}
+                    </td>
+                    <td className="country-count">{faction.countryCount}</td>
+                    <td className="area">{formatArea(faction.totalArea)}</td>
+                    <td className="attack-bonus">
+                      {faction.territoryBonus
+                        ? `+${(faction.territoryBonus.totalAttackBonus * 100).toFixed(1)}%`
+                        : '-'}
+                    </td>
+                    <td className="defense-bonus">
+                      {faction.territoryBonus
+                        ? `+${(faction.territoryBonus.totalDefenseBonus * 100).toFixed(1)}%`
+                        : '-'}
+                    </td>
+                    <td className="win-rate">{formatWinRate(faction.winRate)}</td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

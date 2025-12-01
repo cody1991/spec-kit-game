@@ -261,3 +261,25 @@
   color: #e0e8f0;
   font-weight: 600;
 }
+
+/* 已淘汰势力样式 */
+.row-eliminated {
+  opacity: 0.5;
+}
+
+.row-eliminated .faction-name {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.eliminated-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.2);
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
