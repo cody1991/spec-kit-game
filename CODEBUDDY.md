@@ -5,6 +5,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-30
 ## Active Technologies
 - TypeScript 5.x + Zustand (状态管理), Phaser 3 (游戏引擎), React 18 (UI) (009-unification-balance)
 - 内存状态（Zustand store），无持久化需求 (009-unification-balance)
+- 内存状态（Zustand store）+ IndexedDB（idb 7.1.1）用于持久化 (010-gradual-conquest)
 
 - TypeScript 5.4（严格模式，ESM） + Phaser 3.80（地图渲染）、React 18（UI面板）、Zustand 4（状态管理与订阅） (004-fix-battle-territory-bugs)
 - IndexedDB（eventLog持久化）、Zustand内存存储（territories、territoryStates） (004-fix-battle-territory-bugs)
@@ -40,10 +41,10 @@ npm test && npm run lint
 TypeScript 5.4（ESM，strictNullChecks on）: Follow standard conventions
 
 ## Recent Changes
+- 010-gradual-conquest: Added TypeScript 5.4.5 + React 18.2, Zustand 4.4.7, Phaser 3.80.1, D3-geo 3.1.0
 - 009-unification-balance: Added TypeScript 5.x + Zustand (状态管理), Phaser 3 (游戏引擎), React 18 (UI)
 
 - 008-territory-bonus: Added TypeScript 5.4.5 + React 18.2, Zustand 4.4.7, Phaser 3.80.1, D3-geo 3.1.0
-- 007-conquest-logic-fix: Added TypeScript 5.x, React 18.x + Phaser 3, Zustand, D3-geo, TopoJSON
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

@@ -1,109 +1,103 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: 渐进式领土蚕食机制
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Branch**: `010-gradual-conquest` | **Date**: 2025-12-01 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/010-gradual-conquest/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+实现渐进式领土蚕食机制，将当前"一次性完全占领"模式改为"逐步蚕食"模式。战斗胜利后增加占领进度（而非直接更换所有者），进度达到100%时正式转移领土。支持多攻击方独立追踪进度、进度自动衰减、以及基于领土面积的进度计算规则。
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript 5.4.5  
+**Primary Dependencies**: React 18.2, Zustand 4.4.7, Phaser 3.80.1, D3-geo 3.1.0  
+**Storage**: 内存状态（Zustand store）+ IndexedDB（idb 7.1.1）用于持久化  
+**Testing**: Vitest 1.0.4 + Playwright 1.40.1  
+**Target Platform**: Web Browser (Chrome, Firefox, Safari)  
+**Project Type**: Web application (React + Phaser game)  
+**Performance Goals**: 60fps 渲染，tick 处理时间 <10ms  
+**Constraints**: 占领进度计算不应增加超过 2ms 的 tick 处理时间  
+**Scale/Scope**: ~200 个国家/领土，30-50 个指挥官
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-1. **代码质量门禁**：计划中需列出格式化、静态分析与代码评审策略，说明如何衡量复杂度与文档产出。
-2. **测试门禁**：必须给出测试金字塔、覆盖率目标与测试先行策略，明确哪些测试会在 CI 中阻塞合并。
-3. **体验门禁**：描述目标用户、成功路径与失败恢复体验，并附可达性与可用性验证方法。
-4. **性能门禁**：提供端到端性能预算、基准方案与降级/背压策略，说明如何监测回归。
-5. **可观测性门禁**：定义日志、指标、追踪最小集合及其仪表盘位置，确保上线后 24h 内可复盘。
+1. **代码质量门禁** ✅
+   - 格式化：使用 Prettier 统一格式
+   - 静态分析：ESLint + TypeScript 严格模式
+   - 代码评审：PR 合并前需 review
+   - 复杂度：新增模块遵循单一职责原则，`ConquestProgressSystem` 独立于 `BattleSystem`
+
+2. **测试门禁** ✅
+   - 测试金字塔：单元测试（进度计算逻辑）> 集成测试（系统交互）> E2E（用户流程）
+   - 覆盖率目标：80%（针对新增代码）
+   - CI 阻塞：`pnpm test` 必须通过才能合并
+   - 测试先行：先编写进度计算的测试用例
+
+3. **体验门禁** ✅
+   - 目标用户：游戏玩家，期望看到渐进式征服过程
+   - 成功路径：观察领土被逐步蚕食，体验拉锯战紧张感
+   - 失败恢复：进度衰减机制防止"占坑不打"
+   - 可达性：渐变色需有足够对比度，悬停显示具体进度数值
+
+4. **性能门禁** ✅
+   - 性能预算：进度计算 <2ms/tick，渲染 60fps
+   - 基准方案：使用 Map 数据结构 O(1) 查找，批量更新减少 store 调用
+   - 降级策略：低端设备可禁用渐变色动画
+
+5. **可观测性门禁** ✅
+   - 日志：使用现有 `logger` 记录进度变化事件
+   - 指标：在 `PerformanceMetrics` 中追踪进度计算耗时
+   - 仪表盘：开发者控制台显示当前争夺中的领土数量
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+specs/010-gradual-conquest/
+├── plan.md              # This file
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output (internal interfaces)
+└── tasks.md             # Phase 2 output (/speckit.tasks command)
 ```
 
 ### Source Code (repository root)
 
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
-
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+app/src/
+├── core/
+│   ├── types.ts                          # 扩展 Territory 类型
+│   ├── simulation/
+│   │   └── systems/
+│   │       ├── battleSystem.ts           # 修改：使用进度系统
+│   │       └── conquestProgressSystem.ts # 新增：进度管理系统
+│   └── state/
+│       └── store.ts                      # 扩展：进度状态管理
+├── config/
+│   └── conquestProgress.config.ts        # 新增：进度配置
+├── scenes/world/
+│   └── rendering/
+│       └── MapRenderer.ts                # 修改：渐变色渲染
+└── ui/panels/
+    └── CountryDetailPanel.tsx            # 修改：显示进度信息
 
 tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+├── unit/
+│   └── conquestProgress.test.ts          # 新增：进度计算测试
+└── integration/
+    └── gradualConquest.test.ts           # 新增：系统集成测试
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: 遵循现有项目结构，新增 `conquestProgressSystem.ts` 作为独立系统，与 `battleSystem.ts` 协作但职责分离。
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> 无违规项，设计遵循现有架构模式。
 
-| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
-| -------------------------- | ------------------ | ------------------------------------ |
-| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+| --------- | ---------- | ------------------------------------ |
+| N/A       | N/A        | N/A                                  |
