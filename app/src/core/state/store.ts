@@ -161,9 +161,11 @@ export interface GameState {
   setCommanders: (commanders: HistoricalCommander[]) => void;
   setTerritories: (territories: Territory[]) => void;
   updateCommander: (id: string, updates: Partial<HistoricalCommander>) => void;
+  batchUpdateCommanders: (updates: Array<{ id: string; updates: Partial<HistoricalCommander> }>) => void;
   updateTerritory: (id: string, updates: Partial<Territory>) => void;
   batchUpdateTerritories: (updates: Array<{ id: string; updates: Partial<Territory> }>) => void;
   addBattleEvent: (event: BattleEvent) => void;
+  addBattleEvents: (events: BattleEvent[]) => void;
   selectCommander: (id: string | null) => void;
   selectTerritory: (id: string | null) => void;
   setVictory: (commanderId: string) => void;
@@ -286,6 +288,34 @@ export const useGameStore = create<GameState>((set) => ({
       };
     }),
 
+  batchUpdateCommanders: (updates) =>
+    set((state) => {
+      if (updates.length === 0) return {};
+      
+      // 构建更新 Map
+      const updateMap = new Map<string, Partial<HistoricalCommander>>();
+      for (const { id, updates: commanderUpdates } of updates) {
+        updateMap.set(id, commanderUpdates);
+      }
+      
+      // 单次遍历更新
+      const newCommanders = state.commanders.map((c) => {
+        const commanderUpdates = updateMap.get(c.id);
+        return commanderUpdates ? { ...c, ...commanderUpdates } : c;
+      });
+      
+      // 标记脏
+      const newDirtyFlags = { ...state.dirtyFlags };
+      for (const { id } of updates) {
+        newDirtyFlags.commanders.add(id);
+      }
+      
+      return {
+        commanders: newCommanders,
+        dirtyFlags: newDirtyFlags,
+      };
+    }),
+
   updateTerritory: (id, updates) =>
     set((state) => {
       logger.log('STORE_UPDATE', `🔄 [store.updateTerritory] Called for ${id}`);
@@ -313,29 +343,44 @@ export const useGameStore = create<GameState>((set) => ({
     set((state) => {
       logger.log('STORE_UPDATE', `🔄 [store.batchUpdateTerritories] Processing ${updates.length} updates`);
       
-      let newTerritories = [...state.territories];
+      // 构建更新 Map，O(1) 查找
+      const updateMap = new Map<string, Partial<Territory>>();
+      for (const { id, updates: territoryUpdates } of updates) {
+        updateMap.set(id, territoryUpdates);
+      }
+      
+      // 单次遍历更新 territories 数组
+      const newTerritories = state.territories.map((t) => {
+        const territoryUpdates = updateMap.get(t.id);
+        return territoryUpdates ? { ...t, ...territoryUpdates } : t;
+      });
+      
+      // 更新 territoryStates
       const newStates = new Map(state.territoryStates);
       const newDirtyFlags = { ...state.dirtyFlags };
       
       for (const { id, updates: territoryUpdates } of updates) {
-        // Update territories array
-        newTerritories = newTerritories.map((t) =>
-          t.id === id ? { ...t, ...territoryUpdates } : t
-        );
-        
-        // Update territoryStates
         const existingState = newStates.get(id);
-        if (existingState && territoryUpdates.ownerId !== undefined) {
-          newStates.set(id, {
-            ...existingState,
-            previousOwnerId: existingState.ownerId,
-            ownerId: territoryUpdates.ownerId,
-            troops: territoryUpdates.garrison ?? existingState.troops,
-            defense: territoryUpdates.stability ?? existingState.defense,
-            conqueredAt: Date.now(),
-            updatedAt: Date.now(),
-            transitionProgress: 0,
-          });
+        if (existingState) {
+          if (territoryUpdates.ownerId !== undefined) {
+            newStates.set(id, {
+              ...existingState,
+              previousOwnerId: existingState.ownerId,
+              ownerId: territoryUpdates.ownerId,
+              troops: territoryUpdates.garrison ?? existingState.troops,
+              defense: territoryUpdates.stability ?? existingState.defense,
+              conqueredAt: Date.now(),
+              updatedAt: Date.now(),
+              transitionProgress: 0,
+            });
+          } else if (territoryUpdates.garrison !== undefined || territoryUpdates.stability !== undefined) {
+            newStates.set(id, {
+              ...existingState,
+              troops: territoryUpdates.garrison ?? existingState.troops,
+              defense: territoryUpdates.stability ?? existingState.defense,
+              updatedAt: Date.now(),
+            });
+          }
         }
         
         // Mark as dirty
@@ -355,7 +400,17 @@ export const useGameStore = create<GameState>((set) => ({
       state.eventLogBuffer.push(event);
       
       // 同时更新 eventLog 数组以保持向后兼容
-      // 但使用 RingBuffer 的 toArray 而不是 slice
+      return {
+        eventLog: state.eventLogBuffer.toArray(),
+      };
+    }),
+
+  addBattleEvents: (events) =>
+    set((state) => {
+      // 批量添加事件
+      for (const event of events) {
+        state.eventLogBuffer.push(event);
+      }
       return {
         eventLog: state.eventLogBuffer.toArray(),
       };

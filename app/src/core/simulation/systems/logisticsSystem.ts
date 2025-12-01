@@ -32,6 +32,10 @@ export class LogisticsSystem implements System {
       });
     }
 
+    // 收集所有更新
+    const allTerritoryUpdates: Array<{ id: string; updates: { stability?: number; garrison?: number } }> = [];
+    const allCommanderUpdates: Array<{ id: string; updates: { currentPower?: number; morale?: number } }> = [];
+
     // 每个指挥官根据领土获得补给和恢复
     for (let i = 0; i < commanders.length; i++) {
       const commander = commanders[i];
@@ -50,23 +54,24 @@ export class LogisticsSystem implements System {
         }
       }
 
-      // 恢复战力和士气
+      // 收集指挥官更新
       const powerGain = Math.min(5, totalFood + totalIndustry);
       const moraleGain = Math.min(3, Math.floor(totalFood / 2));
 
-      store.updateCommander(commander.id, {
-        currentPower: Math.min(100, commander.currentPower + powerGain),
-        morale: Math.min(100, commander.morale + moraleGain),
+      allCommanderUpdates.push({
+        id: commander.id,
+        updates: {
+          currentPower: Math.min(100, commander.currentPower + powerGain),
+          morale: Math.min(100, commander.morale + moraleGain),
+        },
       });
 
-      // 批量收集领土更新
-      const territoryUpdates: Array<{ id: string; updates: { stability?: number; garrison?: number } }> = [];
-      
+      // 收集领土更新
       for (let j = 0; j < ownedTerritoryIds.length; j++) {
         const territoryId = ownedTerritoryIds[j];
         const cached = this.territoryCache.get(territoryId);
         if (cached) {
-          territoryUpdates.push({
+          allTerritoryUpdates.push({
             id: territoryId,
             updates: {
               stability: Math.min(100, cached.stability + 2),
@@ -75,17 +80,14 @@ export class LogisticsSystem implements System {
           });
         }
       }
+    }
 
-      // 使用批量更新（如果有很多领土）
-      if (territoryUpdates.length > 5) {
-        store.batchUpdateTerritories(territoryUpdates);
-      } else {
-        // 少量领土时逐个更新
-        for (let j = 0; j < territoryUpdates.length; j++) {
-          const { id, updates } = territoryUpdates[j];
-          store.updateTerritory(id, updates);
-        }
-      }
+    // 一次性批量更新
+    if (allCommanderUpdates.length > 0) {
+      store.batchUpdateCommanders(allCommanderUpdates);
+    }
+    if (allTerritoryUpdates.length > 0) {
+      store.batchUpdateTerritories(allTerritoryUpdates);
     }
   }
 }

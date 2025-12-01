@@ -319,64 +319,63 @@ export class WorldScene extends Phaser.Scene {
    * Setup subscription to territoryStates changes
    * Triggers map updates when territory ownership changes
    * 
-   * @performance 使用浅比较优化，只在实际变化时触发更新
+   * @performance 
+   * - 使用浅比较优化，只在实际变化时触发更新
+   * - 节流订阅回调，延迟处理而不是丢弃更新
    */
   private setupTerritorySubscription(): void {
     const state = useGameStore.getState();
-    let previousTerritoryStates = new Map(state.territoryStates);
-    let previousSize = previousTerritoryStates.size;
+    let previousSize = state.territoryStates.size;
+    let pendingUpdate = false;
+    let throttleTimer: ReturnType<typeof setTimeout> | null = null;
+    const SUBSCRIPTION_THROTTLE_MS = 100; // 最多每100ms处理一次
 
     logger.log('SUBSCRIPTION', `🔔 [WorldScene] Setting up subscription with ${previousSize} initial states`);
+
+    const processUpdate = () => {
+      pendingUpdate = false;
+      throttleTimer = null;
+      // 触发渲染
+      this.renderWorld();
+    };
 
     // Subscribe to all state changes with optimized comparison
     this.territorySubscription = useGameStore.subscribe((newState) => {
       const newStates = newState.territoryStates;
       const newSize = newStates.size;
+      const dirtyTerritories = newState.dirtyFlags.territories;
 
-      // 快速检查：如果大小相同且没有脏标记，跳过详细比较
-      if (newSize === previousSize && !newState.dirtyFlags.fullRedraw && newState.dirtyFlags.territories.size === 0) {
+      // 快速检查：如果没有脏领土且大小相同，跳过
+      if (dirtyTerritories.size === 0 && newSize === previousSize && !newState.dirtyFlags.fullRedraw) {
         return;
       }
 
-      logger.log('SUBSCRIPTION', `🔔 [WorldScene] Subscription triggered, checking ${newSize} states`);
-
-      // 只处理脏标记中的领土
-      const dirtyTerritories = newState.dirtyFlags.territories;
-      
-      if (dirtyTerritories.size > 0) {
-        dirtyTerritories.forEach((territoryId) => {
-          const newTerritoryState = newStates.get(territoryId);
-          if (newTerritoryState) {
-            this.handleTerritoryOwnershipChange(territoryId, newTerritoryState);
-          }
-        });
-      }
-
-      // 检查是否需要处理被移除的领土
-      if (newSize < previousSize) {
-        previousTerritoryStates.forEach((prevState, territoryId) => {
-          if (!newStates.has(territoryId)) {
-            const neutralState: TerritoryState = {
-              countryId: prevState.countryId,
-              countryName: prevState.countryName,
-              ownerId: null,
-              troops: prevState.troops,
-              resources: prevState.resources,
-              defense: prevState.defense,
-              updatedAt: Date.now(),
-              conqueredAt: prevState.conqueredAt,
-              previousOwnerId: prevState.ownerId,
-              transitionProgress: null,
-              isHighlighted: false,
-            };
-            this.handleTerritoryOwnershipChange(territoryId, neutralState);
-          }
-        });
-      }
-
-      // Update reference for next comparison
-      previousTerritoryStates = new Map(newStates);
       previousSize = newSize;
+
+      // 标记有待处理的更新
+      if (dirtyTerritories.size > 0 || newState.dirtyFlags.fullRedraw) {
+        logger.log('SUBSCRIPTION', `🔔 [WorldScene] ${dirtyTerritories.size} dirty territories detected`);
+        
+        // 如果没有待处理的定时器，立即设置一个
+        if (!throttleTimer) {
+          if (!pendingUpdate) {
+            // 首次更新立即执行
+            pendingUpdate = true;
+            processUpdate();
+          }
+          // 设置节流定时器，确保后续更新不会太频繁
+          throttleTimer = setTimeout(() => {
+            if (pendingUpdate) {
+              processUpdate();
+            } else {
+              throttleTimer = null;
+            }
+          }, SUBSCRIPTION_THROTTLE_MS);
+        } else {
+          // 已有定时器，标记待处理
+          pendingUpdate = true;
+        }
+      }
     });
 
     logger.log('SUBSCRIPTION', '✅ [WorldScene] Territory subscription active');
