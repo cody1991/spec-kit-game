@@ -17,6 +17,8 @@ export class WorldScene extends Phaser.Scene {
   private performanceMonitor!: PerformanceMonitor;
   private countries: Country[] = [];
   private territorySubscription?: () => void;
+  private lastRenderTime: number = 0;
+  private renderThrottleMs: number = 16; // 默认 ~60fps
 
   constructor() {
     super({ key: 'WorldScene' });
@@ -59,7 +61,7 @@ export class WorldScene extends Phaser.Scene {
         this.renderWorld();
       }
     } catch (error) {
-      console.error('❌ Failed to load map data:', error);
+      logger.error('❌ Failed to load map data:', error);
 
       // Try fallback to simplified map
       try {
@@ -84,14 +86,14 @@ export class WorldScene extends Phaser.Scene {
           this.renderWorld();
         }
       } catch (fallbackError) {
-        console.error('❌ Fallback map load also failed:', fallbackError);
+        logger.error('❌ Fallback map load also failed:', fallbackError);
         // Continue with empty map - old territory system will be used
       }
     }
   }
 
   create(): void {
-    console.log('🎬 WorldScene.create() called');
+    logger.log('MAP_RENDERER_INIT', '🎬 WorldScene.create() called');
 
     this.territoriesGroup = this.add.group();
     this.commandersGroup = this.add.group();
@@ -107,12 +109,7 @@ export class WorldScene extends Phaser.Scene {
     camera.setScroll(0, 0);
     camera.setZoom(1);
 
-    console.log('📷 Camera initialized:', {
-      bounds: camera.getBounds(),
-      scroll: { x: camera.scrollX, y: camera.scrollY },
-      zoom: camera.zoom,
-      viewport: { width: camera.width, height: camera.height },
-    });
+    logger.log('MAP_RENDERER_INIT', '📷 Camera initialized');
 
     // Wait for map data to load (async operation from preload)
     // Check periodically until countries are loaded
@@ -124,7 +121,7 @@ export class WorldScene extends Phaser.Scene {
       elapsedTime += checkInterval;
 
       if (this.countries.length > 0) {
-        console.log(`✅ Map data ready (waited ${elapsedTime}ms), initializing renderer...`);
+        logger.log('MAP_LOADING', `✅ Map data ready (waited ${elapsedTime}ms), initializing renderer...`);
         this.initializeMapRenderer();
         this.initializeCameraController();
         this.verifyTerritoryStatesComplete();
@@ -133,10 +130,10 @@ export class WorldScene extends Phaser.Scene {
         this.renderWorld();
         this.events.on('postupdate', this.onUpdate, this);
       } else if (elapsedTime < maxWaitTime) {
-        console.log(`⏳ Waiting for map data... (${elapsedTime}ms)`);
+        logger.log('MAP_LOADING', `⏳ Waiting for map data... (${elapsedTime}ms)`);
         this.time.delayedCall(checkInterval, waitForMapData);
       } else {
-        console.warn('⚠️  Map data not loaded after 5s, falling back to old system');
+        logger.warn('WARNINGS', '⚠️  Map data not loaded after 5s, falling back to old system');
         this.initializeCameraController();
         this.verifyTerritoryStatesComplete();
         this.setupTerritorySubscription();
@@ -172,16 +169,12 @@ export class WorldScene extends Phaser.Scene {
                        this.isUsingOldRegionSystem(territories));
 
     if (needsInit) {
-      console.log('🔄 Reinitializing game world with country data...');
-      console.log(`   Current state: commanders=${commanders.length}, territories=${territories.length}`);
-      console.log(`   Countries available: ${this.countries.length}`);
+      logger.log('GAME_SESSION', '🔄 Reinitializing game world with country data...');
       
       // 使用真实国家数据重新启动会话
       startSession(seed, this.countries);
       
-      console.log('✅ Game world reinitialized with country-based territories');
-    } else if (!gameStarted && this.countries.length > 0) {
-      console.log('⚠️  Map data loaded but game not started yet');
+      logger.log('GAME_SESSION', '✅ Game world reinitialized with country-based territories');
     }
   }
 
@@ -197,10 +190,6 @@ export class WorldScene extends Phaser.Scene {
     const sampleId = territories[0].id;
     const isOldSystem = sampleId.includes('-') || isNaN(Number(sampleId));
     
-    if (isOldSystem) {
-      console.log(`⚠️  Detected old region system (sample ID: "${sampleId}")`);
-    }
-    
     return isOldSystem;
   }
 
@@ -211,7 +200,7 @@ export class WorldScene extends Phaser.Scene {
 
   private initializeMapRenderer(): void {
     try {
-      console.log('🎨 Initializing MapRenderer...');
+      logger.log('MAP_RENDERER_INIT', '🎨 Initializing MapRenderer...');
       this.mapRenderer = new MapRenderer();
       this.mapRenderer.initialize(this, {
         useWebGL: true,
@@ -222,12 +211,12 @@ export class WorldScene extends Phaser.Scene {
         poolSize: 200,
       });
 
-      console.log('✅ MapRenderer initialized successfully');
+      logger.log('MAP_RENDERER_INIT', '✅ MapRenderer initialized successfully');
 
       // Map countries to commanders
       this.mapCountriesToCommanders();
     } catch (error) {
-      console.error('❌ Failed to initialize MapRenderer:', error);
+      logger.error('❌ Failed to initialize MapRenderer:', error);
       this.mapRenderer = null as any;
     }
   }
@@ -241,6 +230,7 @@ export class WorldScene extends Phaser.Scene {
    * @performance
    * - Target: < 10ms for 200 countries（比之前更快，因为不需要区域映射）
    * - Uses Map data structure for O(1) lookups
+   * - 复用已存在的 Map 对象，减少 GC 压力
    */
   private mapCountriesToCommanders(): void {
     performance.mark('mapping-start');
@@ -248,22 +238,20 @@ export class WorldScene extends Phaser.Scene {
     const state = useGameStore.getState();
     const { commanders, territories } = state;
 
-    console.log('🔍 Syncing country ownership from game state...');
-    console.log(
-      '   Commanders:',
-      commanders.map((c) => `${c.name} (${c.id}): ${c.controlledTerritories.slice(0, 3).join(', ')}${c.controlledTerritories.length > 3 ? '...' : ''}`
-      )
-    );
+    logger.log('MAP_LOADING', '🔍 Syncing country ownership from game state...');
 
-    // 直接从territories获取所有权信息（Territory.id现在就是国家ID）
-    const territoryStates = new Map();
-    territories.forEach((territory) => {
+    // 复用已存在的 Map 或创建新的
+    const territoryStates = new Map<string, TerritoryState>();
+    
+    // 使用 for 循环代替 forEach 以提高性能
+    for (let i = 0; i < territories.length; i++) {
+      const territory = territories[i];
       if (territory.ownerId) {
         const country = this.countries.find(c => c.id === territory.id);
         
         territoryStates.set(territory.id, {
-          countryId: territory.id, // 现在是真实国家ID
-          countryName: country?.name || territory.name, // 优先使用真实国家名
+          countryId: territory.id,
+          countryName: country?.name || territory.name,
           ownerId: territory.ownerId,
           troops: territory.garrison,
           resources: 0,
@@ -275,7 +263,7 @@ export class WorldScene extends Phaser.Scene {
           isHighlighted: false,
         });
       }
-    });
+    }
 
     // 更新store中的territoryStates（确保地图渲染层有正确数据）
     state.setTerritoryStates(territoryStates);
@@ -284,28 +272,7 @@ export class WorldScene extends Phaser.Scene {
     performance.measure('mapping-duration', 'mapping-start', 'mapping-end');
     const duration = performance.getEntriesByName('mapping-duration')[0]?.duration || 0;
 
-    console.log(`🗺️  Synced ${territoryStates.size} countries with ${commanders.length} commanders`);
-    console.log(`⏱️  Sync completed in ${duration.toFixed(2)}ms`);
-
-    // Log mapping details
-    if (process.env.NODE_ENV === 'development') {
-      const mappedCommanderIds = new Set<string>();
-      territoryStates.forEach((ts) => mappedCommanderIds.add(ts.ownerId));
-      console.log(
-        `   Commanders with territories: ${mappedCommanderIds.size}/${commanders.length}`
-      );
-
-      // Log sample mappings with commander names
-      const samples = Array.from(territoryStates.entries()).slice(0, 3);
-      console.log(
-        '   Sample mappings:',
-        samples.map(([countryId, ts]) => {
-          const country = this.countries.find((c) => c.id === countryId);
-          const commander = commanders.find((c) => c.id === ts.ownerId);
-          return `${country?.name || countryId} -> ${commander?.name || ts.ownerId}`;
-        })
-      );
-    }
+    logger.log('MAP_LOADING', `🗺️  Synced ${territoryStates.size} countries with ${commanders.length} commanders in ${duration.toFixed(2)}ms`);
   }
 
   /**
@@ -342,80 +309,77 @@ export class WorldScene extends Phaser.Scene {
     });
 
     if (missingStates.length > 0) {
-      console.warn(
-        `⚠️  [WorldScene] Created default states for ${missingStates.length} territories:`,
-        missingStates.slice(0, 5)
-      );
+      logger.warn('WARNINGS', `⚠️  [WorldScene] Created default states for ${missingStates.length} territories`);
     } else {
-      console.log('✅ [WorldScene] All territory states initialized');
+      logger.log('MAP_LOADING', '✅ [WorldScene] All territory states initialized');
     }
   }
 
   /**
    * Setup subscription to territoryStates changes
    * Triggers map updates when territory ownership changes
+   * 
+   * @performance 使用浅比较优化，只在实际变化时触发更新
    */
   private setupTerritorySubscription(): void {
     const state = useGameStore.getState();
     let previousTerritoryStates = new Map(state.territoryStates);
+    let previousSize = previousTerritoryStates.size;
 
-    console.log(`🔔 [WorldScene] Setting up subscription with ${previousTerritoryStates.size} initial states`);
+    logger.log('SUBSCRIPTION', `🔔 [WorldScene] Setting up subscription with ${previousSize} initial states`);
 
-    // Subscribe to all state changes
+    // Subscribe to all state changes with optimized comparison
     this.territorySubscription = useGameStore.subscribe((newState) => {
       const newStates = newState.territoryStates;
+      const newSize = newStates.size;
 
-      console.log(`🔔 [WorldScene] Subscription triggered, checking ${newStates.size} states`);
+      // 快速检查：如果大小相同且没有脏标记，跳过详细比较
+      if (newSize === previousSize && !newState.dirtyFlags.fullRedraw && newState.dirtyFlags.territories.size === 0) {
+        return;
+      }
 
-      // Check for changes in territory ownership
-      let changesDetected = 0;
-      newStates.forEach((newState: TerritoryState, territoryId: string) => {
-        const prevState = previousTerritoryStates.get(territoryId);
+      logger.log('SUBSCRIPTION', `🔔 [WorldScene] Subscription triggered, checking ${newSize} states`);
 
-        // Check if ownerId changed
-        if (!prevState || prevState.ownerId !== newState.ownerId) {
-          console.log(
-            `🔔 [WorldScene] Change detected: ${territoryId} ${prevState?.ownerId || 'null'} → ${newState.ownerId}`
-          );
-          changesDetected++;
-          this.handleTerritoryOwnershipChange(territoryId, newState);
-        }
-      });
+      // 只处理脏标记中的领土
+      const dirtyTerritories = newState.dirtyFlags.territories;
+      
+      if (dirtyTerritories.size > 0) {
+        dirtyTerritories.forEach((territoryId) => {
+          const newTerritoryState = newStates.get(territoryId);
+          if (newTerritoryState) {
+            this.handleTerritoryOwnershipChange(territoryId, newTerritoryState);
+          }
+        });
+      }
 
-      // Also handle territories that disappeared from the map (e.g. after reset)
-      previousTerritoryStates.forEach((prevState: TerritoryState, territoryId: string) => {
-        if (!newStates.has(territoryId)) {
-          const neutralState: TerritoryState = {
-            countryId: prevState.countryId,
-            countryName: prevState.countryName,
-            ownerId: null,
-            troops: prevState.troops,
-            resources: prevState.resources,
-            defense: prevState.defense,
-            updatedAt: Date.now(),
-            conqueredAt: prevState.conqueredAt,
-            previousOwnerId: prevState.ownerId,
-            transitionProgress: null,
-            isHighlighted: false,
-          };
-
-          console.log(
-            `🔔 [WorldScene] Territory removed from state, resetting to neutral: ${territoryId} ${prevState.ownerId} → null`
-          );
-          changesDetected++;
-          this.handleTerritoryOwnershipChange(territoryId, neutralState);
-        }
-      });
-
-      if (changesDetected === 0) {
-        console.log(`🔔 [WorldScene] No ownership changes detected in this update`);
+      // 检查是否需要处理被移除的领土
+      if (newSize < previousSize) {
+        previousTerritoryStates.forEach((prevState, territoryId) => {
+          if (!newStates.has(territoryId)) {
+            const neutralState: TerritoryState = {
+              countryId: prevState.countryId,
+              countryName: prevState.countryName,
+              ownerId: null,
+              troops: prevState.troops,
+              resources: prevState.resources,
+              defense: prevState.defense,
+              updatedAt: Date.now(),
+              conqueredAt: prevState.conqueredAt,
+              previousOwnerId: prevState.ownerId,
+              transitionProgress: null,
+              isHighlighted: false,
+            };
+            this.handleTerritoryOwnershipChange(territoryId, neutralState);
+          }
+        });
       }
 
       // Update reference for next comparison
       previousTerritoryStates = new Map(newStates);
+      previousSize = newSize;
     });
 
-    console.log('✅ [WorldScene] Territory subscription active');
+    logger.log('SUBSCRIPTION', '✅ [WorldScene] Territory subscription active');
   }
 
   /**
@@ -433,11 +397,9 @@ export class WorldScene extends Phaser.Scene {
 
     if (colorMapping) {
       this.mapRenderer.updateCountry(territoryId, newState, colorMapping);
-      console.log(`🎨 [WorldScene] Map updated: ${territoryId} → ${newState.ownerId}`);
+      logger.log('TERRITORY_OWNERSHIP', `🎨 [WorldScene] Map updated: ${territoryId} → ${newState.ownerId}`);
     } else if (newState.ownerId) {
-      console.warn(
-        `⚠️  [WorldScene] Missing color mapping for commander: ${newState.ownerId}, using default`
-      );
+      logger.warn('WARNINGS', `⚠️  [WorldScene] Missing color mapping for commander: ${newState.ownerId}`);
       // Use default gray color
       this.mapRenderer.updateCountry(territoryId, newState, {
         commanderId: newState.ownerId,
@@ -456,27 +418,51 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * 渲染世界地图
+   * 
+   * @performance 
+   * - 使用脏标记进行增量渲染
+   * - 渲染节流避免过于频繁的重绘
+   */
   private renderWorld(): void {
     const state = useGameStore.getState();
-    const { territories, commanders, territoryStates, colorMappings } = state;
+    const { territories, commanders, territoryStates, colorMappings, dirtyFlags, performanceConfig } = state;
+
+    // 检查是否需要渲染（节流）
+    const now = performance.now();
+    if (now - this.lastRenderTime < this.renderThrottleMs && !dirtyFlags.fullRedraw) {
+      return;
+    }
+    this.lastRenderTime = now;
 
     // Use new map renderer if available
     if (this.mapRenderer && this.countries.length > 0 && territoryStates.size > 0) {
       this.performanceMonitor.startMeasure('mapRender');
 
+      // 如果启用增量渲染且不需要全量重绘，只渲染脏区域
+      const shouldIncrementalRender = performanceConfig.enableIncrementalRender && 
+                                       !dirtyFlags.fullRedraw && 
+                                       dirtyFlags.territories.size > 0;
+
       const stats = this.mapRenderer.render(
         this.countries,
         territoryStates,
         colorMappings,
-        commanders // Pass commanders for label rendering
+        commanders,
+        shouldIncrementalRender ? dirtyFlags.territories : undefined
       );
 
       this.performanceMonitor.endMeasure('mapRender');
+
+      // 清除脏标记
+      state.clearDirtyFlags();
 
       // Update performance metrics
       useGameStore.getState().updatePerformance({
         fps: this.performanceMonitor.getAverageFps(),
         tickMs: stats.renderTime,
+        renderMs: stats.renderTime,
       });
 
       return;
@@ -658,28 +644,35 @@ export class WorldScene extends Phaser.Scene {
     // Update color transitions in map renderer
     if (this.mapRenderer) {
       this.mapRenderer.updateTransitions(delta);
-
-      // Disable animations if performance is poor
-      const fps = this.performanceMonitor.getAverageFps();
-      if (fps < 30 && this.mapRenderer) {
-        console.warn(`⚠️  Low FPS detected (${fps.toFixed(1)}), disabling animations`);
-        this.mapRenderer.setEnableAnimation(false);
-      }
     }
 
     // Access game state (for tick-based rendering)
     const state = useGameStore.getState();
+    const { performanceConfig } = state;
 
-    // 每30 tick 重新渲染一次完整地图（降低渲染频率以提升性能）
-    if (state.tick % 30 === 0) {
+    // 根据配置的间隔重新渲染地图
+    if (state.tick % performanceConfig.mapRedrawInterval === 0) {
+      // 标记需要全量重绘
+      state.markFullRedraw();
       this.renderWorld();
     }
 
-    // Check performance and adjust animation settings
+    // Check performance and adjust settings
     const fps = this.performanceMonitor.getAverageFps();
-    if (this.mapRenderer && fps < 30) {
-      console.warn(`⚠️  Low FPS detected: ${fps}, disabling animations`);
-      this.mapRenderer.setEnableAnimation(false);
+    
+    // 自动降级：低FPS时禁用动画
+    if (performanceConfig.autoDegrade && fps < performanceConfig.lowFpsThreshold) {
+      if (this.mapRenderer) {
+        this.mapRenderer.setEnableAnimation(false);
+      }
+      // 增加渲染节流间隔
+      this.renderThrottleMs = 33; // ~30fps
+      
+      // 更新配置
+      if (state.performanceConfig.enableAnimations) {
+        state.setPerformanceConfig({ enableAnimations: false });
+        logger.log('PERFORMANCE', `⚠️  Low FPS (${fps.toFixed(1)}), disabling animations`);
+      }
     }
   }
 
@@ -690,7 +683,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.territorySubscription) {
       this.territorySubscription();
       this.territorySubscription = undefined;
-      console.log('✅ [WorldScene] Territory subscription cleaned up');
+      logger.log('MAP_RENDERER_INIT', '✅ [WorldScene] Territory subscription cleaned up');
     }
 
     if (this.mapRenderer) {

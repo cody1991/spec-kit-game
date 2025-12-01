@@ -55,6 +55,38 @@ export interface BattleEvent {
   seed: string;
 }
 
+/**
+ * 性能指标（增强版）
+ * 用于监控游戏运行时性能
+ */
+export interface PerformanceMetrics {
+  /** 当前FPS */
+  fps: number;
+  /** Tick处理时间(ms) */
+  tickMs: number;
+  /** 内存使用(MB) */
+  memoryUsageMB: number;
+  /** 渲染时间(ms) */
+  renderMs: number;
+  /** 上次更新时间戳 */
+  lastUpdated: number;
+}
+
+/**
+ * 脏标记
+ * 用于增量渲染，只渲染变化的部分
+ */
+export interface DirtyFlags {
+  /** 需要重绘的领土ID */
+  territories: Set<string>;
+  /** 需要重绘的指挥官ID */
+  commanders: Set<string>;
+  /** 是否需要全量重绘 */
+  fullRedraw: boolean;
+  /** 上次渲染的Tick */
+  lastRenderTick: number;
+}
+
 export interface WorldState {
   sessionId: string;
   seed: string;
@@ -65,7 +97,7 @@ export interface WorldState {
   victoryThreshold: number;
   elapsedMs: number;
   stasisTimerMs: number;
-  performanceMetrics: { fps: number; tickMs: number };
+  performanceMetrics: PerformanceMetrics;
   lastSnapshot: string;
 }
 

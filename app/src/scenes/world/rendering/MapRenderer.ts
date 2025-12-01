@@ -3,6 +3,11 @@
  *
  * Renders countries on the Phaser canvas using Graphics API.
  * Supports viewport culling, LOD, and performance optimization.
+ * 
+ * @performance
+ * - 支持增量渲染（只渲染脏区域）
+ * - 使用对象池减少 GC 压力
+ * - 颜色过渡动画可选禁用
  */
 
 import type {
@@ -15,6 +20,7 @@ import type {
 import { GraphicsPool } from './GraphicsPool';
 import { CoordinateTransformer } from '../utils/CoordinateTransformer';
 import { ColorTransitionManager, type IColorTransitionManager } from './ColorTransitionManager';
+import { logger } from '@/config/debug.config';
 
 export class MapRenderer {
   private scene!: Phaser.Scene;
@@ -23,8 +29,8 @@ export class MapRenderer {
   private transformer!: CoordinateTransformer;
   private transitionManager!: IColorTransitionManager;
   private countryGraphics: Map<string, Phaser.GameObjects.Graphics> = new Map();
-  private countryLabels: Map<string, Phaser.GameObjects.Text> = new Map(); // NEW: Text labels for countries
-  private previousColors: Map<string, number> = new Map(); // Track previous colors for transitions
+  private countryLabels: Map<string, Phaser.GameObjects.Text> = new Map();
+  private previousColors: Map<string, number> = new Map();
   private commanders: Array<{ id: string; name: string }> = [];
   private stats: RenderStats = {
     countriesRendered: 0,
@@ -39,7 +45,7 @@ export class MapRenderer {
     this.config = {
       useWebGL: true,
       borderWidth: 2,
-      borderColor: 0x666666, // 灰色边框
+      borderColor: 0x666666,
       fillAlpha: 0.9,
       antiAlias: true,
       enableTransition: true,
@@ -61,58 +67,40 @@ export class MapRenderer {
 
       // Initialize coordinate transformer with game dimensions
       const camera = scene.cameras.main;
-      console.log(
-        '📐 Initializing CoordinateTransformer with dimensions:',
-        camera.width,
-        'x',
-        camera.height
-      );
+      logger.log('MAP_RENDERER_INIT', '📐 Initializing CoordinateTransformer');
 
       this.transformer = new CoordinateTransformer(camera.width, camera.height);
-      console.log('✅ CoordinateTransformer created');
 
       // Initialize color transition manager
-      console.log('🎨 Initializing ColorTransitionManager...');
       this.transitionManager = new ColorTransitionManager(this.config.transitionDuration);
-      console.log('✅ ColorTransitionManager initialized');
 
       if (this.config.useObjectPool) {
-        console.log('🎱 Initializing GraphicsPool...');
         this.graphicsPool = new GraphicsPool(scene, this.config.poolSize);
-        this.graphicsPool.prewarm(50); // Pre-create 50 objects
-        console.log('✅ GraphicsPool initialized');
+        this.graphicsPool.prewarm(50);
       }
 
-      console.log('✅ MapRenderer initialized with dimensions:', camera.width, 'x', camera.height);
-
-      // Test coordinate transformation
-      const testPoints = [
-        [0, 0], // Prime meridian, equator
-        [-100, 40], // North America
-        [105, 35], // China
-      ];
-
-      console.log('📍 Test coordinate transformations:');
-      testPoints.forEach(([lon, lat]) => {
-        const screen = this.transformer.geoToScreen(lon, lat);
-        console.log(`  [${lon}, ${lat}] -> [${Math.round(screen.x)}, ${Math.round(screen.y)}]`);
-      });
-
-      console.log('✅ MapRenderer initialization complete');
+      logger.log('MAP_RENDERER_INIT', '✅ MapRenderer initialized');
     } catch (error) {
-      console.error('❌ Error during MapRenderer initialization:', error);
+      logger.error('❌ Error during MapRenderer initialization:', error);
       throw error;
     }
   }
 
   /**
    * Render countries (main rendering method)
+   * 
+   * @param countries - 所有国家数据
+   * @param territoryStates - 领土状态
+   * @param colorMappings - 颜色映射
+   * @param commanders - 指挥官列表
+   * @param dirtyTerritories - 可选：只渲染这些脏领土（增量渲染）
    */
   render(
     countries: Country[],
     territoryStates: Map<string, TerritoryState>,
     colorMappings: Map<string, CommanderColor>,
-    commanders: Array<{ id: string; name: string }> = [] // NEW: Add commanders parameter
+    commanders: Array<{ id: string; name: string }> = [],
+    dirtyTerritories?: Set<string>
   ): RenderStats {
     const startTime = performance.now();
 
@@ -120,69 +108,37 @@ export class MapRenderer {
     this.stats.drawCalls = 0;
     this.stats.vertices = 0;
 
-    // Cache commanders for incremental updates (updateCountry)
+    // Cache commanders for incremental updates
     this.commanders = commanders;
 
-    // Get camera viewport for culling
-    const camera = this.scene.cameras.main;
-    const viewport = {
-      minX: camera.scrollX,
-      minY: camera.scrollY,
-      maxX: camera.scrollX + camera.width,
-      maxY: camera.scrollY + camera.height,
-    };
+    // 增量渲染模式：只渲染脏领土
+    if (dirtyTerritories && dirtyTerritories.size > 0) {
+      dirtyTerritories.forEach((countryId) => {
+        const country = countries.find(c => c.id === countryId);
+        if (!country) return;
 
-    console.log('📷 Camera viewport:', viewport);
+        const state = territoryStates.get(country.id);
+        const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) ?? null : null;
 
-    // Render visible countries
-    let culledCount = 0;
-    let renderedWithOwner = 0;
-    let renderedWithoutOwner = 0;
+        this.renderCountry(country, state, colorMapping);
+        this.renderCountryLabel(country, state, commanders);
+        this.stats.countriesRendered++;
+      });
 
+      this.stats.renderTime = performance.now() - startTime;
+      logger.log('MAP_RENDERING', `🎨 Incremental render: ${this.stats.countriesRendered} countries in ${this.stats.renderTime.toFixed(2)}ms`);
+      return this.stats;
+    }
+
+    // 全量渲染
     countries.forEach((country) => {
-      // TEMPORARY: Disable viewport culling for debugging
-      // TODO: Fix culling after coordinate system is verified
-      const shouldRender = true;
-
-      if (!shouldRender) {
-        culledCount++;
-        return;
-      }
-
       const state = territoryStates.get(country.id);
       const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) ?? null : null;
 
       this.renderCountry(country, state, colorMapping);
-      
-      // NEW: Render country label with commander name
       this.renderCountryLabel(country, state, commanders);
-      
       this.stats.countriesRendered++;
-
-      if (state?.ownerId && colorMapping) {
-        renderedWithOwner++;
-      } else {
-        renderedWithoutOwner++;
-      }
     });
-
-    // Log first render details
-    if (this.stats.countriesRendered === 0 && countries.length > 0) {
-      console.error('❌ No countries rendered!', {
-        totalCountries: countries.length,
-        culled: culledCount,
-        viewport,
-        territoryStatesSize: territoryStates.size,
-        colorMappingsSize: colorMappings.size,
-        sampleCountry: countries[0]
-          ? {
-              id: countries[0].id,
-              name: countries[0].name,
-              bbox: countries[0].bbox,
-            }
-          : 'none',
-      });
-    }
 
     this.stats.renderTime = performance.now() - startTime;
     return this.stats;
@@ -453,7 +409,7 @@ export class MapRenderer {
     const country = countries?.find((c) => c.id === countryId);
 
     if (!country) {
-      console.warn(`❌ [MapRenderer] Country ${countryId} not found in registry`);
+      logger.warn('WARNINGS', `❌ [MapRenderer] Country ${countryId} not found in registry`);
       return;
     }
 

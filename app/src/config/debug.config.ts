@@ -2,7 +2,25 @@
  * Debug Configuration
  * 
  * 集中控制日志输出，避免控制台过于卡顿
+ * 
+ * @performance 生产环境自动禁用所有非关键日志
  */
+
+/**
+ * 检测是否为生产环境
+ */
+const isProduction = (): boolean => {
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV) {
+    return process.env.NODE_ENV === 'production';
+  }
+  // Vite 环境
+  if (typeof import.meta !== 'undefined' && import.meta.env?.MODE) {
+    return import.meta.env.MODE === 'production';
+  }
+  return false;
+};
+
+const IS_PRODUCTION = isProduction();
 
 export const DEBUG_CONFIG = {
   // 核心系统日志
@@ -10,9 +28,9 @@ export const DEBUG_CONFIG = {
   WORLD_GENERATION: false,    // createInitialWorld
   
   // 地图系统日志
-  MAP_LOADING: true,          // 地图加载（保留关键信息）
+  MAP_LOADING: !IS_PRODUCTION,          // 地图加载（保留关键信息）
   MAP_RENDERING: false,       // 地图渲染（过于频繁，默认关闭）
-  MAP_RENDERER_INIT: true,    // 渲染器初始化
+  MAP_RENDERER_INIT: !IS_PRODUCTION,    // 渲染器初始化
   
   // 领土系统日志
   TERRITORY_UPDATE: false,    // 领土更新（每次战斗都会触发）
@@ -30,7 +48,13 @@ export const DEBUG_CONFIG = {
   
   // 错误日志（始终启用）
   ERRORS: true,
-  WARNINGS: true,
+  WARNINGS: !IS_PRODUCTION,   // 生产环境禁用警告
+  
+  // 订阅系统日志（高频，默认关闭）
+  SUBSCRIPTION: false,        // Zustand 订阅触发
+  
+  // Store 操作日志（高频，默认关闭）
+  STORE_UPDATE: false,        // store 状态更新
 };
 
 /**

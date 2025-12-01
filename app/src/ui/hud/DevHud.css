@@ -63,6 +63,24 @@
   padding: 12px;
 }
 
+.hud-section {
+  margin-bottom: 12px;
+}
+
+.hud-section:last-child {
+  margin-bottom: 0;
+}
+
+.hud-section-title {
+  color: #888;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .hud-row {
   display: flex;
   justify-content: space-between;
@@ -81,6 +99,31 @@
 .hud-value {
   color: #4ecdc4;
   font-weight: 600;
+}
+
+.hud-toggle-row {
+  align-items: center;
+}
+
+.hud-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #888;
+  padding: 2px 8px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hud-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hud-toggle.active {
+  background: rgba(78, 205, 196, 0.3);
+  border-color: #4ecdc4;
+  color: #4ecdc4;
 }
 
 .hud-footer {

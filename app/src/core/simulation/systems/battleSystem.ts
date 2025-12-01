@@ -3,6 +3,7 @@ import { useGameStore } from '../../state/store';
 import type { BattleEvent, HistoricalCommander, Territory } from '../../types';
 import { globalEventBus } from '../../events/eventTypes';
 import { createCountryConquestTelemetry } from '@/services/telemetry/countryConquestTelemetry';
+import { logger } from '@/config/debug.config';
 
 /**
  * Global battle event counter for generating unique IDs
@@ -29,6 +30,14 @@ export function generateBattleEventId(): string {
   return `battle-${Date.now()}-${battleEventCounter++}`;
 }
 
+/**
+ * 战斗系统
+ * 
+ * @performance
+ * - 减少每 Tick 的计算量
+ * - 使用批量更新减少 store 操作
+ * - 移除不必要的 console.log
+ */
 export class BattleSystem implements System {
   name = 'BattleSystem';
 
@@ -39,43 +48,40 @@ export class BattleSystem implements System {
     // 找到活跃的指挥官
     const activeCommanders = commanders.filter((c) => c.status === 'active');
     
-    // 调试日志
-    if (activeCommanders.length < 10) {
-      console.log(`🎮 Active commanders: ${activeCommanders.length}`, 
-        activeCommanders.map(c => `${c.name}(${c.controlledTerritories.length})`).join(', '));
-    }
+    // 调试日志（仅在指挥官数量少时输出）
+    logger.log('BATTLE_EVENTS', `🎮 Active commanders: ${activeCommanders.length}`);
 
     // 每个指挥官有机会发起进攻
-    activeCommanders.forEach((attacker) => {
-      if (attacker.controlledTerritories.length === 0) return;
+    for (let i = 0; i < activeCommanders.length; i++) {
+      const attacker = activeCommanders[i];
+      if (attacker.controlledTerritories.length === 0) continue;
 
-      // 找到相邻敌对领土
-      const ownedTerritories = territories.filter((t) =>
-        attacker.controlledTerritories.includes(t.id)
-      );
-
-      const targetTerritories: Territory[] = [];
-      ownedTerritories.forEach((territory) => {
-        territory.adjacentIds.forEach((adjId) => {
+      // 找到相邻敌对领土（使用 Set 避免重复）
+      const targetSet = new Set<string>();
+      
+      for (let j = 0; j < attacker.controlledTerritories.length; j++) {
+        const territoryId = attacker.controlledTerritories[j];
+        const territory = territories.find((t) => t.id === territoryId);
+        if (!territory) continue;
+        
+        for (let k = 0; k < territory.adjacentIds.length; k++) {
+          const adjId = territory.adjacentIds[k];
           const adjTerritory = territories.find((t) => t.id === adjId);
           // 可以攻击：1) 敌对领土 2) 中立领土（ownerId为null）
           if (adjTerritory && adjTerritory.ownerId !== attacker.id) {
-            targetTerritories.push(adjTerritory);
+            targetSet.add(adjId);
           }
-        });
-      });
-
-      if (targetTerritories.length === 0) {
-        // 调试：为什么没有目标
-        if (activeCommanders.length < 10) {
-          console.log(`  ⚠️ ${attacker.name} has no targets. Owned: ${attacker.controlledTerritories.length}`);
         }
-        return;
       }
+
+      if (targetSet.size === 0) continue;
 
       // 随机选择一个目标 (80% chance per tick - 极快战斗)
       if (Math.random() < 0.8) {
-        const target = targetTerritories[Math.floor(Math.random() * targetTerritories.length)];
+        const targetIds = Array.from(targetSet);
+        const targetId = targetIds[Math.floor(Math.random() * targetIds.length)];
+        const target = territories.find((t) => t.id === targetId);
+        if (!target) continue;
         
         // 如果是中立领土（无主），直接占领
         if (!target.ownerId) {
@@ -89,12 +95,12 @@ export class BattleSystem implements System {
             this.executeBattle(attacker, defender, target);
           } else {
             // 领土的主人已被淘汰但领土还没清理，直接占领
-            console.log(`🏳️ Orphaned territory ${target.name} (owner eliminated), occupying...`);
+            logger.log('BATTLE_EVENTS', `🏳️ Orphaned territory ${target.name}, occupying...`);
             this.occupyNeutralTerritory(attacker, target);
           }
         }
       }
-    });
+    }
   }
 
   /**
@@ -129,7 +135,7 @@ export class BattleSystem implements System {
 
     store.addBattleEvent(event);
     
-    console.log(`🏳️ Neutral Territory: ${territory.name} occupied by ${attacker.name}`);
+    logger.log('BATTLE_EVENTS', `🏳️ Neutral Territory: ${territory.name} occupied by ${attacker.name}`);
   }
 
   private executeBattle(
@@ -190,9 +196,7 @@ export class BattleSystem implements System {
         })
       );
 
-      console.log(
-        `📍 Territory Update: ${territory.name} conquered by ${attacker.name} from ${defender.name}`
-      );
+      logger.log('BATTLE_EVENTS', `📍 Territory Update: ${territory.name} conquered by ${attacker.name} from ${defender.name}`);
 
       store.updateCommander(attacker.id, {
         controlledTerritories: [...attacker.controlledTerritories, territory.id],
@@ -236,7 +240,7 @@ export class BattleSystem implements System {
         };
         store.addBattleEvent(eliminationEvent);
         
-        console.log(`💀 Commander Eliminated: ${defender.name} - territories cleared`);
+        logger.log('BATTLE_EVENTS', `💀 Commander Eliminated: ${defender.name}`);
         
         globalEventBus.emit({
           type: 'commander:eliminated',
