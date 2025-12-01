@@ -31,6 +31,7 @@ const recentEvents = [...eventLog]
 - **去重过滤**：在渲染前使用 `Map` 按ID去重，确保每个ID只出现一次
 
 **Alternatives considered**：
+
 - UUID v4：过度工程化，增加依赖且生成成本更高
 - 序列号索引：需要全局计数器管理，增加状态复杂度
 - 时间戳 + 源标识：无法解决同源高频冲突
@@ -42,14 +43,15 @@ const recentEvents = [...eventLog]
 **当前实现分析**：
 
 1. **数据流链路**（基于代码分析）：
+
    ```
-   battleSystem.updateTerritory() 
-   → store.updateTerritory() 
+   battleSystem.updateTerritory()
+   → store.updateTerritory()
    → store.territories[i] 被更新
-   
-   WorldScene.update() 
+
+   WorldScene.update()
    → 检查 territoryStates.get(id)
-   → 如果 ownerId 变化 → updateTerritoryState() 
+   → 如果 ownerId 变化 → updateTerritoryState()
    → mapRenderer.updateCountry()
    ```
 
@@ -67,6 +69,7 @@ const recentEvents = [...eventLog]
 - **防御性渲染**：`MapRenderer.updateCountry()` 在缺失 `colorMapping` 时记录警告并使用默认颜色
 
 **Alternatives considered**：
+
 - 统一数据源（只保留territoryStates）：需要大规模重构，风险高
 - 事件总线：引入额外复杂度，且与Zustand模式不匹配
 - 强制刷新地图：性能损耗大，无法实现平滑过渡
@@ -95,6 +98,7 @@ const recentEvents = [...eventLog]
    - 测试React渲染时的key唯一性
 
 **Performance impact**：
+
 - 计数器操作：O(1)，可忽略
 - 去重操作：O(n)，n≤200（最大事件数），<1ms
 - 排序操作：现有实现已是 O(n log n)，无额外开销
@@ -124,6 +128,7 @@ const recentEvents = [...eventLog]
    - 使用灰色或透明色标记未分配的领土
 
 **Performance impact**：
+
 - 订阅机制：Zustand内置优化，仅在实际变化时触发
 - 初始化验证：一次性开销，约5-10ms（200个国家）
 - 防御性检查：每次渲染增加1-2个条件判断，可忽略
@@ -171,14 +176,14 @@ const recentEvents = [...eventLog]
 
 ## 风险与缓解
 
-| 风险                               | 影响         | 缓解措施                                             |
-| ---------------------------------- | ------------ | ---------------------------------------------------- |
-| 全局计数器在重新开局后未重置       | ID连续性破坏 | 在 `resetGame()` 中显式重置计数器                    |
-| Zustand订阅在场景销毁时未清理      | 内存泄漏     | 在 `WorldScene.shutdown()` 中调用 `unsubscribe()`    |
-| 防御性默认颜色影响用户体验         | 视觉混乱     | 使用半透明灰色+警告标记，确保问题可见但不阻塞游戏   |
-| 双向同步增加状态管理复杂度         | 维护成本上升 | 编写集成测试覆盖所有同步路径，文档化数据流           |
-| 时间戳解析失败时排序算法出现NaN    | 界面崩溃     | 添加 `isNaN()` 检查，失败时使用事件添加顺序作为备选 |
-| 高频战斗时计数器溢出（32位整数上限）| ID冲突       | 使用BigInt或在达到阈值时重置（实际上百万次战斗才溢出）|
+| 风险                                 | 影响         | 缓解措施                                               |
+| ------------------------------------ | ------------ | ------------------------------------------------------ |
+| 全局计数器在重新开局后未重置         | ID连续性破坏 | 在 `resetGame()` 中显式重置计数器                      |
+| Zustand订阅在场景销毁时未清理        | 内存泄漏     | 在 `WorldScene.shutdown()` 中调用 `unsubscribe()`      |
+| 防御性默认颜色影响用户体验           | 视觉混乱     | 使用半透明灰色+警告标记，确保问题可见但不阻塞游戏      |
+| 双向同步增加状态管理复杂度           | 维护成本上升 | 编写集成测试覆盖所有同步路径，文档化数据流             |
+| 时间戳解析失败时排序算法出现NaN      | 界面崩溃     | 添加 `isNaN()` 检查，失败时使用事件添加顺序作为备选    |
+| 高频战斗时计数器溢出（32位整数上限） | ID冲突       | 使用BigInt或在达到阈值时重置（实际上百万次战斗才溢出） |
 
 ---
 

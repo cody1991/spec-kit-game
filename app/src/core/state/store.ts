@@ -11,10 +11,13 @@ import type {
   FactionStatistics,
   PerformanceMetrics,
   DirtyFlags,
+  TerritoryBonusConfig,
+  TerritoryBonus,
 } from '../types';
 import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
 import { RingBuffer } from '@/utils/RingBuffer';
 import { DEFAULT_PERFORMANCE_CONFIG, type PerformanceConfig } from '@/config/performance.config';
+import { DEFAULT_TERRITORY_BONUS_CONFIG } from '@/config/territoryBonus.config';
 import { logger } from '@/config/debug.config';
 
 /**
@@ -26,7 +29,10 @@ function updateTerritoryOwnership(
   updates: Partial<Territory>,
   newTerritories: Territory[]
 ) {
-  logger.log('STORE_UPDATE', `🔄 [updateTerritoryOwnership] Processing ${id}, ownerId: ${updates.ownerId}`);
+  logger.log(
+    'STORE_UPDATE',
+    `🔄 [updateTerritoryOwnership] Processing ${id}, ownerId: ${updates.ownerId}`
+  );
 
   const newStates = new Map(state.territoryStates);
 
@@ -75,7 +81,10 @@ function updateTerritoryOwnership(
 
     newStates.set(id, newState);
 
-    logger.log('TERRITORY_OWNERSHIP', `🆕 [Territory] Created new state: ${id} → ${updates.ownerId}`);
+    logger.log(
+      'TERRITORY_OWNERSHIP',
+      `🆕 [Territory] Created new state: ${id} → ${updates.ownerId}`
+    );
   }
 
   // Mark territory as dirty for incremental rendering
@@ -156,12 +165,17 @@ export interface GameState {
   factionStats: Map<string, FactionStatistics>;
   showFactionStatsPanel: boolean;
 
+  // 领土加成配置 (Feature: 008-territory-bonus)
+  territoryBonusConfig: TerritoryBonusConfig;
+
   // Actions
   startGame: (seed: string) => void;
   setCommanders: (commanders: HistoricalCommander[]) => void;
   setTerritories: (territories: Territory[]) => void;
   updateCommander: (id: string, updates: Partial<HistoricalCommander>) => void;
-  batchUpdateCommanders: (updates: Array<{ id: string; updates: Partial<HistoricalCommander> }>) => void;
+  batchUpdateCommanders: (
+    updates: Array<{ id: string; updates: Partial<HistoricalCommander> }>
+  ) => void;
   updateTerritory: (id: string, updates: Partial<Territory>) => void;
   batchUpdateTerritories: (updates: Array<{ id: string; updates: Partial<Territory> }>) => void;
   addBattleEvent: (event: BattleEvent) => void;
@@ -195,6 +209,10 @@ export interface GameState {
   initializeFactionStats: () => void;
   toggleFactionStatsPanel: () => void;
   closeFactionStatsPanel: () => void;
+
+  // Territory Bonus Actions (Feature: 008-territory-bonus)
+  updateTerritoryBonus: (commanderId: string, bonus: TerritoryBonus) => void;
+  setTerritoryBonusConfig: (config: Partial<TerritoryBonusConfig>) => void;
 }
 
 /**
@@ -256,6 +274,9 @@ export const useGameStore = create<GameState>((set) => ({
   factionStats: new Map(),
   showFactionStatsPanel: false,
 
+  // Territory Bonus Config (Feature: 008-territory-bonus)
+  territoryBonusConfig: { ...DEFAULT_TERRITORY_BONUS_CONFIG },
+
   // Actions
   startGame: (seed: string) =>
     set((state) => ({
@@ -296,7 +317,7 @@ export const useGameStore = create<GameState>((set) => ({
       // Mark commander as dirty
       const newDirtyFlags = { ...state.dirtyFlags };
       newDirtyFlags.commanders.add(id);
-      
+
       return {
         commanders: state.commanders.map((c) => (c.id === id ? { ...c, ...updates } : c)),
         dirtyFlags: newDirtyFlags,
@@ -306,25 +327,25 @@ export const useGameStore = create<GameState>((set) => ({
   batchUpdateCommanders: (updates) =>
     set((state) => {
       if (updates.length === 0) return {};
-      
+
       // 构建更新 Map
       const updateMap = new Map<string, Partial<HistoricalCommander>>();
       for (const { id, updates: commanderUpdates } of updates) {
         updateMap.set(id, commanderUpdates);
       }
-      
+
       // 单次遍历更新
       const newCommanders = state.commanders.map((c) => {
         const commanderUpdates = updateMap.get(c.id);
         return commanderUpdates ? { ...c, ...commanderUpdates } : c;
       });
-      
+
       // 标记脏
       const newDirtyFlags = { ...state.dirtyFlags };
       for (const { id } of updates) {
         newDirtyFlags.commanders.add(id);
       }
-      
+
       return {
         commanders: newCommanders,
         dirtyFlags: newDirtyFlags,
@@ -334,15 +355,16 @@ export const useGameStore = create<GameState>((set) => ({
   updateTerritory: (id, updates) =>
     set((state) => {
       logger.log('STORE_UPDATE', `🔄 [store.updateTerritory] Called for ${id}`);
-      
+
       // 1. 更新 territories 数组
-      const newTerritories = state.territories.map((t) =>
-        t.id === id ? { ...t, ...updates } : t
-      );
+      const newTerritories = state.territories.map((t) => (t.id === id ? { ...t, ...updates } : t));
 
       // 2. 如果 ownerId 变化，同步更新 territoryStates
       if (updates.ownerId !== undefined) {
-        logger.log('TERRITORY_OWNERSHIP', `🔄 [store] ownerId change detected: ${id} → ${updates.ownerId}`);
+        logger.log(
+          'TERRITORY_OWNERSHIP',
+          `🔄 [store] ownerId change detected: ${id} → ${updates.ownerId}`
+        );
         return updateTerritoryOwnership(state, id, updates, newTerritories);
       }
 
@@ -356,27 +378,30 @@ export const useGameStore = create<GameState>((set) => ({
 
   batchUpdateTerritories: (updates) =>
     set((state) => {
-      logger.log('STORE_UPDATE', `🔄 [store.batchUpdateTerritories] Processing ${updates.length} updates`);
-      
+      logger.log(
+        'STORE_UPDATE',
+        `🔄 [store.batchUpdateTerritories] Processing ${updates.length} updates`
+      );
+
       // 构建更新 Map，O(1) 查找
       const updateMap = new Map<string, Partial<Territory>>();
       for (const { id, updates: territoryUpdates } of updates) {
         updateMap.set(id, territoryUpdates);
       }
-      
+
       // 单次遍历更新 territories 数组
       const newTerritories = state.territories.map((t) => {
         const territoryUpdates = updateMap.get(t.id);
         return territoryUpdates ? { ...t, ...territoryUpdates } : t;
       });
-      
+
       // 更新 territoryStates
       const newStates = new Map(state.territoryStates);
       const newDirtyFlags = { ...state.dirtyFlags };
-      
+
       for (const { id, updates: territoryUpdates } of updates) {
         const existingState = newStates.get(id);
-        
+
         if (territoryUpdates.ownerId !== undefined) {
           if (existingState) {
             // 更新已存在的领土状态
@@ -407,9 +432,15 @@ export const useGameStore = create<GameState>((set) => ({
               transitionProgress: 0,
               isHighlighted: false,
             });
-            logger.log('TERRITORY_OWNERSHIP', `🆕 [batchUpdate] Created new state for neutral territory: ${id} → ${territoryUpdates.ownerId}`);
+            logger.log(
+              'TERRITORY_OWNERSHIP',
+              `🆕 [batchUpdate] Created new state for neutral territory: ${id} → ${territoryUpdates.ownerId}`
+            );
           }
-        } else if (existingState && (territoryUpdates.garrison !== undefined || territoryUpdates.stability !== undefined)) {
+        } else if (
+          existingState &&
+          (territoryUpdates.garrison !== undefined || territoryUpdates.stability !== undefined)
+        ) {
           // 只更新驻军/稳定性（仅当状态已存在时）
           newStates.set(id, {
             ...existingState,
@@ -418,11 +449,11 @@ export const useGameStore = create<GameState>((set) => ({
             updatedAt: Date.now(),
           });
         }
-        
+
         // Mark as dirty
         newDirtyFlags.territories.add(id);
       }
-      
+
       return {
         territories: newTerritories,
         territoryStates: newStates,
@@ -435,7 +466,7 @@ export const useGameStore = create<GameState>((set) => ({
       // 使用 RingBuffer 存储事件（O(1) 操作）
       // 注意：RingBuffer 是可变对象，但我们通过返回新的 eventLog 数组来触发更新
       state.eventLogBuffer.push(event);
-      
+
       // 返回新的 eventLog 数组以触发订阅者更新
       return {
         eventLog: state.eventLogBuffer.toArray(),
@@ -445,12 +476,12 @@ export const useGameStore = create<GameState>((set) => ({
   addBattleEvents: (events) =>
     set((state) => {
       if (events.length === 0) return {};
-      
+
       // 批量添加事件
       for (const event of events) {
         state.eventLogBuffer.push(event);
       }
-      
+
       // 返回新的 eventLog 数组以触发订阅者更新
       return {
         eventLog: state.eventLogBuffer.toArray(),
@@ -464,8 +495,7 @@ export const useGameStore = create<GameState>((set) => ({
   setVictory: (commanderId) =>
     set({ showVictoryModal: true, victorCommanderId: commanderId, isPaused: true }),
 
-  closeVictoryModal: () =>
-    set({ showVictoryModal: false }),
+  closeVictoryModal: () => set({ showVictoryModal: false }),
 
   incrementTick: () =>
     set((state) => ({
@@ -482,8 +512,8 @@ export const useGameStore = create<GameState>((set) => ({
 
   updatePerformance: (metrics) =>
     set((state) => ({
-      performanceMetrics: { 
-        ...state.performanceMetrics, 
+      performanceMetrics: {
+        ...state.performanceMetrics,
         ...metrics,
         lastUpdated: Date.now(),
       },
@@ -492,7 +522,7 @@ export const useGameStore = create<GameState>((set) => ({
   resetGame: () => {
     // Reset battle event counter to ensure ID uniqueness in new game session
     resetBattleEventCounter();
-    
+
     set((state) => ({
       gameStarted: false,
       sessionId: '',
@@ -579,10 +609,10 @@ export const useGameStore = create<GameState>((set) => ({
       const newMap = new Map(state.factionStats);
       const existing = newMap.get(commanderId);
       if (existing) {
-        newMap.set(commanderId, { 
-          ...existing, 
-          ...updates, 
-          lastUpdatedAt: Date.now() 
+        newMap.set(commanderId, {
+          ...existing,
+          ...updates,
+          lastUpdatedAt: Date.now(),
         });
       }
       return { factionStats: newMap };
@@ -591,9 +621,9 @@ export const useGameStore = create<GameState>((set) => ({
   initializeFactionStats: () =>
     set((state) => {
       logger.log('GAME_SESSION', '🔧 [initializeFactionStats] Starting...');
-      
+
       const statsMap = new Map<string, FactionStatistics>();
-      
+
       state.commanders.forEach((commander) => {
         // 计算占领的国家数量和总面积
         const ownedCountries = commander.controlledTerritories
@@ -613,16 +643,39 @@ export const useGameStore = create<GameState>((set) => ({
           losses: 0,
           winRate: -1, // N/A initially
           lastUpdatedAt: Date.now(),
+          territoryBonus: null, // Will be calculated by territoryBonusService
         });
       });
 
-      logger.log('GAME_SESSION', `🔧 [initializeFactionStats] Created ${statsMap.size} faction stats`);
+      logger.log(
+        'GAME_SESSION',
+        `🔧 [initializeFactionStats] Created ${statsMap.size} faction stats`
+      );
       return { factionStats: statsMap };
     }),
 
   toggleFactionStatsPanel: () =>
     set((state) => ({ showFactionStatsPanel: !state.showFactionStatsPanel })),
 
-  closeFactionStatsPanel: () =>
-    set({ showFactionStatsPanel: false }),
+  closeFactionStatsPanel: () => set({ showFactionStatsPanel: false }),
+
+  // Territory Bonus Actions (Feature: 008-territory-bonus)
+  updateTerritoryBonus: (commanderId, bonus) =>
+    set((state) => {
+      const newMap = new Map(state.factionStats);
+      const existing = newMap.get(commanderId);
+      if (existing) {
+        newMap.set(commanderId, {
+          ...existing,
+          territoryBonus: bonus,
+          lastUpdatedAt: Date.now(),
+        });
+      }
+      return { factionStats: newMap };
+    }),
+
+  setTerritoryBonusConfig: (config) =>
+    set((state) => ({
+      territoryBonusConfig: { ...state.territoryBonusConfig, ...config },
+    })),
 }));

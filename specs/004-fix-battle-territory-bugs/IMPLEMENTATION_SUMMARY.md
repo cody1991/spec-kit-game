@@ -7,11 +7,13 @@
 ## 修复的问题
 
 ### Bug #1: 战报系统时间顺序混乱且存在重复
+
 - **现象**: 最新战报不在顶部，存在多条相同的战报记录
 - **根因**: `Date.now() + Math.random()` 在高频场景下产生重复ID，React key冲突导致DOM复用
 - **影响**: 玩家无法准确追踪战局动态，体验严重受损
 
 ### Bug #2: 地图领土初始化后不再更新
+
 - **现象**: 游戏启动后地图颜色正确，但战斗发生后领土颜色不变
 - **根因**: `territories`数组更新但`territoryStates` Map未同步，地图渲染依赖轮询检测变化
 - **影响**: 玩家无法看到势力扩张，视觉反馈缺失
@@ -21,6 +23,7 @@
 ### 1. 战报系统修复 (US1)
 
 #### T014: 全局计数器实现
+
 **文件**: `app/src/core/simulation/systems/battleSystem.ts`
 
 ```typescript
@@ -36,11 +39,13 @@ export function generateBattleEventId(): string {
 }
 ```
 
-**效果**: 
+**效果**:
+
 - ID格式从 `battle-{timestamp}-{random}` 改为 `battle-{timestamp}-{counter}`
 - 100%消除ID冲突风险
 
 #### T015: ID生成替换
+
 **文件**: `app/src/core/simulation/systems/battleSystem.ts`
 
 - 替换 `occupyNeutralTerritory()` 中的ID生成
@@ -48,6 +53,7 @@ export function generateBattleEventId(): string {
 - 所有战报事件统一使用 `generateBattleEventId()`
 
 #### T017: 去重与稳定排序
+
 **文件**: `app/src/ui/panels/BattleTimeline.tsx`
 
 ```typescript
@@ -82,11 +88,13 @@ const recentEvents = useMemo(() => {
 ```
 
 **效果**:
+
 - 100%去重（使用Map按ID过滤）
 - 稳定排序（时间戳相同时按ID排序）
 - 时间戳验证（防止无效日期）
 
 #### T019: 计数器重置
+
 **文件**: `app/src/core/state/store.ts`
 
 ```typescript
@@ -94,8 +102,10 @@ import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
 
 resetGame: () => {
   resetBattleEventCounter(); // 重置计数器
-  set({ /* ... */ });
-}
+  set({
+    /* ... */
+  });
+};
 ```
 
 **效果**: 每次新游戏会话计数器从0开始
@@ -105,6 +115,7 @@ resetGame: () => {
 ### 2. 领土更新修复 (US2)
 
 #### T027: 双向同步机制
+
 **文件**: `app/src/core/state/store.ts`
 
 ```typescript
@@ -139,24 +150,24 @@ function updateTerritoryOwnership(
 // 主更新方法
 updateTerritory: (id, updates) =>
   set((state) => {
-    const newTerritories = state.territories.map((t) =>
-      t.id === id ? { ...t, ...updates } : t
-    );
+    const newTerritories = state.territories.map((t) => (t.id === id ? { ...t, ...updates } : t));
 
     if (updates.ownerId !== undefined) {
       return updateTerritoryOwnership(state, id, updates, newTerritories);
     }
 
     // 处理其他更新...
-  })
+  });
 ```
 
 **效果**:
+
 - `territories`数组和`territoryStates` Map原子性同步
 - 使用不可变模式（`new Map()`）
 - 自动创建缺失的状态
 
 #### T028: 初始化验证
+
 **文件**: `app/src/scenes/world/WorldScene.ts`
 
 ```typescript
@@ -198,6 +209,7 @@ private verifyTerritoryStatesComplete(): void {
 **效果**: 确保所有国家都有对应的TerritoryState，消除"state not found"错误
 
 #### T029: 订阅机制
+
 **文件**: `app/src/scenes/world/WorldScene.ts`
 
 ```typescript
@@ -228,11 +240,13 @@ private setupTerritorySubscription(): void {
 ```
 
 **效果**:
+
 - 替代轮询检测（从30 tick一次 → 实时响应）
 - 性能提升约90%（订阅只在变化时触发）
 - 延迟降低至<16ms
 
 #### T030: 所有权变更处理
+
 **文件**: `app/src/scenes/world/WorldScene.ts`
 
 ```typescript
@@ -243,8 +257,8 @@ private handleTerritoryOwnershipChange(
   if (!this.mapRenderer) return;
 
   const state = useGameStore.getState();
-  const colorMapping = newState.ownerId 
-    ? state.colorMappings.get(newState.ownerId) 
+  const colorMapping = newState.ownerId
+    ? state.colorMappings.get(newState.ownerId)
     : null;
 
   if (colorMapping) {
@@ -272,11 +286,13 @@ private handleTerritoryOwnershipChange(
 ```
 
 **效果**:
+
 - 实时更新地图颜色（<1秒）
 - 防御性渲染（colorMapping缺失时使用默认色）
 - 支持中立领土显示
 
 #### T031: 订阅清理
+
 **文件**: `app/src/scenes/world/WorldScene.ts`
 
 ```typescript
@@ -302,12 +318,12 @@ cleanup(): void {
 
 ## 修改的文件
 
-| 文件 | 变更 | 行数 | 复杂度 |
-|------|------|------|--------|
-| `app/src/core/simulation/systems/battleSystem.ts` | ✅ 修改 | +25 | ✅ <15 |
-| `app/src/ui/panels/BattleTimeline.tsx` | ✅ 修改 | +35 | ✅ <10 |
-| `app/src/core/state/store.ts` | ✅ 修改 | +95 | ✅ <15 |
-| `app/src/scenes/world/WorldScene.ts` | ✅ 修改 | +120 | ⚠️ 预存 |
+| 文件                                              | 变更    | 行数 | 复杂度  |
+| ------------------------------------------------- | ------- | ---- | ------- |
+| `app/src/core/simulation/systems/battleSystem.ts` | ✅ 修改 | +25  | ✅ <15  |
+| `app/src/ui/panels/BattleTimeline.tsx`            | ✅ 修改 | +35  | ✅ <10  |
+| `app/src/core/state/store.ts`                     | ✅ 修改 | +95  | ✅ <15  |
+| `app/src/scenes/world/WorldScene.ts`              | ✅ 修改 | +120 | ⚠️ 预存 |
 
 **总计**: 4个文件，~275行代码变更
 
@@ -316,6 +332,7 @@ cleanup(): void {
 ## 验证结果
 
 ### 代码质量
+
 - ✅ ESLint通过（修改文件无新增错误）
 - ✅ TypeScript编译通过
 - ✅ 构建成功（pnpm build）
@@ -325,6 +342,7 @@ cleanup(): void {
 ### 功能验证（手动测试）
 
 #### 战报系统
+
 - ✅ ID格式正确（`battle-{timestamp}-{counter}`）
 - ✅ 无重复ID（连续100次生成）
 - ✅ 时间戳降序排列（最新在顶部）
@@ -333,6 +351,7 @@ cleanup(): void {
 - ✅ 计数器重置（新游戏会话从0开始）
 
 #### 领土更新
+
 - ✅ 初始化时所有国家有状态
 - ✅ 战斗后地图颜色立即更新（<1秒）
 - ✅ `territories` ↔ `territoryStates` 同步
@@ -341,6 +360,7 @@ cleanup(): void {
 - ✅ 场景销毁时订阅正确清理
 
 ### 性能验证
+
 - ✅ 战报排序<5ms（200条记录）
 - ✅ 领土更新触发<1ms
 - ✅ 地图渲染保持60 FPS
@@ -351,14 +371,14 @@ cleanup(): void {
 
 ## 成功标准达成情况
 
-| 标准 | 目标 | 实际 | 状态 |
-|------|------|------|------|
-| SC-001 | 100%战报正序且无重复 | 100% | ✅ |
-| SC-002 | 1秒内颜色更新 | <500ms | ✅ |
-| SC-003 | 稳定排序无跳动 | 稳定 | ✅ |
-| SC-004 | 100%信息一致性 | 100% | ✅ |
-| SC-005 | 90%追踪能力 | (待用户测试) | ⏳ |
-| SC-006 | 无特定警告 | 0警告 | ✅ |
+| 标准   | 目标                 | 实际         | 状态 |
+| ------ | -------------------- | ------------ | ---- |
+| SC-001 | 100%战报正序且无重复 | 100%         | ✅   |
+| SC-002 | 1秒内颜色更新        | <500ms       | ✅   |
+| SC-003 | 稳定排序无跳动       | 稳定         | ✅   |
+| SC-004 | 100%信息一致性       | 100%         | ✅   |
+| SC-005 | 90%追踪能力          | (待用户测试) | ⏳   |
+| SC-006 | 无特定警告           | 0警告        | ✅   |
 
 ---
 
@@ -377,20 +397,24 @@ cleanup(): void {
 ## 技术亮点
 
 ### 1. 三重ID保障
+
 - 时间戳（Date.now()）: 秒级唯一性
 - 全局计数器（battleEventCounter）: 毫秒级唯一性
 - 格式化（`battle-{ts}-{cnt}`）: 可读性和可调试性
 
 ### 2. 双向同步模式
+
 ```
 territories数组 ←→ territoryStates Map
      (UI层)              (渲染层)
 ```
+
 - 原子性更新（同一set调用）
 - 不可变模式（new Map()）
 - 防御性创建（缺失时自动补齐）
 
 ### 3. 订阅式渲染
+
 ```
 Before: 轮询检测 (每30 tick检查)
 After:  订阅通知 (变化时立即触发)
@@ -400,6 +424,7 @@ After:  订阅通知 (变化时立即触发)
 ```
 
 ### 4. 代码组织
+
 - 提取helper函数降低复杂度（updateTerritoryOwnership）
 - JSDoc注释完整（所有新增函数）
 - 日志统一格式（`[组件] 操作: 详情`）
@@ -409,14 +434,17 @@ After:  订阅通知 (变化时立即触发)
 ## 后续工作
 
 ### 立即需要
+
 - 无（核心修复已完成）
 
 ### 建议优化（非必需）
+
 1. **性能监控**: 在Dev HUD中显示战报渲染和领土更新耗时
 2. **E2E测试**: 编写自动化测试覆盖两个用户故事
 3. **用户研究**: 收集"追踪能力"提升的定量数据（SC-005）
 
 ### 技术债务
+
 - `WorldScene.ts`预存的复杂度警告（非本次修复引入）
 - TypeScript版本不匹配警告（5.9.3 vs 5.4.x）
 
@@ -431,10 +459,12 @@ After:  订阅通知 (变化时立即触发)
 **成功标准**: ✅ 5/6项通过，1项待用户测试
 
 两个P1优先级bug已完全修复：
+
 1. ✅ 战报系统按时间正序显示且无重复
 2. ✅ 地图领土实时更新且信息同步
 
 修复后游戏体验显著提升：
+
 - 玩家可清晰追踪最新战报（最新在顶部，无重复）
 - 地图实时反映势力变化（战斗后立即更新）
 - 性能优化（订阅机制比轮询快90%）

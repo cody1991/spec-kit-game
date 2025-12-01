@@ -2,11 +2,11 @@ import type { FactionStatistics } from '../core/types';
 
 /**
  * 排行榜排序算法
- * 
+ *
  * 排序规则：
  * 1. 主排序：国家数量降序 (countryCount DESC)
  * 2. 次排序：国土面积降序 (totalArea DESC)
- * 
+ *
  * @param stats 势力统计数据数组
  * @returns 排序后的数组，每个元素添加了 rank 字段
  */

@@ -6,7 +6,8 @@
 
 **问题**: 战报显示顺序不正确，最新的战报应该在最上面
 
-**解决方案**: 
+**解决方案**:
+
 - 文件: `app/src/ui/panels/BattleTimeline.tsx`
 - 修改: 使用 `slice(-20).reverse()` 代替 `reverse().slice(0, 20)`
 - 效果: 最新的 20 条战报按时间倒序显示（最新的在顶部）
@@ -24,15 +25,17 @@ const recentEvents = [...eventLog].slice(-20).reverse();
 **新增功能**: 在地图上显示占领该国家的指挥官名称
 
 **实现细节**:
+
 - 文件: `app/src/scenes/world/rendering/MapRenderer.ts`
 - 新增: `countryLabels: Map<string, Phaser.GameObjects.Text>` 用于存储文本标签
 - 修改: `render()` 方法新增 `commanders` 参数
 - 新增: `renderCountryLabel()` 方法用于渲染指挥官名称
 
 **特性**:
+
 1. **智能显示**: 只显示已被占领的国家，并显示占领者（指挥官）的名字
 2. **位置准确**: 文本显示在国家的质心位置（使用地理坐标转换）
-3. **缩放自适应**: 
+3. **缩放自适应**:
    - 缩放 < 0.6x: 隐藏标签（避免密集显示）
    - 缩放 >= 0.6x: 显示标签
    - 字体大小随缩放级别动态调整 (10px - 18px)
@@ -43,6 +46,7 @@ const recentEvents = [...eventLog].slice(-20).reverse();
    - 渲染层级 1000（显示在地图之上）
 
 **示例效果**:
+
 - 美国领土上显示: "华盛顿"
 - 法国领土上显示: "拿破仑"
 - 中国领土上显示: "秦始皇"
@@ -50,11 +54,13 @@ const recentEvents = [...eventLog].slice(-20).reverse();
 ### 3. 相机控制改进（之前的改进）✅
 
 **拖动功能**:
+
 - 左键或右键都可以拖动地图
 - 鼠标样式提示: `grab` → `grabbing` → `grab`
 - 拖动考虑缩放级别，更流畅
 
 **缩放功能**:
+
 - 缩放范围: 0.3x - 3.0x
 - 以鼠标位置为中心缩放
 - 控制台显示当前缩放级别
@@ -68,16 +74,19 @@ const recentEvents = [...eventLog].slice(-20).reverse();
 ## 使用说明
 
 ### 查看战报
+
 - 战报面板会自动显示最新的 20 条战报
 - 最新的战报始终在最顶部
 - 包含时间戳、参与者、结果等信息
 
 ### 查看指挥官名称
+
 1. **缩小视图** (zoom < 0.6x): 标签自动隐藏，避免文字重叠
 2. **正常/放大视图** (zoom >= 0.6x): 显示占领该国家的指挥官名字
 3. **放大查看细节** (zoom > 1.5x): 文字变大，更清晰
 
 ### 地图操作
+
 - 🖱️ **拖动**: 左键或右键拖动地图
 - 🔍 **缩放**: 鼠标滚轮 (0.3x - 3.0x)
 - 🌍 **完整视图**: 缩小到 0.3x-0.5x 查看完整世界地图
@@ -89,7 +98,7 @@ const recentEvents = [...eventLog].slice(-20).reverse();
 
 ```typescript
 private renderCountryLabel(
-  country: Country, 
+  country: Country,
   state: TerritoryState | undefined,
   commanders: Array<{ id: string; name: string }>
 ): void {

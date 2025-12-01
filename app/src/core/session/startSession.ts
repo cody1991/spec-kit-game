@@ -7,7 +7,7 @@ import type { CommanderColor, Country } from '../types';
 
 /**
  * 启动游戏会话
- * 
+ *
  * 注意：现在需要等待地图数据加载完成后才能初始化游戏世界。
  * 如果地图数据未准备好，将推迟初始化直到数据可用。
  */
@@ -20,14 +20,14 @@ export function startSession(seed?: string, countries?: Country[]): void {
     // 保存seed到store，等待地图加载完成后再初始化
     const store = useGameStore.getState();
     store.startGame(seedString);
-    
+
     // 发送游戏准备事件（但还未完全初始化）
     globalEventBus.emit({
       type: 'game:start',
       timestamp: new Date().toISOString(),
       payload: { seed: seedString, status: 'pending-map-data' },
     });
-    
+
     return;
   }
 
@@ -72,7 +72,7 @@ export function startSession(seed?: string, countries?: Country[]): void {
   const territoryStates = new Map();
   territories.forEach((territory) => {
     if (territory.ownerId) {
-      const country = countries.find(c => c.id === territory.id);
+      const country = countries.find((c) => c.id === territory.id);
       territoryStates.set(territory.id, {
         countryId: territory.id, // 现在是真实的国家ID（如'840'）
         countryName: country?.name || territory.name, // 使用真实国家名称

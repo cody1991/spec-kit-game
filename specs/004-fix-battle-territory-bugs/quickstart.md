@@ -34,15 +34,15 @@ const store = useGameStore.getState();
 const events = store.eventLog;
 
 // 检查ID重复
-const ids = events.map(e => e.id);
+const ids = events.map((e) => e.id);
 const uniqueIds = new Set(ids);
 console.log('Total events:', ids.length);
 console.log('Unique IDs:', uniqueIds.size);
 console.log('Has duplicates:', ids.length !== uniqueIds.size);
 
 // 检查时间顺序
-const timestamps = events.map(e => new Date(e.timestamp).getTime());
-const isSorted = timestamps.every((t, i) => i === 0 || t >= timestamps[i-1]);
+const timestamps = events.map((e) => new Date(e.timestamp).getTime());
+const isSorted = timestamps.every((t, i) => i === 0 || t >= timestamps[i - 1]);
 console.log('Is chronological:', isSorted);
 ```
 
@@ -64,8 +64,8 @@ store.territories.forEach(t => {
   if (!state) {
     console.warn('Missing state for territory:', t.id);
   } else if (state.ownerId !== t.ownerId) {
-    console.error('Owner mismatch:', t.id, 
-      'Territory:', t.ownerId, 
+    console.error('Owner mismatch:', t.id,
+      'Territory:', t.ownerId,
       'State:', state.ownerId
     );
   }
@@ -116,7 +116,7 @@ pnpm test -- battleSystem.spec.ts
 const recentEvents = useMemo(() => {
   // 1. 去重（按ID）
   const uniqueEvents = new Map<string, BattleEvent>();
-  eventLog.forEach(event => {
+  eventLog.forEach((event) => {
     uniqueEvents.set(event.id, event);
   });
 
@@ -125,18 +125,18 @@ const recentEvents = useMemo(() => {
     .sort((a, b) => {
       const timeA = new Date(a.timestamp).getTime();
       const timeB = new Date(b.timestamp).getTime();
-      
+
       // 验证时间戳有效性
       if (isNaN(timeA) || isNaN(timeB)) {
         console.warn('Invalid timestamp detected:', a.timestamp, b.timestamp);
         return 0;
       }
-      
+
       // 降序排列
       if (timeB !== timeA) {
         return timeB - timeA;
       }
-      
+
       // 时间戳相同时按ID排序（稳定排序）
       return b.id.localeCompare(a.id);
     })
@@ -161,15 +161,15 @@ pnpm test -- BattleTimeline.spec.tsx
 updateTerritory: (id, updates) =>
   set((state) => {
     // 1. 更新 territories 数组
-    const newTerritories = state.territories.map((t) => 
+    const newTerritories = state.territories.map((t) =>
       t.id === id ? { ...t, ...updates } : t
     );
-    
+
     // 2. 如果 ownerId 变化，同步更新 territoryStates
     if (updates.ownerId !== undefined) {
       const existingState = state.territoryStates.get(id);
       const newStates = new Map(state.territoryStates);
-      
+
       if (existingState) {
         newStates.set(id, {
           ...existingState,
@@ -181,18 +181,18 @@ updateTerritory: (id, updates) =>
           updatedAt: Date.now(),
           transitionProgress: 0, // 触发颜色过渡动画
         });
-        
+
         console.log(
           `🔄 Territory sync: ${id} owner changed to ${updates.ownerId}`
         );
       }
-      
+
       return {
         territories: newTerritories,
         territoryStates: newStates,
       };
     }
-    
+
     return { territories: newTerritories };
   }),
 ```
@@ -214,11 +214,11 @@ pnpm test -- store.spec.ts
 private verifyTerritoryStatesComplete(): void {
   const state = useGameStore.getState();
   const missingStates: string[] = [];
-  
+
   state.countries.forEach(country => {
     if (!state.territoryStates.has(country.id)) {
       missingStates.push(country.id);
-      
+
       // 创建默认状态
       const defaultState: TerritoryState = {
         countryId: country.id,
@@ -233,11 +233,11 @@ private verifyTerritoryStatesComplete(): void {
         transitionProgress: null,
         isHighlighted: false,
       };
-      
+
       state.territoryStates.set(country.id, defaultState);
     }
   });
-  
+
   if (missingStates.length > 0) {
     console.warn(
       `⚠️ Created default states for ${missingStates.length} territories:`,
@@ -265,7 +265,7 @@ private territorySubscription?: () => void;
 // 在 create() 方法中添加订阅
 private setupTerritorySubscription(): void {
   const store = useGameStore.getState();
-  
+
   // 订阅 territoryStates 变化
   this.territorySubscription = useGameStore.subscribe(
     (state) => state.territoryStates,
@@ -273,7 +273,7 @@ private setupTerritorySubscription(): void {
       // 检测变化的领土
       newStates.forEach((newState, territoryId) => {
         const prevState = prevStates.get(territoryId);
-        
+
         // 检查 ownerId 是否变化
         if (!prevState || prevState.ownerId !== newState.ownerId) {
           this.handleTerritoryOwnershipChange(territoryId, newState);
@@ -291,7 +291,7 @@ private handleTerritoryOwnershipChange(
   const colorMapping = newState.ownerId
     ? store.colorMappings.get(newState.ownerId)
     : null;
-  
+
   if (colorMapping) {
     this.mapRenderer.updateCountry(territoryId, newState, colorMapping);
     console.log(`🎨 Map updated: ${territoryId} → ${newState.ownerId}`);
@@ -335,7 +335,7 @@ import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
 // 修改 resetGame 方法
 resetGame: () => {
   resetBattleEventCounter(); // 重置战报计数器
-  
+
   set({
     gameStarted: false,
     sessionId: '',
@@ -364,7 +364,7 @@ const events = store.eventLog;
 console.assert(events.length === new Set(events.map(e => e.id)).size, 'No duplicate IDs');
 
 const timestamps = events.map(e => new Date(e.timestamp).getTime());
-const isSorted = timestamps.slice(0, 20).every((t, i) => 
+const isSorted = timestamps.slice(0, 20).every((t, i) =>
   i === 0 || t <= timestamps[i-1]
 );
 console.assert(isSorted, 'Timeline sorted descending');
@@ -425,9 +425,7 @@ pnpm test:coverage
 
 ```typescript
 // 检查是否有无效时间戳
-const invalidEvents = eventLog.filter(e => 
-  isNaN(new Date(e.timestamp).getTime())
-);
+const invalidEvents = eventLog.filter((e) => isNaN(new Date(e.timestamp).getTime()));
 console.log('Invalid timestamps:', invalidEvents);
 ```
 

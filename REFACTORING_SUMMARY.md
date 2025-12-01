@@ -28,6 +28,7 @@
 ### 根本原因
 
 **Territory.id与Country.id类型不一致**：
+
 - Territory使用旧的区域字符串ID
 - Country使用ISO标准数字字符串ID
 - 中间层的`regionMapping`试图桥接，但只在初始化时有效
@@ -41,7 +42,7 @@
 
 ```
 旧架构：
-createInitialWorld() 
+createInitialWorld()
   → createTerritories() (生成区域Territory)
     → Territory.id = 'western-europe'
       → battleSystem.updateTerritory('western-europe')
@@ -49,7 +50,7 @@ createInitialWorld()
           ❌ 地图无法找到对应国家
 
 新架构：
-createInitialWorld(countries: Country[]) 
+createInitialWorld(countries: Country[])
   → 从真实国家数据创建Territory
     → Territory.id = '840' (美国ISO码)
       → battleSystem.updateTerritory('840')
@@ -62,6 +63,7 @@ createInitialWorld(countries: Country[])
 #### 1. 重构 `createInitialWorld.ts`
 
 **修改前**:
+
 ```typescript
 export function createInitialWorld(options: InitialWorldOptions) {
   const territories: Territory[] = createTerritories(); // 生成15个区域
@@ -70,6 +72,7 @@ export function createInitialWorld(options: InitialWorldOptions) {
 ```
 
 **修改后**:
+
 ```typescript
 export interface InitialWorldOptions {
   seed: number;
@@ -79,7 +82,7 @@ export interface InitialWorldOptions {
 
 export function createInitialWorld(options: InitialWorldOptions) {
   const { countries } = options;
-  
+
   // 从国家数据创建Territory
   const territories: Territory[] = countries.map((country) => ({
     id: country.id, // 使用国家ID（如'840'）而非区域ID
@@ -87,7 +90,7 @@ export function createInitialWorld(options: InitialWorldOptions) {
     adjacentIds: country.neighbors || [],
     // ... 其他字段
   }));
-  
+
   // 区域映射仅用于指挥官起始位置分配
   const regionCountryIds = getCountryIdsByRegion(commander.originRegion);
   const startTerritory = getRandomCountryFromRegion(territories, regionCountryIds, seed);
@@ -95,6 +98,7 @@ export function createInitialWorld(options: InitialWorldOptions) {
 ```
 
 **关键变化**:
+
 - Territory.id现在是国家ISO数字码（如`'840'`, `'156'`）
 - 区域映射降级为"初始化辅助工具"，仅用于将指挥官的`originRegion`转换为具体国家列表
 - `controlledTerritories`直接存储国家ID
@@ -102,10 +106,11 @@ export function createInitialWorld(options: InitialWorldOptions) {
 #### 2. 更新 `startSession.ts`
 
 **修改前**:
+
 ```typescript
 export function startSession(seed?: string): void {
   const { commanders, territories } = createInitialWorld({ seed, commanderCount: 30 });
-  
+
   // 创建territoryStates（但与territories脱节）
   const territoryStates = new Map();
   // ...
@@ -113,6 +118,7 @@ export function startSession(seed?: string): void {
 ```
 
 **修改后**:
+
 ```typescript
 export function startSession(seed?: string, countries?: Country[]): void {
   if (!countries || countries.length === 0) {
@@ -130,7 +136,7 @@ export function startSession(seed?: string, countries?: Country[]): void {
   const territoryStates = new Map();
   territories.forEach((territory) => {
     if (territory.ownerId) {
-      const country = countries.find(c => c.id === territory.id);
+      const country = countries.find((c) => c.id === territory.id);
       territoryStates.set(territory.id, {
         countryId: territory.id, // 现在是真实的国家ID
         countryName: country?.name || territory.name,
@@ -145,13 +151,14 @@ export function startSession(seed?: string, countries?: Country[]): void {
 #### 3. 重构 `WorldScene.ts`
 
 **新增方法**：
+
 ```typescript
 private initializeGameWorldIfNeeded(): void {
   const store = useGameStore.getState();
   const { gameStarted, seed, commanders, territories } = store;
 
   // 检查是否仍在使用旧区域系统
-  const needsInit = gameStarted && 
+  const needsInit = gameStarted &&
                     this.countries.length > 0 &&
                     this.isUsingOldRegionSystem(territories);
 
@@ -163,16 +170,17 @@ private initializeGameWorldIfNeeded(): void {
 
 private isUsingOldRegionSystem(territories: Territory[]): boolean {
   if (territories.length === 0) return false;
-  
+
   const sampleId = territories[0].id;
   // 旧系统使用'western-europe'，新系统使用'840'
   const isOldSystem = sampleId.includes('-') || isNaN(Number(sampleId));
-  
+
   return isOldSystem;
 }
 ```
 
 **简化 `mapCountriesToCommanders`**：
+
 ```typescript
 // 修改前：需要复杂的区域→国家映射
 private mapCountriesToCommanders(): void {
@@ -202,16 +210,16 @@ private mapCountriesToCommanders(): void {
 
 ```typescript
 const mockCountries: Country[] = [
-  { id: '840', name: '美国', nameEn: 'United States', /* ... */ },
-  { id: '156', name: '中国', nameEn: 'China', /* ... */ },
+  { id: '840', name: '美国', nameEn: 'United States' /* ... */ },
+  { id: '156', name: '中国', nameEn: 'China' /* ... */ },
   // ... 更多国家
 ];
 
 it('领土ID应该是国家ID而非区域ID', () => {
-  const { territories } = createInitialWorld({ 
-    seed: 12345, 
+  const { territories } = createInitialWorld({
+    seed: 12345,
     commanderCount: 5,
-    countries: mockCountries 
+    countries: mockCountries,
   });
 
   territories.forEach((t) => {
@@ -226,11 +234,13 @@ it('领土ID应该是国家ID而非区域ID', () => {
 ### 单元测试
 
 ✅ **generation.spec.ts** (8/8 通过)
+
 - Territory ID现在是国家ISO码：`'356'`, `'276'`, `'643'`
 - 指挥官的`controlledTerritories`包含国家ID
 - 创建世界基于真实国家数据
 
 ✅ **store.countryOwnership.spec.ts** (2/2 通过)
+
 - 单国更新不会批量占领
 - 区域ID不再触发特殊处理
 
@@ -277,12 +287,13 @@ it('领土ID应该是国家ID而非区域ID', () => {
 ### 数据流
 
 1. **初始化流程**
+
    ```
-   StartScreen点击"开始" 
-     → startSession()（暂存seed） 
-     → WorldScene.loadMapDataAsync() 
-     → countries加载完成 
-     → initializeGameWorldIfNeeded() 
+   StartScreen点击"开始"
+     → startSession()（暂存seed）
+     → WorldScene.loadMapDataAsync()
+     → countries加载完成
+     → initializeGameWorldIfNeeded()
      → startSession(seed, countries) 重新初始化
      → createInitialWorld基于真实国家创建Territory
    ```
@@ -318,17 +329,19 @@ it('领土ID应该是国家ID而非区域ID', () => {
 
 - **用途**: 仅初始化时选择指挥官起始国家
 - **位置**: `createInitialWorld()`中的辅助函数
-- **收益**: 
+- **收益**:
   - 运行时完全不依赖区域概念
   - 所有ID统一为国家ISO码
   - 战斗系统和地图渲染直接对接
 
 **保留理由**：
+
 - 指挥官数据仍使用`originRegion`（如拿破仑='europe'）
 - 需要将抽象地理区域转换为具体国家列表
 - 例：`'americas'` → `['840', '124', '484']`（美国、加拿大、墨西哥）
 
 **代码位置**：
+
 ```typescript
 // app/src/config/regionMapping.config.ts
 export const REGION_COUNTRY_MAPPINGS = [
@@ -343,6 +356,7 @@ export const REGION_COUNTRY_MAPPINGS = [
 ### 如果你的代码使用了区域ID
 
 ❌ **错误用法**（已废弃）：
+
 ```typescript
 // 不要这样做！
 const territories = createTerritories(); // 返回区域Territory
@@ -350,6 +364,7 @@ battleSystem.updateTerritory('western-europe'); // 区域ID
 ```
 
 ✅ **正确用法**（当前）：
+
 ```typescript
 // 总是使用国家ID
 const countries = await loadCountries();
@@ -360,14 +375,13 @@ battleSystem.updateTerritory('276'); // 国家ID（德国）
 ### 如果你需要区域信息
 
 ✅ **使用方式**：
+
 ```typescript
 // 查询某国家属于哪个区域（仅供显示）
 import { REGION_COUNTRY_MAPPINGS } from '@/config/regionMapping.config';
 
 function getRegionForCountry(countryId: string): string | undefined {
-  const mapping = REGION_COUNTRY_MAPPINGS.find(m => 
-    m.countryIds.includes(countryId)
-  );
+  const mapping = REGION_COUNTRY_MAPPINGS.find((m) => m.countryIds.includes(countryId));
   return mapping?.id; // 'europe', 'americas'等
 }
 
@@ -418,7 +432,7 @@ function getRegionForCountry(countryId: string): string | undefined {
 ✅ **统一数据模型**: Territory.id = Country.id (ISO数字码)  
 ✅ **消除脱节**: 战斗系统更新 → 地图直接渲染  
 ✅ **简化架构**: 移除运行时区域映射逻辑  
-✅ **测试通过**: 单元测试、构建、开发服务器全部正常  
+✅ **测试通过**: 单元测试、构建、开发服务器全部正常
 
 ### 技术债务
 

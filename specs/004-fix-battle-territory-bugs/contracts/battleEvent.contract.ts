@@ -1,8 +1,8 @@
 /**
  * Contract: BattleEvent ID Uniqueness and Timestamp Validity
- * 
+ *
  * Purpose: Ensure that all battle events have unique IDs and valid ISO 8601 timestamps
- * 
+ *
  * Test scenarios:
  * 1. ID uniqueness in high-frequency battle scenarios
  * 2. Timestamp format validation
@@ -39,9 +39,9 @@ describe('Contract: BattleEvent ID Generation', () => {
   it('C-002: should follow ID format pattern', () => {
     const id = generateBattleEventId();
     const pattern = /^battle-\d+-\d+$/;
-    
+
     expect(id).toMatch(pattern);
-    
+
     // Extract parts
     const parts = id.split('-');
     expect(parts).toHaveLength(3);
@@ -117,7 +117,7 @@ describe('Contract: BattleEvent Timestamp', () => {
     const after = Date.now();
 
     const eventTime = new Date(event.timestamp).getTime();
-    
+
     expect(eventTime).toBeGreaterThanOrEqual(before);
     expect(eventTime).toBeLessThanOrEqual(after);
   });

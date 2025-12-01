@@ -15,10 +15,7 @@ import type { HistoricalCommander, Territory } from '../../app/src/core/types';
 import { DEFAULT_CONQUEST_CONFIG } from '../../app/src/config/conquest.config';
 
 // 创建测试用的领主
-function createMockCommander(
-  id: string,
-  territories: string[] = []
-): HistoricalCommander {
+function createMockCommander(id: string, territories: string[] = []): HistoricalCommander {
   return {
     id,
     name: `Commander ${id}`,
@@ -77,8 +74,8 @@ describe('targetSelector', () => {
       const stats = calculateSelectionStats(results);
 
       // 允许±5%误差，85%概率应该在80%-90%之间
-      expect(stats.adjacentRatio).toBeGreaterThan(0.80);
-      expect(stats.adjacentRatio).toBeLessThan(0.90);
+      expect(stats.adjacentRatio).toBeGreaterThan(0.8);
+      expect(stats.adjacentRatio).toBeLessThan(0.9);
     });
 
     it('应该在无相邻目标时选择远程目标', () => {
@@ -186,13 +183,16 @@ describe('targetSelector', () => {
   describe('概率分布验证（1000次模拟）', () => {
     it('应该符合85%/15%的概率分布（允许±5%误差）', () => {
       const attacker = createMockCommander('attacker', ['t1']);
-      
+
       // 创建一个有足够相邻和远程目标的场景
       const territoryMap = new Map<string, Territory>();
       const allTerritoryIds: string[] = [];
 
       // t1 是攻击方领土，有5个相邻敌对领土
-      territoryMap.set('t1', createMockTerritory('t1', ['adj1', 'adj2', 'adj3', 'adj4', 'adj5'], 'attacker'));
+      territoryMap.set(
+        't1',
+        createMockTerritory('t1', ['adj1', 'adj2', 'adj3', 'adj4', 'adj5'], 'attacker')
+      );
       allTerritoryIds.push('t1');
 
       // 5个相邻敌对领土
@@ -220,14 +220,16 @@ describe('targetSelector', () => {
 
       // 验证概率分布
       // 85% ± 5% = [80%, 90%]
-      expect(stats.adjacentRatio).toBeGreaterThanOrEqual(0.80);
-      expect(stats.adjacentRatio).toBeLessThanOrEqual(0.90);
+      expect(stats.adjacentRatio).toBeGreaterThanOrEqual(0.8);
+      expect(stats.adjacentRatio).toBeLessThanOrEqual(0.9);
 
       // 15% ± 5% = [10%, 20%]
-      expect(stats.remoteRatio).toBeGreaterThanOrEqual(0.10);
-      expect(stats.remoteRatio).toBeLessThanOrEqual(0.20);
+      expect(stats.remoteRatio).toBeGreaterThanOrEqual(0.1);
+      expect(stats.remoteRatio).toBeLessThanOrEqual(0.2);
 
-      console.log(`概率分布验证: 相邻=${(stats.adjacentRatio * 100).toFixed(1)}%, 远程=${(stats.remoteRatio * 100).toFixed(1)}%`);
+      console.log(
+        `概率分布验证: 相邻=${(stats.adjacentRatio * 100).toFixed(1)}%, 远程=${(stats.remoteRatio * 100).toFixed(1)}%`
+      );
     });
   });
 });

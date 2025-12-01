@@ -11,22 +11,24 @@
 
 ```typescript
 interface RingBuffer<T> {
-  capacity: number;      // 最大容量
-  head: number;          // 写入位置
-  size: number;          // 当前元素数量
-  buffer: T[];           // 底层数组
-  
-  push(item: T): void;   // O(1) 添加元素
-  toArray(): T[];        // 转换为数组（用于UI显示）
-  clear(): void;         // 清空缓冲区
+  capacity: number; // 最大容量
+  head: number; // 写入位置
+  size: number; // 当前元素数量
+  buffer: T[]; // 底层数组
+
+  push(item: T): void; // O(1) 添加元素
+  toArray(): T[]; // 转换为数组（用于UI显示）
+  clear(): void; // 清空缓冲区
 }
 ```
 
 **Validation Rules**:
+
 - capacity必须为正整数
 - size永远不超过capacity
 
 **State Transitions**:
+
 - Empty → HasItems: 第一次push
 - HasItems → Full: size达到capacity
 - Full → Full: 继续push时覆盖最旧元素
@@ -39,11 +41,11 @@ interface RingBuffer<T> {
 
 ```typescript
 interface PerformanceMetrics {
-  fps: number;           // 当前FPS
-  tickMs: number;        // Tick处理时间(ms)
+  fps: number; // 当前FPS
+  tickMs: number; // Tick处理时间(ms)
   memoryUsageMB: number; // 内存使用(MB) - 新增
-  gcCount: number;       // GC次数估算 - 新增
-  renderMs: number;      // 渲染时间(ms) - 新增
+  gcCount: number; // GC次数估算 - 新增
+  renderMs: number; // 渲染时间(ms) - 新增
 }
 ```
 
@@ -55,21 +57,22 @@ interface PerformanceMetrics {
 
 ```typescript
 interface PerformanceConfig {
-  enableDetailedLogs: boolean;     // 是否启用详细日志
-  enableAnimations: boolean;       // 是否启用动画
-  renderThrottleMs: number;        // 渲染节流间隔(ms)
-  lowFpsThreshold: number;         // 低FPS阈值
-  autoDegrade: boolean;            // 是否自动降级
-  eventLogCapacity: number;        // 事件日志容量
+  enableDetailedLogs: boolean; // 是否启用详细日志
+  enableAnimations: boolean; // 是否启用动画
+  renderThrottleMs: number; // 渲染节流间隔(ms)
+  lowFpsThreshold: number; // 低FPS阈值
+  autoDegrade: boolean; // 是否自动降级
+  eventLogCapacity: number; // 事件日志容量
 }
 ```
 
 **Default Values**:
+
 ```typescript
 const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
   enableDetailedLogs: process.env.NODE_ENV === 'development',
   enableAnimations: true,
-  renderThrottleMs: 16,  // ~60fps
+  renderThrottleMs: 16, // ~60fps
   lowFpsThreshold: 30,
   autoDegrade: true,
   eventLogCapacity: 200,
@@ -84,10 +87,10 @@ const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
 
 ```typescript
 interface DirtyFlags {
-  territories: Set<string>;  // 需要重绘的领土ID
-  commanders: Set<string>;   // 需要重绘的指挥官ID
-  fullRedraw: boolean;       // 是否需要全量重绘
-  lastRenderTick: number;    // 上次渲染的Tick
+  territories: Set<string>; // 需要重绘的领土ID
+  commanders: Set<string>; // 需要重绘的指挥官ID
+  fullRedraw: boolean; // 是否需要全量重绘
+  lastRenderTick: number; // 上次渲染的Tick
 }
 ```
 
@@ -102,11 +105,11 @@ interface DirtyFlags {
 ```typescript
 interface GameState {
   // ... 现有字段 ...
-  
+
   // 新增性能相关
   performanceConfig: PerformanceConfig;
   dirtyFlags: DirtyFlags;
-  
+
   // Actions
   setPerformanceConfig: (config: Partial<PerformanceConfig>) => void;
   markDirty: (type: 'territory' | 'commander', id: string) => void;

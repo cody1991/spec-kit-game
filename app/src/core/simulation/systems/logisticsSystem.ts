@@ -3,7 +3,7 @@ import { useGameStore } from '../../state/store';
 
 /**
  * 后勤系统
- * 
+ *
  * @performance
  * - 使用 for 循环代替 forEach 提高性能
  * - 使用批量更新减少 store 操作
@@ -11,9 +11,12 @@ import { useGameStore } from '../../state/store';
  */
 export class LogisticsSystem implements System {
   name = 'LogisticsSystem';
-  
+
   // 缓存领土 ID 到领土对象的映射
-  private territoryCache: Map<string, { food: number; industry: number; stability: number; garrison: number }> = new Map();
+  private territoryCache: Map<
+    string,
+    { food: number; industry: number; stability: number; garrison: number }
+  > = new Map();
 
   update(_deltaMs: number): void {
     const state = useGameStore.getState();
@@ -33,8 +36,14 @@ export class LogisticsSystem implements System {
     }
 
     // 收集所有更新
-    const allTerritoryUpdates: Array<{ id: string; updates: { stability?: number; garrison?: number } }> = [];
-    const allCommanderUpdates: Array<{ id: string; updates: { currentPower?: number; morale?: number } }> = [];
+    const allTerritoryUpdates: Array<{
+      id: string;
+      updates: { stability?: number; garrison?: number };
+    }> = [];
+    const allCommanderUpdates: Array<{
+      id: string;
+      updates: { currentPower?: number; morale?: number };
+    }> = [];
 
     // 每个指挥官根据领土获得补给和恢复
     for (let i = 0; i < commanders.length; i++) {
@@ -45,7 +54,7 @@ export class LogisticsSystem implements System {
       let totalFood = 0;
       let totalIndustry = 0;
       const ownedTerritoryIds = commander.controlledTerritories;
-      
+
       for (let j = 0; j < ownedTerritoryIds.length; j++) {
         const cached = this.territoryCache.get(ownedTerritoryIds[j]);
         if (cached) {

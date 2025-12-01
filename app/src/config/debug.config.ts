@@ -1,8 +1,8 @@
 /**
  * Debug Configuration
- * 
+ *
  * 集中控制日志输出，避免控制台过于卡顿
- * 
+ *
  * @performance 生产环境自动禁用所有非关键日志
  */
 
@@ -24,37 +24,39 @@ const IS_PRODUCTION = isProduction();
 
 export const DEBUG_CONFIG = {
   // 核心系统日志
-  GAME_SESSION: false,        // startSession, pauseSession 等
-  WORLD_GENERATION: false,    // createInitialWorld
-  
+  GAME_SESSION: false, // startSession, pauseSession 等
+  WORLD_GENERATION: false, // createInitialWorld
+
   // 地图系统日志
-  MAP_LOADING: !IS_PRODUCTION,          // 地图加载（保留关键信息）
-  MAP_RENDERING: false,       // 地图渲染（过于频繁，默认关闭）
-  MAP_RENDERER_INIT: !IS_PRODUCTION,    // 渲染器初始化
-  
+  MAP_LOADING: !IS_PRODUCTION, // 地图加载（保留关键信息）
+  MAP_RENDERING: false, // 地图渲染（过于频繁，默认关闭）
+  MAP_RENDERER_INIT: !IS_PRODUCTION, // 渲染器初始化
+
   // 领土系统日志
-  TERRITORY_UPDATE: false,    // 领土更新（每次战斗都会触发）
+  TERRITORY_UPDATE: false, // 领土更新（每次战斗都会触发）
   TERRITORY_OWNERSHIP: false, // 所有权变更
-  
+  TERRITORY_BONUS: false, // 领土加成计算 (Feature: 008-territory-bonus)
+
   // 战斗系统日志
-  BATTLE_EVENTS: false,       // 战斗事件
-  BATTLE_RESOLUTION: false,   // 战斗解算
-  
+  BATTLE_EVENTS: false, // 战斗事件
+  BATTLE_RESOLUTION: false, // 战斗解算
+  BATTLE_SYSTEM: false, // 战斗系统（目标选择等）
+
   // 性能监控
-  PERFORMANCE: false,         // FPS、渲染时间等
-  
+  PERFORMANCE: false, // FPS、渲染时间等
+
   // 缓存系统
-  CACHE: false,               // IndexedDB 缓存操作
-  
+  CACHE: false, // IndexedDB 缓存操作
+
   // 错误日志（始终启用）
   ERRORS: true,
-  WARNINGS: !IS_PRODUCTION,   // 生产环境禁用警告
-  
+  WARNINGS: !IS_PRODUCTION, // 生产环境禁用警告
+
   // 订阅系统日志（高频，默认关闭）
-  SUBSCRIPTION: false,        // Zustand 订阅触发
-  
+  SUBSCRIPTION: false, // Zustand 订阅触发
+
   // Store 操作日志（高频，默认关闭）
-  STORE_UPDATE: false,        // store 状态更新
+  STORE_UPDATE: false, // store 状态更新
 };
 
 /**
@@ -66,19 +68,19 @@ export const logger = {
       console.log(...args);
     }
   },
-  
+
   warn: (category: keyof typeof DEBUG_CONFIG, ...args: any[]) => {
     if (DEBUG_CONFIG[category]) {
       console.warn(...args);
     }
   },
-  
+
   error: (...args: any[]) => {
     if (DEBUG_CONFIG.ERRORS) {
       console.error(...args);
     }
   },
-  
+
   group: (category: keyof typeof DEBUG_CONFIG, label: string, fn: () => void) => {
     if (DEBUG_CONFIG[category]) {
       console.group(label);
@@ -97,12 +99,12 @@ if (typeof window !== 'undefined') {
     DEBUG_CONFIG[category] = true;
     console.log(`✅ Enabled debug logging for: ${category}`);
   };
-  
+
   (window as any).disableDebug = (category: keyof typeof DEBUG_CONFIG) => {
     DEBUG_CONFIG[category] = false;
     console.log(`❌ Disabled debug logging for: ${category}`);
   };
-  
+
   (window as any).showDebugConfig = () => {
     console.table(DEBUG_CONFIG);
   };

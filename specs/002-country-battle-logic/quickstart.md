@@ -43,10 +43,10 @@
 建议修改点：
 
 1. `app/src/core/simulation/systems/battleSystem.ts` 与相关系统：
-   - 确保战斗结算仅针对单个 `territoryId/countryId` 生成成功攻占事件。  
+   - 确保战斗结算仅针对单个 `territoryId/countryId` 生成成功攻占事件。
    - 若当前逻辑存在按区域批量更新，需要改为对国家列表逐个生成事件和状态更新。
 2. `app/src/core/state/store.ts`
-   - 通过 `updateTerritory` 和 `updateTerritoryState` 保证每次状态更新只对应一个 `countryId`。  
+   - 通过 `updateTerritory` 和 `updateTerritoryState` 保证每次状态更新只对应一个 `countryId`。
    - 为“由区域触发的批量更新”保留初始化路径（如有需要），并明确与运行期分支隔离。
 3. `app/src/scenes/world/WorldScene.ts` 与 `app/src/scenes/world/utils/countryMapper.ts`：
    - 使用 `Country.id` 作为交互选中、战斗目标与日志事件中的统一标识。
@@ -60,10 +60,10 @@
 建议修改点：
 
 1. 找到负责在地图上绘制占领者姓名的代码（通常位于 `app/src/ui` 或 `app/src/scenes/world`）：
-   - 确保渲染时只读 `GameState.territoryStates` 中的 `ownerId` + 指挥官信息，而不是叠加多个文本节点。  
+   - 确保渲染时只读 `GameState.territoryStates` 中的 `ownerId` + 指挥官信息，而不是叠加多个文本节点。
    - 使用稳定的 `key` 或对象 ID 来管理姓名文本，使旧文本在所有权变更时被销毁或复用。
 2. 在 React UI（如 `CountryDetailPanel`、`BattleTimeline` 等）中：
-   - 确保只展示当前占领者姓名，不追加显示历史占领者名称。  
+   - 确保只展示当前占领者姓名，不追加显示历史占领者名称。
    - 历史信息如需展示，应明确放在战报或时间线中，与当前状态区分。
 
 ## 3. 测试与验证路径
@@ -85,13 +85,13 @@
 
 1. 单国攻占：
    - 从开始界面进入世界地图。
-   - 选择一个敌方国家并发起攻占，观察战斗结算。  
+   - 选择一个敌方国家并发起攻占，观察战斗结算。
    - 断言：只有该国家的颜色与姓名发生变化，对方其他国家保持不变。
 2. 多次易主：
-   - 在同一局中让同一个国家经历多次易主。  
+   - 在同一局中让同一个国家经历多次易主。
    - 断言：任意时刻该国家只展示当前占领者姓名，没有历史名字残留或重叠。
 3. 刷新/重新进入：
-   - 在一次或多次攻占后刷新页面或重新进入对局。  
+   - 在一次或多次攻占后刷新页面或重新进入对局。
    - 断言：地图展示与内部状态一致，不出现区域级占领节点或错误的姓名。
 
 ## 4. 参考文档

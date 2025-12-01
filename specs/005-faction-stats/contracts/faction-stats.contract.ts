@@ -1,6 +1,6 @@
 /**
  * Contract: FactionStatistics Interface
- * 
+ *
  * Purpose: 定义势力统计数据的接口契约，确保数据准确性和一致性
  * Version: 1.0.0
  * Date: 2025-12-01
@@ -121,7 +121,7 @@ describe('Contract: FactionStatistics Data Model', () => {
       const winRate = calculateWinRate(75, 25);
       const expected = 0.75;
       const error = Math.abs(winRate - expected);
-      
+
       // 精度要求：< 0.001 (0.1%)
       expect(error).toBeLessThan(0.001);
     });

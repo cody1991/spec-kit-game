@@ -3,9 +3,9 @@ import type { Country, TerritoryState } from '@core/types';
 
 /**
  * 单元测试：世界场景国家展示逻辑
- * 
+ *
  * 目标：验证地图渲染使用Country.id而非区域ID
- * 
+ *
  * 测试场景：
  * 1. 地图实体集合只包含Country.id（ISO数字码）
  * 2. 不渲染区域名称标签（如"东南亚"、"北美"、"中美"）

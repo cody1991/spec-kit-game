@@ -1,8 +1,8 @@
 /**
  * Contract: Territory State Synchronization
- * 
+ *
  * Purpose: Ensure territories array and territoryStates Map remain synchronized
- * 
+ *
  * Test scenarios:
  * 1. Bidirectional sync when ownerId changes
  * 2. Initial state completeness
@@ -73,10 +73,12 @@ describe('Contract: Territory Bidirectional Sync', () => {
 
     const store = createMockStore(
       [createMockTerritory(territoryId, 'commander-1')],
-      new Map([[
-        territoryId,
-        { ...createMockTerritoryState(territoryId, 'commander-1'), transitionProgress: 0.7 },
-      ]])
+      new Map([
+        [
+          territoryId,
+          { ...createMockTerritoryState(territoryId, 'commander-1'), transitionProgress: 0.7 },
+        ],
+      ])
     );
 
     // Change owner

@@ -13,6 +13,7 @@
 ### 决策：增量更新 + Map存储
 
 **选择理由**:
+
 - 使用 `Map<commanderId, FactionStatistics>` 存储统计数据，O(1)查找和更新
 - 采用增量更新而非全量重算：
   - 战斗事件触发时，仅更新涉及的2个势力的战胜/战败计数
@@ -20,6 +21,7 @@
   - 排序仅在需要显示时执行（懒计算）
 
 **性能分析**:
+
 ```typescript
 // 增量更新时间复杂度
 - 单次战斗更新: O(1) - 仅更新2个势力的计数
@@ -29,7 +31,8 @@
 ```
 
 **备选方案及拒绝理由**:
-1. **全量重算**: 每次事件都遍历所有战斗记录和领土 → 时间复杂度O(m*n)，m为战斗数，n为势力数，性能不可接受
+
+1. **全量重算**: 每次事件都遍历所有战斗记录和领土 → 时间复杂度O(m\*n)，m为战斗数，n为势力数，性能不可接受
 2. **数组存储**: 查找势力需要O(n)遍历 → 高频更新场景下性能较差
 3. **数据库存储**: 增加复杂度且无持久化需求 → 过度设计
 
@@ -40,14 +43,14 @@
 function handleBattleResult(event: BattleEvent) {
   const attackerStats = factionStatsMap.get(event.attackerId);
   const defenderStats = factionStatsMap.get(event.defenderId);
-  
+
   if (event.result === 'success') {
     attackerStats.wins += 1;
     defenderStats.losses += 1;
   } else {
     // 进攻失败，防守成功（不计入战败）
   }
-  
+
   // 更新胜率
   attackerStats.winRate = attackerStats.wins / (attackerStats.wins + attackerStats.losses);
   defenderStats.winRate = defenderStats.wins / (defenderStats.wins + defenderStats.losses);
@@ -59,13 +62,15 @@ function handleBattleResult(event: BattleEvent) {
 ### 决策：仅统计领土所有权变更的战斗
 
 **定义**:
+
 - **战胜 (Win)**: 进攻成功，导致领土所有权从防守方转移给进攻方
 - **战败 (Loss)**: 防守失败，失去领土所有权
-- **不计入**: 
+- **不计入**:
   - 占领中立领土（无防守方）
   - 进攻失败但防守方未失去领土（这种情况不算战败，因为防守成功）
 
 **战斗事件映射**:
+
 ```typescript
 // 当前游戏中的战斗事件类型
 type BattleEvent = {
@@ -87,6 +92,7 @@ if (event.type === 'attack' && event.defenderId) {
 ```
 
 **理由**:
+
 - 符合规格定义（FR-003, FR-004, FR-011）
 - 避免中立领土占领膨胀战绩
 - 与现有 BattleSystem 的事件定义兼容
@@ -98,11 +104,12 @@ if (event.type === 'attack' && event.defenderId) {
 **精度要求**: < 0.1% 误差（规格 SC-007）
 
 **实现方案**:
+
 ```typescript
 interface FactionStatistics {
-  wins: number;        // 整数
-  losses: number;      // 整数
-  winRate: number;     // 浮点数，范围 [0, 1]
+  wins: number; // 整数
+  losses: number; // 整数
+  winRate: number; // 浮点数，范围 [0, 1]
 }
 
 // 计算胜率
@@ -120,12 +127,14 @@ function formatWinRate(winRate: number): string {
 ```
 
 **精度验证**:
+
 - JavaScript Number 是64位双精度浮点数
 - 有效数字位数：约15-17位
 - 对于战斗次数 < 10000 的场景，精度误差 < 0.001%
 - 符合规格要求
 
 **边界情况处理**:
+
 - 总战斗次数 = 0 → 返回 -1，显示为 "N/A"
 - 避免除零错误
 
@@ -134,6 +143,7 @@ function formatWinRate(winRate: number): string {
 ### 决策：异步计算 + 防抖 + 懒排序
 
 **策略1: 使用 requestIdleCallback 异步计算**
+
 ```typescript
 function scheduleStatsUpdate(commanderId: string) {
   if ('requestIdleCallback' in window) {
@@ -146,6 +156,7 @@ function scheduleStatsUpdate(commanderId: string) {
 ```
 
 **策略2: 防抖高频事件**
+
 ```typescript
 import { debounce } from 'lodash-es'; // 或自实现
 
@@ -155,6 +166,7 @@ const debouncedUpdate = debounce((commanderId) => {
 ```
 
 **策略3: 懒排序**
+
 ```typescript
 // 仅在打开面板或手动刷新时排序
 function getLeaderboard(): FactionStatistics[] {
@@ -169,10 +181,12 @@ function getLeaderboard(): FactionStatistics[] {
 ```
 
 **策略4: 虚拟列表（降级方案）**
+
 - 当势力数 > 50 时，使用 react-window 或 react-virtual 实现虚拟滚动
 - 仅渲染可见区域的列表项
 
 **性能基准**:
+
 - 增量更新: < 1ms
 - 排序（50个势力）: < 5ms
 - 组件渲染（50个列表项）: < 100ms
@@ -183,11 +197,12 @@ function getLeaderboard(): FactionStatistics[] {
 ### 决策：从 Country 实体获取 area 属性
 
 **数据来源**:
+
 ```typescript
 interface Country {
-  id: string;          // ISO 3166-1 alpha-3
+  id: string; // ISO 3166-1 alpha-3
   name: string;
-  area: number;        // km² (平方公里)
+  area: number; // km² (平方公里)
   geometry: MultiPolygon;
   centroid: Point;
   // ...
@@ -195,21 +210,24 @@ interface Country {
 
 // 计算势力总面积
 function calculateTotalArea(commanderId: string, countries: Country[]): number {
-  const ownedCountries = territoryStates.entries()
+  const ownedCountries = territoryStates
+    .entries()
     .filter(([_, state]) => state.ownerId === commanderId)
-    .map(([countryId, _]) => countries.find(c => c.id === countryId))
-    .filter(c => c !== undefined);
-  
+    .map(([countryId, _]) => countries.find((c) => c.id === countryId))
+    .filter((c) => c !== undefined);
+
   return ownedCountries.reduce((sum, country) => sum + country.area, 0);
 }
 ```
 
 **数据可用性**:
+
 - ✅ `Country.area` 已存在于地图数据中
 - ✅ 数据类型：number (km²)
 - ✅ 覆盖所有国家
 
 **数据更新时机**:
+
 - 领土所有权变更时（Commander.controlledTerritories 变化）
 - 使用增量计算：`newArea = oldArea + gainedCountry.area - lostCountry.area`
 
@@ -218,6 +236,7 @@ function calculateTotalArea(commanderId: string, countries: Country[]): number {
 ### 决策：表格布局 + 响应式排序
 
 **布局方案**:
+
 ```
 +----------------------------------------------------------+
 | 势力统计排行榜                                    [关闭X] |
@@ -232,15 +251,18 @@ function calculateTotalArea(commanderId: string, countries: Country[]): number {
 ```
 
 **交互设计**:
+
 - 点击行 → 展开详情面板（P3功能）
 - 高亮最近变化的数据（动画效果）
 - 响应式设计：移动端适配
 
 **参考组件**:
+
 - 现有 `CommanderPanel` 的样式风格
 - 现有 `BattleTimeline` 的面板布局
 
 **视觉反馈**:
+
 - 数据更新时：淡入动画 + 高亮边框（持续1秒）
 - 排名变化：上升↑绿色，下降↓红色
 
@@ -249,24 +271,25 @@ function calculateTotalArea(commanderId: string, countries: Country[]): number {
 ### 单元测试重点
 
 **统计计算逻辑**:
+
 ```typescript
 describe('FactionStatsService', () => {
   it('should increment wins when attack succeeds', () => {
     // Given: 初始战胜次数为0
     const stats = createFactionStats(commanderId);
-    
+
     // When: 进攻成功
     handleBattleResult({ attackerId: commanderId, result: 'success', defenderId: 'enemy1' });
-    
+
     // Then: 战胜次数+1
     expect(stats.wins).toBe(1);
   });
-  
+
   it('should calculate win rate correctly', () => {
     const stats = { wins: 7, losses: 3 };
     expect(calculateWinRate(stats.wins, stats.losses)).toBeCloseTo(0.7, 2);
   });
-  
+
   it('should return N/A for zero battles', () => {
     const stats = { wins: 0, losses: 0 };
     expect(calculateWinRate(stats.wins, stats.losses)).toBe(-1);
@@ -276,6 +299,7 @@ describe('FactionStatsService', () => {
 ```
 
 **排序逻辑**:
+
 ```typescript
 describe('Leaderboard Sorting', () => {
   it('should sort by country count descending', () => {
@@ -286,7 +310,7 @@ describe('Leaderboard Sorting', () => {
     const sorted = sortLeaderboard(stats);
     expect(sorted[0].commanderId).toBe('b'); // 20 > 10
   });
-  
+
   it('should use area as tiebreaker', () => {
     const stats = [
       { commanderId: 'a', countryCount: 10, totalArea: 800 },
@@ -301,12 +325,13 @@ describe('Leaderboard Sorting', () => {
 ### 集成测试重点
 
 **事件订阅与更新**:
+
 ```typescript
 describe('Stats Update Integration', () => {
   it('should update stats when battle event occurs', async () => {
     // Given: 初始状态
     const store = useGameStore.getState();
-    
+
     // When: 触发战斗事件
     store.addBattleEvent({
       type: 'attack',
@@ -314,7 +339,7 @@ describe('Stats Update Integration', () => {
       defenderId: 'wellington',
       result: 'success',
     });
-    
+
     // Then: 统计数据更新
     await waitFor(() => {
       const stats = store.factionStats.get('napoleon');
@@ -327,19 +352,20 @@ describe('Stats Update Integration', () => {
 ### E2E测试重点
 
 **用户交互流**:
+
 ```typescript
 test('User can view faction stats leaderboard', async ({ page }) => {
   // 1. 打开游戏
   await page.goto('/');
   await page.click('button:has-text("开始游戏")');
-  
+
   // 2. 打开统计面板
   await page.keyboard.press('s');
-  
+
   // 3. 验证排行榜显示
   await expect(page.locator('.faction-stats-panel')).toBeVisible();
   await expect(page.locator('.leaderboard-row')).toHaveCount.greaterThan(0);
-  
+
   // 4. 验证数据排序
   const firstRow = page.locator('.leaderboard-row').first();
   const firstCountryCount = await firstRow.locator('.country-count').textContent();
@@ -354,6 +380,7 @@ test('User can view faction stats leaderboard', async ({ page }) => {
 ### 决策：最小化外部依赖
 
 **已有依赖（复用）**:
+
 - React 18 ✅
 - TypeScript ✅
 - Zustand ✅
@@ -361,12 +388,14 @@ test('User can view faction stats leaderboard', async ({ page }) => {
 - Playwright ✅
 
 **新增依赖（评估）**:
+
 - ❌ **Lodash**: 不需要，使用原生 Array.sort 和自实现 debounce（更轻量）
 - ❌ **React-Window**: 暂不需要，仅在势力数 > 50 时考虑
 - ❌ **Chart.js**: P3功能（趋势图），暂不引入
 - ✅ **无新增依赖** - 使用现有技术栈即可满足需求
 
 **自实现工具函数**:
+
 ```typescript
 // 简单 debounce 实现
 function debounce<T extends (...args: any[]) => any>(

@@ -27,6 +27,7 @@ pnpm dev
 5. 运行约10-15分钟，观察性能下降
 
 **预期问题**:
+
 - FPS从60逐渐降至1-10
 - Tick耗时从几十ms增长到1000ms+
 - 页面明显卡顿
@@ -55,14 +56,14 @@ pnpm dev
 
 ### 4. 关键文件位置
 
-| 文件 | 用途 | 优化重点 |
-|------|------|----------|
-| `app/src/core/state/store.ts` | 状态管理 | 订阅优化、批量更新 |
-| `app/src/core/simulation/tickScheduler.ts` | Tick调度 | 性能监控 |
-| `app/src/scenes/world/WorldScene.ts` | 场景渲染 | 日志清理、增量渲染 |
-| `app/src/scenes/world/rendering/MapRenderer.ts` | 地图渲染 | 脏标记、节流 |
-| `app/src/ui/hud/DevHud.tsx` | 性能HUD | 指标增强 |
-| `app/src/config/debug.config.ts` | 日志配置 | 条件日志 |
+| 文件                                            | 用途     | 优化重点           |
+| ----------------------------------------------- | -------- | ------------------ |
+| `app/src/core/state/store.ts`                   | 状态管理 | 订阅优化、批量更新 |
+| `app/src/core/simulation/tickScheduler.ts`      | Tick调度 | 性能监控           |
+| `app/src/scenes/world/WorldScene.ts`            | 场景渲染 | 日志清理、增量渲染 |
+| `app/src/scenes/world/rendering/MapRenderer.ts` | 地图渲染 | 脏标记、节流       |
+| `app/src/ui/hud/DevHud.tsx`                     | 性能HUD  | 指标增强           |
+| `app/src/config/debug.config.ts`                | 日志配置 | 条件日志           |
 
 ### 5. 运行测试
 
@@ -79,12 +80,12 @@ pnpm test:e2e
 
 ### 6. 性能验收标准
 
-| 指标 | 目标值 | 测量方法 |
-|------|--------|----------|
-| FPS (30分钟后) | ≥ 30 | DevHud显示 |
-| Tick处理时间 | < 200ms | DevHud显示 |
-| 内存增长 | < 50% | Chrome Memory面板 |
-| 地图操作响应 | < 100ms | 主观感受 + Performance |
+| 指标           | 目标值  | 测量方法               |
+| -------------- | ------- | ---------------------- |
+| FPS (30分钟后) | ≥ 30    | DevHud显示             |
+| Tick处理时间   | < 200ms | DevHud显示             |
+| 内存增长       | < 50%   | Chrome Memory面板      |
+| 地图操作响应   | < 100ms | 主观感受 + Performance |
 
 ### 7. 开发流程
 
@@ -116,6 +117,7 @@ console.log(performance.getEntriesByName('myFunction'));
 ### Q: 如何确认优化生效？
 
 对比优化前后的DevHud指标：
+
 - FPS应保持稳定
 - Tick耗时不应持续增长
 - 内存使用应趋于平稳

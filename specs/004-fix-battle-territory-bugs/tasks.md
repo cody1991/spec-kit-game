@@ -16,6 +16,7 @@
 ## Path Conventions
 
 本项目使用单体Web SPA结构：
+
 - **Source**: `app/src/` at repository root
 - **Tests**: `tests/` at repository root (unit/, contract/, e2e/)
 
@@ -61,6 +62,7 @@
 **Independent Test**: 运行游戏5分钟，检查战报面板中20条战报按时间戳降序排列且无重复ID
 
 **Acceptance Criteria**:
+
 - 战报按timestamp降序排列（最新在顶部）
 - 无重复事件ID
 - 相同时间戳的事件按ID稳定排序
@@ -98,13 +100,13 @@
 
 ### Implementation for User Story 1
 
-- [X] T014 [US1] Implement global battleEventCounter in app/src/core/simulation/systems/battleSystem.ts
+- [x] T014 [US1] Implement global battleEventCounter in app/src/core/simulation/systems/battleSystem.ts
   - 在文件顶部添加 `let battleEventCounter = 0;`
   - 实现 `export function resetBattleEventCounter() { battleEventCounter = 0; }`
   - 实现 `export function generateBattleEventId() { return \`battle-${Date.now()}-${battleEventCounter++}\`; }`
   - 添加JSDoc注释说明ID生成策略
 
-- [X] T015 [US1] Replace all BattleEvent ID generation with generateBattleEventId() in app/src/core/simulation/systems/battleSystem.ts
+- [x] T015 [US1] Replace all BattleEvent ID generation with generateBattleEventId() in app/src/core/simulation/systems/battleSystem.ts
   - 替换 `executeBattle()` 中的ID生成
   - 替换 `occupyNeutralTerritory()` 中的ID生成
   - 搜索所有 `battle-${Date.now()}-${Math.random()}` 并替换
@@ -116,7 +118,7 @@
   - 重新生成ID（调用 `generateBattleEventId()`）
   - 限制最多重试3次
 
-- [X] T017 [US1] Implement deduplication logic in BattleTimeline component in app/src/ui/panels/BattleTimeline.tsx
+- [x] T017 [US1] Implement deduplication logic in BattleTimeline component in app/src/ui/panels/BattleTimeline.tsx
   - 创建 `useMemo` hook计算 `recentEvents`
   - 使用 `Map<string, BattleEvent>` 去重（key为event.id）
   - 添加timestamp有效性检查（`isNaN(new Date(timestamp).getTime())`）
@@ -128,7 +130,7 @@
   - 添加timestamp验证注释
   - 检查所有创建BattleEvent的位置
 
-- [X] T019 [US1] Integrate counter reset in store.resetGame() in app/src/core/state/store.ts
+- [x] T019 [US1] Integrate counter reset in store.resetGame() in app/src/core/state/store.ts
   - 在文件顶部导入 `import { resetBattleEventCounter } from '../simulation/systems/battleSystem';`
   - 在 `resetGame` 函数开头调用 `resetBattleEventCounter();`
   - 添加注释说明重置的必要性
@@ -155,6 +157,7 @@
 **Independent Test**: 运行游戏5分钟，观察地图上至少3次领土易手时颜色立即更新（1秒内）
 
 **Acceptance Criteria**:
+
 - 初始化时所有国家在territoryStates中有记录
 - 战斗导致领土易手时territories和territoryStates同步更新
 - 地图颜色在1秒内响应变化
@@ -192,7 +195,7 @@
 
 ### Implementation for User Story 2
 
-- [X] T027 [US2] Implement bidirectional sync in store.updateTerritory() in app/src/core/state/store.ts
+- [x] T027 [US2] Implement bidirectional sync in store.updateTerritory() in app/src/core/state/store.ts
   - 修改 `updateTerritory` 方法
   - 检测 `updates.ownerId` 是否定义
   - 如果ownerId变化：同步更新territoryStates Map
@@ -200,14 +203,14 @@
   - 使用不可变模式：`new Map(state.territoryStates)`
   - 返回 `{ territories: newTerritories, territoryStates: newStates }`
 
-- [X] T028 [US2] Add territory state initialization verification in app/src/scenes/world/WorldScene.ts
+- [x] T028 [US2] Add territory state initialization verification in app/src/scenes/world/WorldScene.ts
   - 实现 `private verifyTerritoryStatesComplete(): void`
   - 遍历 `state.countries`，检查每个是否在 `state.territoryStates` 中
   - 缺失时创建默认TerritoryState（ownerId: null, troops: 0, defense: 50）
   - 记录警告：`console.warn('Created default states for ${missingStates.length} territories')`
   - 在 `create()` 方法末尾调用
 
-- [X] T029 [US2] Implement subscription mechanism in app/src/scenes/world/WorldScene.ts
+- [x] T029 [US2] Implement subscription mechanism in app/src/scenes/world/WorldScene.ts
   - 添加私有属性：`private territorySubscription?: () => void`
   - 实现 `private setupTerritorySubscription(): void`
   - 使用 `useGameStore.subscribe((state) => state.territoryStates, callback)`
@@ -215,14 +218,14 @@
   - 调用 `this.handleTerritoryOwnershipChange(territoryId, newState)`
   - 在 `create()` 末尾调用
 
-- [X] T030 [US2] Implement territory ownership change handler in app/src/scenes/world/WorldScene.ts
+- [x] T030 [US2] Implement territory ownership change handler in app/src/scenes/world/WorldScene.ts
   - 实现 `private handleTerritoryOwnershipChange(territoryId: string, newState: TerritoryState): void`
   - 从 `colorMappings` 获取颜色
   - 如果colorMapping存在：调用 `this.mapRenderer.updateCountry()`
   - 如果缺失：记录警告并使用默认灰色（0x808080）
   - 添加日志：`console.log('Map updated: ${territoryId} → ${newState.ownerId}')`
 
-- [X] T031 [US2] Add subscription cleanup in WorldScene.shutdown() in app/src/scenes/world/WorldScene.ts
+- [x] T031 [US2] Add subscription cleanup in WorldScene.shutdown() in app/src/scenes/world/WorldScene.ts
   - 在 `shutdown()` 方法中检查 `this.territorySubscription`
   - 如果存在，调用 `this.territorySubscription()` 取消订阅
   - 设置 `this.territorySubscription = undefined`
@@ -355,6 +358,7 @@
   - 可以独立测试和部署
 
 **关键点**: US1和US2修改 `store.ts` 的不同部分：
+
 - US1修改 `addBattleEvent()` 和 `resetGame()`
 - US2修改 `updateTerritory()`
 - 无代码冲突风险
@@ -362,6 +366,7 @@
 ### Within Each User Story
 
 **US1执行顺序**：
+
 1. T009-T013: 编写所有测试（并行）→ 验证失败
 2. T014: 实现计数器（foundational）
 3. T015-T018: 实施修复（可部分并行）
@@ -369,6 +374,7 @@
 5. T020-T021: 日志和质量检查
 
 **US2执行顺序**：
+
 1. T022-T026: 编写所有测试（并行）→ 验证失败
 2. T027: 实现双向同步（foundational）
 3. T028-T030: 实施订阅机制（顺序依赖）
@@ -378,25 +384,32 @@
 ### Parallel Opportunities
 
 **Setup阶段（Phase 1）**：
+
 - T002, T003, T004 可并行
 
 **Foundational阶段（Phase 2）**：
+
 - T005, T006, T007, T008 可并行
 
 **US1测试阶段**：
+
 - T009, T010, T011, T012 可并行
 
 **US2测试阶段**：
+
 - T022, T023, T024, T025 可并行
 
 **US1和US2实施**：
+
 - 如果有2名开发者，US1和US2可完全并行
 - 修改的文件不冲突，可独立提交
 
 **Integration阶段（Phase 5）**：
+
 - T035, T036 可并行
 
 **Polish阶段（Phase 6）**：
+
 - T039, T040, T041 可并行
 - T042, T043, T045 可并行
 
@@ -494,6 +507,7 @@ Task T029: "Implement subscription"
 **Total Tasks**: 46
 
 ### By Phase:
+
 - Phase 1 (Setup): 4 tasks
 - Phase 2 (Foundational): 4 tasks
 - Phase 3 (User Story 1): 13 tasks (5 test tasks, 8 implementation tasks)
@@ -502,33 +516,39 @@ Task T029: "Implement subscription"
 - Phase 6 (Polish): 8 tasks
 
 ### By User Story:
+
 - **User Story 1 (战报排序)**: 13 tasks
   - Tests: 5 tasks (T009-T013)
   - Implementation: 8 tasks (T014-T021)
-  
 - **User Story 2 (领土更新)**: 13 tasks
   - Tests: 5 tasks (T022-T026)
   - Implementation: 8 tasks (T027-T034)
 
 ### Parallel Opportunities:
+
 - **21 tasks** marked with [P] can run in parallel within their phases
 - **2 user stories** can be implemented completely in parallel (US1 & US2)
 - **Estimated time savings**: 30-40% with parallel execution
 
 ### Test Coverage:
+
 - **Unit tests**: 9 test suites (ID生成、timestamp、排序、去重、同步、初始化、订阅)
 - **Contract tests**: 12 contract scenarios (C-101 to C-112)
 - **E2E tests**: 2 scenarios (战报顺序、领土可视化)
 - **Total test tasks**: 10 tasks (22% of all tasks)
 
 ### MVP Scope:
+
 **Both User Stories (US1 + US2)** constitute the MVP as both bugs are critical:
+
 - ✅ 战报排序修复 → 玩家可以追踪战斗
 - ✅ 领土更新修复 → 玩家可以看到势力变化
 - 🎯 两者缺一不可，都是P1致命问题
 
 ### Format Validation:
+
 ✅ All 46 tasks follow the required checklist format:
+
 - ✅ Checkbox prefix `- [ ]`
 - ✅ Sequential Task ID (T001-T046)
 - ✅ [P] marker for 21 parallelizable tasks
@@ -549,6 +569,7 @@ Task T029: "Implement subscription"
 - **避免**: 模糊任务、文件冲突、跨故事依赖（破坏独立性）
 
 **关键成功因素**:
+
 1. ✅ 测试先行（TDD）确保修复正确性
 2. ✅ 双向同步和订阅机制避免未来bug
 3. ✅ 性能监控确保无性能退化

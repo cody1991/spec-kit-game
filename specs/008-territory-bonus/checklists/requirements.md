@@ -33,6 +33,7 @@
 ## Clarification Session Summary
 
 5 questions asked and answered:
+
 1. 加成增长曲线类型 → 递减增长（边际递减）
 2. 加成上限数值 → 30%上限
 3. 不连续领土计算 → 累加基础+连续区域额外奖励

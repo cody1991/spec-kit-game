@@ -14,7 +14,7 @@
 - `name: string`：展示名称，用于地图、面板和战报中展示。
 - `originRegion: 'africa' | 'americas' | 'asia' | 'europe' | 'oceania'`：出身大洲，用于背景与平衡，不作为占领单位。
 - `controlledTerritories: string[]`：
-  - 本特性后的约定：对局运行时，该数组仅存储国家 ID（Country.id），不再存储区域 ID。  
+  - 本特性后的约定：对局运行时，该数组仅存储国家 ID（Country.id），不再存储区域 ID。
   - 初始化阶段可以通过 `initialRegions` 和映射表从区域生成国家列表，但一旦世界状态建立完成，`controlledTerritories` 即视为仅包含国家。
 - `initialRegions?: string[]`：保留原始区域 ID 作为调试依据，不参与运行时占领逻辑。
 - `status: 'active' | 'eliminated'`：势力存续状态，当 `controlledTerritories` 为空且满足其他规则时可标记为 `eliminated`。
@@ -99,7 +99,7 @@
 - `type: 'attack' | 'victory' | 'elimination' | ...`：事件类型。
 - `attackerId?: string` / `defenderId?: string`：攻防双方指挥官 ID。
 - `territoryId?: string`：
-  - 本特性后，约定该字段应存储单个 `Country.id`，用于标记具体攻占的国家。  
+  - 本特性后，约定该字段应存储单个 `Country.id`，用于标记具体攻占的国家。
   - 不再接受“区域 ID”作为该字段的合法值。
 - `result: 'success' | 'fail' | 'pending'`：战斗结果。
 - `delta: Record<string, number>`：对战后状态变化（如兵力损耗、士气变更）。
@@ -107,7 +107,7 @@
 
 关系与约束：
 
-- 每条成功的“攻占”事件（`type: 'attack'` 且 `result: 'success'`）都应对应一次 `TerritoryState` 的 ownerId 变更。  
+- 每条成功的“攻占”事件（`type: 'attack'` 且 `result: 'success'`）都应对应一次 `TerritoryState` 的 ownerId 变更。
 - 在回放或分析时，可以通过 `territoryId` 关联到 `Country` 与 `TerritoryState`，重建国家易主轨迹。
 
 ---
@@ -124,7 +124,7 @@
 在本特性下的角色：
 
 - 启动期：可以继续使用 `RegionMapping` 作为“初始配置→国家列表”的辅助工具：
-  - 将历史指挥官的区域配置转换为国家列表，填充至 `HistoricalCommander.controlledTerritories` 与初始 `TerritoryState`。  
+  - 将历史指挥官的区域配置转换为国家列表，填充至 `HistoricalCommander.controlledTerritories` 与初始 `TerritoryState`。
   - 将历史区域 ID 记录在 `HistoricalCommander.initialRegions` 用于调试和回溯。
 - 运行期：
   - 所有实时占领、战斗逻辑不再依据区域 ID 进行更新。
@@ -149,36 +149,36 @@
 ### 3.2 迁移步骤（概念层面）
 
 1. 更新 `TerritoryState`：
-   - 将 `TerritoryState.countryId = cid` 的实例的 `previousOwnerId` 设为当前 `ownerId`。  
-   - 将 `ownerId` 更新为攻击方 `A.id`。  
-   - 根据战斗结果调整 `troops`、`defense` 等字段。  
+   - 将 `TerritoryState.countryId = cid` 的实例的 `previousOwnerId` 设为当前 `ownerId`。
+   - 将 `ownerId` 更新为攻击方 `A.id`。
+   - 根据战斗结果调整 `troops`、`defense` 等字段。
    - 更新 `conqueredAt` 与 `updatedAt` 时间戳，重置或初始化 `transitionProgress` 等动画相关字段。
 
 2. 更新指挥官控制列表：
-   - 在被攻占方 `B` 的 `controlledTerritories` 中移除 `cid`（若存在）。  
-   - 在攻击方 `A` 的 `controlledTerritories` 中添加 `cid`，若已存在则保持去重。  
+   - 在被攻占方 `B` 的 `controlledTerritories` 中移除 `cid`（若存在）。
+   - 在攻击方 `A` 的 `controlledTerritories` 中添加 `cid`，若已存在则保持去重。
    - 若更新后 `B.controlledTerritories` 为空且满足其他淘汰条件，可以将 `B.status` 设为 `eliminated`。
 
 3. 更新 `Territory` 快照（如果仍在使用）：
-   - 将 `Territory.id === cid` 的实体的 `ownerId` 更新为 `A.id`。  
+   - 将 `Territory.id === cid` 的实体的 `ownerId` 更新为 `A.id`。
    - 可同步 `garrison` / `stability` 字段以反映最新状态。
 
 4. 记录 `BattleEvent`：
-   - 写入一条包含 `attackerId = A.id`、`defenderId = B.id`（或 null）、`territoryId = cid`、`result = 'success'` 的事件。  
-   - `narrative` 中描述“谁在何时攻占了哪个国家”，便于战报和时间线展示。  
+   - 写入一条包含 `attackerId = A.id`、`defenderId = B.id`（或 null）、`territoryId = cid`、`result = 'success'` 的事件。
+   - `narrative` 中描述“谁在何时攻占了哪个国家”，便于战报和时间线展示。
    - 可在 `delta` 中记录兵力和防御变化等数值。
 
 5. 驱动 UI 更新：
-   - 颜色：基于最新 `TerritoryState.ownerId` 与 `CommanderColor` 重新计算或增量更新国家 `cid` 的地图填充颜色。  
+   - 颜色：基于最新 `TerritoryState.ownerId` 与 `CommanderColor` 重新计算或增量更新国家 `cid` 的地图填充颜色。
    - 姓名：依据最新 `TerritoryState.ownerId` 渲染各类 UI 文本，确保只存在一个当前占领者名称投影；旧的姓名或标识通过 React/Phaser 生命周期被销毁或覆盖。
 
 ### 3.3 失败与边界场景
 
 - 若战斗结果为失败（`result = 'fail'`）：
-  - `TerritoryState.ownerId` 不变，仅更新数值字段（兵力、稳定度等）。  
+  - `TerritoryState.ownerId` 不变，仅更新数值字段（兵力、稳定度等）。
   - 仍记录 `BattleEvent`，但不触发所有权迁移。
 - 若指定的 `cid` 不存在对应 `Country` 或 `TerritoryState`：
-  - 行为应视为错误或无效操作，不进行隐式创建。  
+  - 行为应视为错误或无效操作，不进行隐式创建。
   - 可通过 Telemetry 或日志记录异常，便于发现数据问题。
 
 ---
@@ -188,19 +188,19 @@
 ### 4.1 运行时一致性
 
 - 在调试或 Telemetry 分析中，可以周期性检查：
-  - `∑ commander.controlledTerritories` 是否与 `TerritoryState.ownerId` 分布一致。  
+  - `∑ commander.controlledTerritories` 是否与 `TerritoryState.ownerId` 分布一致。
   - 是否存在某个 `countryId` 被多个指挥官同时声明为控制（逻辑上应不可见）。
 
 ### 4.2 初始化阶段验证
 
 - 在使用 `RegionMapping` 做初始化映射时：
-  - 检查每个区域 ID 是否能映射到至少一个有效国家 ID，否则记录在 `unmappedRegions` 中。  
-  - 检查每个国家 ID 是否存在于地图数据中，否则记录在 `invalidCountryIds` 中。  
+  - 检查每个区域 ID 是否能映射到至少一个有效国家 ID，否则记录在 `unmappedRegions` 中。
+  - 检查每个国家 ID 是否存在于地图数据中，否则记录在 `invalidCountryIds` 中。
   - 一旦初始状态生成完成，运行时占领逻辑即不再依赖区域 ID。
 
 ### 4.3 UI 层验证
 
 - 在 UI 组件测试中，针对以下场景进行验证：
-  - 单国攻占：一个国家从 `B` → `A` 后，地图与面板上仅出现 `A.name`。  
-  - 多次易主：同一国家经历多次易主后，任意截点只展示一个当前占领者姓名，无历史重影。  
+  - 单国攻占：一个国家从 `B` → `A` 后，地图与面板上仅出现 `A.name`。
+  - 多次易主：同一国家经历多次易主后，任意截点只展示一个当前占领者姓名，无历史重影。
   - 刷新/重进：重新进入对局或刷新页面后，UI 展示的占领情况与最新 `TerritoryState` 与 `BattleEvent` 一致。

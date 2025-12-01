@@ -78,21 +78,21 @@ export class MapDataLoader {
       featureCollection.features.forEach((feature) => {
         try {
           const country = this.featureToCountry(feature);
-          
+
           // 🔧 过滤掉南极洲（Antarctica）- 多种判断条件
-          const isAntarctica = 
-            country.id === 'ATA' || 
-            country.id === '-99' || 
-            country.id === '010' ||  // ISO 3166-1 numeric code
-            country.name === 'Antarctica' || 
+          const isAntarctica =
+            country.id === 'ATA' ||
+            country.id === '-99' ||
+            country.id === '010' || // ISO 3166-1 numeric code
+            country.name === 'Antarctica' ||
             country.nameEn === 'Antarctica' ||
             country.name.toLowerCase().includes('antarctica') ||
             country.nameEn.toLowerCase().includes('antarctica');
-          
+
           if (isAntarctica) {
             return;
           }
-          
+
           countries.push(country);
         } catch (error) {
           console.warn(`Failed to convert feature to country:`, error);

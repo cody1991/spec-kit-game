@@ -3,7 +3,7 @@
  *
  * Renders countries on the Phaser canvas using Graphics API.
  * Supports viewport culling, LOD, and performance optimization.
- * 
+ *
  * @performance
  * - 支持增量渲染（只渲染脏区域）
  * - 使用对象池减少 GC 压力
@@ -88,7 +88,7 @@ export class MapRenderer {
 
   /**
    * Render countries (main rendering method)
-   * 
+   *
    * @param countries - 所有国家数据
    * @param territoryStates - 领土状态
    * @param colorMappings - 颜色映射
@@ -114,11 +114,11 @@ export class MapRenderer {
     // 增量渲染模式：只渲染脏领土
     if (dirtyTerritories && dirtyTerritories.size > 0) {
       dirtyTerritories.forEach((countryId) => {
-        const country = countries.find(c => c.id === countryId);
+        const country = countries.find((c) => c.id === countryId);
         if (!country) return;
 
         const state = territoryStates.get(country.id);
-        const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) ?? null : null;
+        const colorMapping = state?.ownerId ? (colorMappings.get(state.ownerId) ?? null) : null;
 
         this.renderCountry(country, state, colorMapping);
         this.renderCountryLabel(country, state, commanders);
@@ -126,14 +126,17 @@ export class MapRenderer {
       });
 
       this.stats.renderTime = performance.now() - startTime;
-      logger.log('MAP_RENDERING', `🎨 Incremental render: ${this.stats.countriesRendered} countries in ${this.stats.renderTime.toFixed(2)}ms`);
+      logger.log(
+        'MAP_RENDERING',
+        `🎨 Incremental render: ${this.stats.countriesRendered} countries in ${this.stats.renderTime.toFixed(2)}ms`
+      );
       return this.stats;
     }
 
     // 全量渲染
     countries.forEach((country) => {
       const state = territoryStates.get(country.id);
-      const colorMapping = state?.ownerId ? colorMappings.get(state.ownerId) ?? null : null;
+      const colorMapping = state?.ownerId ? (colorMappings.get(state.ownerId) ?? null) : null;
 
       this.renderCountry(country, state, colorMapping);
       this.renderCountryLabel(country, state, commanders);
@@ -216,7 +219,7 @@ export class MapRenderer {
 
     // Get or create text label
     let label = this.countryLabels.get(country.id);
-    
+
     if (!label) {
       label = this.scene.add.text(0, 0, '', {
         fontSize: '12px',
@@ -233,7 +236,7 @@ export class MapRenderer {
 
     // Transform centroid to screen coordinates
     const screenPos = this.transformer.geoToScreen(country.centroid.x, country.centroid.y);
-    
+
     // Update label position and text (show commander name)
     label.setPosition(screenPos.x, screenPos.y);
     label.setText(commander.name);
@@ -308,14 +311,11 @@ export class MapRenderer {
   /**
    * Fill neutral country with gray color
    */
-  private fillNeutralCountry(
-    graphics: Phaser.GameObjects.Graphics,
-    country: Country
-  ): void {
+  private fillNeutralCountry(graphics: Phaser.GameObjects.Graphics, country: Country): void {
     // 中立国家使用深灰色，alpha稍低
     const neutralColor = 0x3a3a3a; // 深灰色
     const neutralAlpha = 0.6;
-    
+
     graphics.fillStyle(neutralColor, neutralAlpha);
 
     country.geometry.coordinates.forEach((polygon) => {

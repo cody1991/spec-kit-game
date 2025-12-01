@@ -6,10 +6,12 @@
 ## Summary
 
 本次实现包含两个主要目标：
+
 1. **领主占领逻辑修复**: 确保领主初始化时必须拥有国家，占领倾向于相邻国家
 2. **真实领土面积数据**: 集成真实的国家面积数据（km²），替代基于几何计算的近似值
 
 技术方案：
+
 - 使用静态 TypeScript 文件存储 241 个国家的真实面积数据
 - 在 `MapDataLoader` 加载时赋值真实面积
 - 在 `CountryDetailPanel` 和 `FactionStatsPanel` 中显示面积
@@ -108,7 +110,7 @@ scripts/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 | --------- | ---------- | ------------------------------------ |
-| 无 | - | - |
+| 无        | -          | -                                    |
 
 ## Next Steps
 

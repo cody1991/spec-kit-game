@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useGameStore } from '../../core/state/store';
 import { sortLeaderboard } from '../../utils/leaderboardSort';
+import { TerritoryBonusDisplay } from '../components/TerritoryBonusDisplay';
 import './FactionStatsPanel.css';
 
 /**
@@ -29,6 +30,7 @@ function formatWinRate(winRate: number): string {
 
 /**
  * 势力统计排行榜面板
+ * Feature: 008-territory-bonus - 展示领土加成信息
  */
 export function FactionStatsPanel() {
   const factionStats = useGameStore((state) => state.factionStats);
@@ -37,6 +39,8 @@ export function FactionStatsPanel() {
 
   // 追踪最近更新的势力ID（用于视觉反馈）
   const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState<Set<string>>(new Set());
+  // Feature: 008-territory-bonus - 追踪展开的势力ID（用于显示加成详情）
+  const [expandedFactionId, setExpandedFactionId] = useState<string | null>(null);
 
   // 排序排行榜
   const leaderboard = useMemo(() => {
@@ -90,8 +94,8 @@ export function FactionStatsPanel() {
               <th>势力</th>
               <th>国家数</th>
               <th>面积</th>
-              <th>战胜</th>
-              <th>战败</th>
+              <th>攻击加成</th>
+              <th>防御加成</th>
               <th>胜率</th>
             </tr>
           </thead>
@@ -104,22 +108,52 @@ export function FactionStatsPanel() {
               </tr>
             ) : (
               leaderboard.map((faction) => (
-                <tr 
-                  key={faction.commanderId} 
-                  className={`leaderboard-row ${recentlyUpdatedIds.has(faction.commanderId) ? 'row-updated' : ''}`}
+                <tr
+                  key={faction.commanderId}
+                  className={`leaderboard-row ${recentlyUpdatedIds.has(faction.commanderId) ? 'row-updated' : ''} ${expandedFactionId === faction.commanderId ? 'row-expanded' : ''}`}
+                  onClick={() =>
+                    setExpandedFactionId(
+                      expandedFactionId === faction.commanderId ? null : faction.commanderId
+                    )
+                  }
+                  style={{ cursor: 'pointer' }}
                 >
                   <td className="rank">{faction.rank}</td>
                   <td className="faction-name">{faction.commanderName}</td>
                   <td className="country-count">{faction.countryCount}</td>
                   <td className="area">{formatArea(faction.totalArea)}</td>
-                  <td className="wins">{faction.wins}</td>
-                  <td className="losses">{faction.losses}</td>
+                  <td className="attack-bonus">
+                    {faction.territoryBonus
+                      ? `+${(faction.territoryBonus.totalAttackBonus * 100).toFixed(1)}%`
+                      : '-'}
+                  </td>
+                  <td className="defense-bonus">
+                    {faction.territoryBonus
+                      ? `+${(faction.territoryBonus.totalDefenseBonus * 100).toFixed(1)}%`
+                      : '-'}
+                  </td>
                   <td className="win-rate">{formatWinRate(faction.winRate)}</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+
+        {/* Feature: 008-territory-bonus - 展开的加成详情 */}
+        {expandedFactionId && (
+          <div className="expanded-bonus-details">
+            <h3>
+              {leaderboard.find((f) => f.commanderId === expandedFactionId)?.commanderName} -
+              加成详情
+            </h3>
+            <TerritoryBonusDisplay
+              bonus={
+                leaderboard.find((f) => f.commanderId === expandedFactionId)?.territoryBonus ?? null
+              }
+              showDetails={true}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

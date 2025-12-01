@@ -12,7 +12,7 @@ export interface System {
 
 /**
  * Tick 调度器
- * 
+ *
  * @performance
  * - 使用 requestAnimationFrame 进行调度
  * - 添加 Tick 耗时监控和警告
@@ -70,11 +70,13 @@ export class TickScheduler {
       // Execute systems
       for (let i = 0; i < this.systems.length; i++) {
         const system = this.systems[i];
-        
+
         // 在性能降级模式下跳过非关键系统（只保留 BattleSystem 和 VictorySystem）
-        if (shouldSkipNonCritical && 
-            system.name !== 'BattleSystem' && 
-            system.name !== 'VictorySystem') {
+        if (
+          shouldSkipNonCritical &&
+          system.name !== 'BattleSystem' &&
+          system.name !== 'VictorySystem'
+        ) {
           continue;
         }
 
@@ -87,12 +89,15 @@ export class TickScheduler {
 
       // Update performance metrics
       const tickMs = performance.now() - tickStart;
-      
+
       // 监控 Tick 耗时
       if (tickMs > this.TICK_WARNING_THRESHOLD_MS) {
         this.consecutiveSlowTicks++;
-        logger.log('PERFORMANCE', `⚠️ Slow tick detected: ${tickMs.toFixed(2)}ms (threshold: ${this.TICK_WARNING_THRESHOLD_MS}ms)`);
-        
+        logger.log(
+          'PERFORMANCE',
+          `⚠️ Slow tick detected: ${tickMs.toFixed(2)}ms (threshold: ${this.TICK_WARNING_THRESHOLD_MS}ms)`
+        );
+
         if (this.consecutiveSlowTicks >= this.MAX_SLOW_TICKS_BEFORE_SKIP) {
           logger.log('PERFORMANCE', `🔻 Performance degradation: skipping non-critical systems`);
         }

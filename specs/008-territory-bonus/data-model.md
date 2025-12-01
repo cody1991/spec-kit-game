@@ -79,7 +79,7 @@ export interface ContiguityAnalysis {
 // 扩展 FactionStatistics (在 types.ts 中)
 export interface FactionStatistics {
   // ... 现有字段 ...
-  
+
   /** 领土加成数据 */
   territoryBonus: TerritoryBonus | null;
 }
@@ -87,10 +87,10 @@ export interface FactionStatistics {
 // 扩展 GameState (在 store.ts 中)
 export interface GameState {
   // ... 现有字段 ...
-  
+
   /** 领土加成配置 */
   territoryBonusConfig: TerritoryBonusConfig;
-  
+
   // 新增 Actions
   updateTerritoryBonus: (commanderId: string, bonus: TerritoryBonus) => void;
   setTerritoryBonusConfig: (config: Partial<TerritoryBonusConfig>) => void;
@@ -101,14 +101,14 @@ export interface GameState {
 
 ```typescript
 export const DEFAULT_TERRITORY_BONUS_CONFIG: TerritoryBonusConfig = {
-  maxBonus: 0.30,                    // 30%上限
-  cityBaseFactor: 0.15,              // 城市基础系数
-  cityScaleFactor: 0.5,              // 城市缩放系数
-  areaBaseFactor: 0.12,              // 面积基础系数
-  areaScaleFactor: 0.8,              // 面积缩放系数
-  continuityBonus: 0.20,             // 连续领土额外20%
-  smallFactionDefenseBonus: 0.15,    // 小势力最高15%防御
-  smallFactionThreshold: 3,          // 3城市以下触发
+  maxBonus: 0.3, // 30%上限
+  cityBaseFactor: 0.15, // 城市基础系数
+  cityScaleFactor: 0.5, // 城市缩放系数
+  areaBaseFactor: 0.12, // 面积基础系数
+  areaScaleFactor: 0.8, // 面积缩放系数
+  continuityBonus: 0.2, // 连续领土额外20%
+  smallFactionDefenseBonus: 0.15, // 小势力最高15%防御
+  smallFactionThreshold: 3, // 3城市以下触发
 };
 ```
 
@@ -178,11 +178,11 @@ export const DEFAULT_TERRITORY_BONUS_CONFIG: TerritoryBonusConfig = {
 
 ## 验证规则
 
-| 字段 | 规则 |
-|------|------|
-| cityBonus | 0 ≤ value ≤ maxBonus |
-| areaBonus | 0 ≤ value ≤ maxBonus |
-| continuityBonus | 0 ≤ value ≤ maxBonus * continuityBonusRate |
-| smallFactionDefenseBonus | 0 ≤ value ≤ smallFactionDefenseBonus |
-| totalAttackBonus | cityBonus + areaBonus + continuityBonus |
-| totalDefenseBonus | totalAttackBonus + smallFactionDefenseBonus |
+| 字段                     | 规则                                        |
+| ------------------------ | ------------------------------------------- |
+| cityBonus                | 0 ≤ value ≤ maxBonus                        |
+| areaBonus                | 0 ≤ value ≤ maxBonus                        |
+| continuityBonus          | 0 ≤ value ≤ maxBonus \* continuityBonusRate |
+| smallFactionDefenseBonus | 0 ≤ value ≤ smallFactionDefenseBonus        |
+| totalAttackBonus         | cityBonus + areaBonus + continuityBonus     |
+| totalDefenseBonus        | totalAttackBonus + smallFactionDefenseBonus |

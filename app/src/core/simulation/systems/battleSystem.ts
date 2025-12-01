@@ -24,7 +24,7 @@ export function resetBattleEventCounter(): void {
 /**
  * Generate a unique battle event ID
  * Format: battle-{timestamp}-{counter}
- * 
+ *
  * @returns A unique ID string that combines timestamp and sequential counter
  * @example "battle-1701234567890-42"
  */
@@ -43,7 +43,7 @@ interface BatchUpdates {
 
 /**
  * 战斗系统
- * 
+ *
  * @performance
  * - 使用 Map 缓存 O(1) 查找代替 Array.find() O(n)
  * - 批量收集所有更新，最后一次性提交到 store
@@ -51,11 +51,11 @@ interface BatchUpdates {
  */
 export class BattleSystem implements System {
   name = 'BattleSystem';
-  
+
   // 缓存 Map，避免每 tick 重复创建
   private territoryMap: Map<string, Territory> = new Map();
   private commanderMap: Map<string, HistoricalCommander> = new Map();
-  
+
   // 批量更新收集器
   private batch: BatchUpdates = {
     territories: new Map(),
@@ -81,7 +81,7 @@ export class BattleSystem implements System {
     for (let i = 0; i < territories.length; i++) {
       this.territoryMap.set(territories[i].id, territories[i]);
     }
-    
+
     // 构建指挥官查找 Map
     this.commanderMap.clear();
     for (let i = 0; i < commanders.length; i++) {
@@ -129,7 +129,7 @@ export class BattleSystem implements System {
           'BATTLE_SYSTEM',
           `⚔️ [BattleSystem] ${attacker.name} 发起${selectionResult.selectionType === 'adjacent' ? '相邻' : '远程'}攻击: ${target.name}`
         );
-        
+
         if (!target.ownerId) {
           this.queueOccupyNeutralTerritory(attacker, target, selectionResult.selectionType);
         } else {
@@ -166,7 +166,9 @@ export class BattleSystem implements System {
 
     // 更新指挥官（合并已有更新）
     const existingUpdate = this.batch.commanders.get(attacker.id) || {};
-    const currentTerritories = existingUpdate.controlledTerritories || [...attacker.controlledTerritories];
+    const currentTerritories = existingUpdate.controlledTerritories || [
+      ...attacker.controlledTerritories,
+    ];
     this.batch.commanders.set(attacker.id, {
       ...existingUpdate,
       controlledTerritories: [...currentTerritories, territory.id],
@@ -189,6 +191,7 @@ export class BattleSystem implements System {
 
   /**
    * 队列：战斗
+   * Feature: 008-territory-bonus - 应用领土加成到战斗计算
    * @param attackType - 攻击类型（相邻/远程）
    */
   private queueBattle(
@@ -197,13 +200,31 @@ export class BattleSystem implements System {
     territory: Territory,
     attackType: 'adjacent' | 'remote' = 'adjacent'
   ): void {
-    const attackPower =
+    // Feature: 008-territory-bonus - 获取领土加成
+    const store = useGameStore.getState();
+    const attackerStats = store.factionStats.get(attacker.id);
+    const defenderStats = store.factionStats.get(defender.id);
+
+    const attackerBonus = attackerStats?.territoryBonus?.totalAttackBonus ?? 0;
+    const defenderBonus = defenderStats?.territoryBonus?.totalDefenseBonus ?? 0;
+
+    // 应用加成到战斗力计算
+    const baseAttackPower =
       attacker.baseAttributes.attack * (attacker.morale / 100) * (attacker.currentPower / 100);
-    const defensePower =
+    const baseDefensePower =
       defender.baseAttributes.defense *
       (defender.morale / 100) *
       (territory.stability / 100) *
       (defender.currentPower / 100);
+
+    // Feature: 008-territory-bonus - 应用加成
+    const attackPower = baseAttackPower * (1 + attackerBonus);
+    const defensePower = baseDefensePower * (1 + defenderBonus);
+
+    logger.log(
+      'TERRITORY_BONUS',
+      `⚔️ Battle: ${attacker.name} (ATK ${baseAttackPower.toFixed(1)} * ${(1 + attackerBonus).toFixed(2)} = ${attackPower.toFixed(1)}) vs ${defender.name} (DEF ${baseDefensePower.toFixed(1)} * ${(1 + defenderBonus).toFixed(2)} = ${defensePower.toFixed(1)})`
+    );
 
     const attackerWins = attackPower > defensePower * (0.8 + Math.random() * 0.4);
     const attackerPowerLoss = Math.floor(Math.random() * 10) + 5;
@@ -228,14 +249,18 @@ export class BattleSystem implements System {
     // 获取已有更新
     const attackerUpdate = this.batch.commanders.get(attacker.id) || {};
     const defenderUpdate = this.batch.commanders.get(defender.id) || {};
-    
+
     // 获取当前值（考虑已有更新）
     const attackerCurrentPower = attackerUpdate.currentPower ?? attacker.currentPower;
     const attackerMorale = attackerUpdate.morale ?? attacker.morale;
     const defenderCurrentPower = defenderUpdate.currentPower ?? defender.currentPower;
     const defenderMorale = defenderUpdate.morale ?? defender.morale;
-    const attackerTerritories = attackerUpdate.controlledTerritories || [...attacker.controlledTerritories];
-    const defenderTerritories = defenderUpdate.controlledTerritories || [...defender.controlledTerritories];
+    const attackerTerritories = attackerUpdate.controlledTerritories || [
+      ...attacker.controlledTerritories,
+    ];
+    const defenderTerritories = defenderUpdate.controlledTerritories || [
+      ...defender.controlledTerritories,
+    ];
 
     if (attackerWins) {
       // 更新领土
@@ -305,9 +330,11 @@ export class BattleSystem implements System {
    * 一次性提交所有更新到 store
    */
   private commitBatch(): void {
-    if (this.batch.territories.size === 0 && 
-        this.batch.commanders.size === 0 && 
-        this.batch.events.length === 0) {
+    if (
+      this.batch.territories.size === 0 &&
+      this.batch.commanders.size === 0 &&
+      this.batch.events.length === 0
+    ) {
       return;
     }
 

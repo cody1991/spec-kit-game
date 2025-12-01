@@ -1,6 +1,7 @@
 import { useGameStore } from '../state/store';
 import type { BattleEvent } from '../types';
 import { debounce } from '../../utils/debounce';
+import { territoryBonusService } from './territoryBonusService';
 
 /**
  * 势力统计服务
@@ -23,28 +24,31 @@ export class FactionStatsService {
    */
   start(): void {
     const store = useGameStore.getState();
-    
+
     // 🔧 延迟初始化，等待countries数据
     const tryInitialize = () => {
       const currentStore = useGameStore.getState();
-      
+
       if (currentStore.countries.length === 0) {
         console.warn('⚠️ FactionStatsService: countries not loaded yet, retrying in 100ms...');
         setTimeout(tryInitialize, 100);
         return;
       }
-      
+
       // 初始化所有势力的统计数据
       currentStore.initializeFactionStats();
-      
+
       // 调试：检查初始化后的数据
       console.log('📊 FactionStatsService started');
       console.log(`   Commanders count: ${currentStore.commanders.length}`);
       console.log(`   Countries count: ${currentStore.countries.length}`);
       console.log(`   Faction stats size: ${currentStore.factionStats.size}`);
-      console.log('   Sample faction stats:', Array.from(currentStore.factionStats.values()).slice(0, 3));
+      console.log(
+        '   Sample faction stats:',
+        Array.from(currentStore.factionStats.values()).slice(0, 3)
+      );
     };
-    
+
     tryInitialize();
 
     // 记录之前的eventLog长度，用于检测新事件
@@ -64,13 +68,13 @@ export class FactionStatsService {
     let previousCommandersLength = store.commanders.length;
     this.unsubscribeCommanders = useGameStore.subscribe((state) => {
       // 检查指挥官数量或领土变化
-      const hasChanges = 
+      const hasChanges =
         state.commanders.length !== previousCommandersLength ||
         state.commanders.some((cmd, idx) => {
           const prev = store.commanders[idx];
           return !prev || cmd.controlledTerritories.length !== prev.controlledTerritories.length;
         });
-      
+
       if (hasChanges) {
         this.handleTerritoryChange();
         previousCommandersLength = state.commanders.length;
@@ -173,10 +177,11 @@ export class FactionStatsService {
 
   /**
    * 处理领土变化，更新国家数量和面积统计
+   * Feature: 008-territory-bonus - 同时更新领土加成
    */
   private handleTerritoryChange(): void {
     const store = useGameStore.getState();
-    
+
     // 重新计算所有势力的领土统计
     store.commanders.forEach((commander) => {
       const stats = store.factionStats.get(commander.id);
@@ -194,13 +199,19 @@ export class FactionStatsService {
 
       // 只有变化时才更新
       if (countryCount !== stats.countryCount || Math.abs(totalArea - stats.totalArea) > 0.1) {
+        // Feature: 008-territory-bonus - 计算领土加成
+        const territoryBonus = territoryBonusService.calculateTotalBonus(commander.id);
+
         store.updateFactionStats(commander.id, {
           countryCount,
           totalArea,
           status: commander.status,
+          territoryBonus,
         });
 
-        console.log(`🗺️ Territory stats updated: ${commander.name} - ${countryCount} countries, ${(totalArea / 1000000).toFixed(2)}M km²`);
+        console.log(
+          `🗺️ Territory stats updated: ${commander.name} - ${countryCount} countries, ${(totalArea / 1000000).toFixed(2)}M km², ATK +${(territoryBonus.totalAttackBonus * 100).toFixed(1)}%, DEF +${(territoryBonus.totalDefenseBonus * 100).toFixed(1)}%`
+        );
       }
     });
   }

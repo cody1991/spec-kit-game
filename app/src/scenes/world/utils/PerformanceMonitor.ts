@@ -3,7 +3,7 @@
  *
  * Tracks FPS, render time, and other performance metrics.
  * Provides sliding window averages for smoother readings.
- * 
+ *
  * @performance
  * - 使用滑动窗口计算平均值
  * - 支持内存使用监控
@@ -109,7 +109,8 @@ export class PerformanceMonitor {
 
     // Store FPS history for stability analysis
     this.fpsHistory.push(this.currentFps);
-    if (this.fpsHistory.length > 300) { // 5 seconds at 60fps
+    if (this.fpsHistory.length > 300) {
+      // 5 seconds at 60fps
       this.fpsHistory.shift();
     }
 
@@ -130,18 +131,23 @@ export class PerformanceMonitor {
     if (this.fpsHistory.length < 60) return;
 
     const avg = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
-    const variance = this.fpsHistory.reduce((sum, fps) => sum + Math.pow(fps - avg, 2), 0) / this.fpsHistory.length;
+    const variance =
+      this.fpsHistory.reduce((sum, fps) => sum + Math.pow(fps - avg, 2), 0) /
+      this.fpsHistory.length;
     const stdDev = Math.sqrt(variance);
-    
+
     // Calculate stability score (0-100, higher is better)
     const stabilityScore = Math.max(0, Math.min(100, 100 - stdDev * 2));
 
-    logger.log('PERFORMANCE', `📊 FPS Stability Report:
+    logger.log(
+      'PERFORMANCE',
+      `📊 FPS Stability Report:
   Average: ${avg.toFixed(1)} fps
   Min: ${this.minFps} fps
   Max: ${this.maxFps} fps
   Std Dev: ${stdDev.toFixed(2)}
-  Stability Score: ${stabilityScore.toFixed(0)}/100`);
+  Stability Score: ${stabilityScore.toFixed(0)}/100`
+    );
 
     // Reset min/max for next period
     this.minFps = this.currentFps;
@@ -176,9 +182,11 @@ export class PerformanceMonitor {
     if (this.fpsHistory.length < 60) return 100;
 
     const avg = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
-    const variance = this.fpsHistory.reduce((sum, fps) => sum + Math.pow(fps - avg, 2), 0) / this.fpsHistory.length;
+    const variance =
+      this.fpsHistory.reduce((sum, fps) => sum + Math.pow(fps - avg, 2), 0) /
+      this.fpsHistory.length;
     const stdDev = Math.sqrt(variance);
-    
+
     return Math.max(0, Math.min(100, 100 - stdDev * 2));
   }
 

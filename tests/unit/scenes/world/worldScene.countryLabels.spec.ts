@@ -3,9 +3,9 @@ import type { TerritoryState } from '@core/types';
 
 /**
  * 单元测试：世界场景国家标签渲染逻辑
- * 
+ *
  * 目标：验证任何时刻每个国家只有一个当前占领者标签
- * 
+ *
  * 测试场景：
  * 1. 构造多次易主序列
  * 2. 验证任何时间点给定countryId只有一个标签对象
@@ -125,7 +125,9 @@ describe('WorldScene 国家标签渲染逻辑', () => {
         expect(label?.text).toBe(owner.name);
         expect(label?.ownerId).toBe(owner.id);
 
-        console.log(`✓ 第${index + 1}次易主: ${owner.name} (总标签数: ${labelManager.getAllLabels().size})`);
+        console.log(
+          `✓ 第${index + 1}次易主: ${owner.name} (总标签数: ${labelManager.getAllLabels().size})`
+        );
       });
 
       // 最终验证
@@ -355,7 +357,7 @@ describe('WorldScene 国家标签渲染逻辑', () => {
       const firstLabel = labelManager.getLabel(countryId);
 
       // 等待1ms确保时间戳不同
-      await new Promise(resolve => setTimeout(resolve, 1));
+      await new Promise((resolve) => setTimeout(resolve, 1));
 
       // 失去后重新占领
       labelManager.removeLabel(countryId);

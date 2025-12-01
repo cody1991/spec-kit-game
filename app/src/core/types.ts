@@ -219,6 +219,8 @@ export interface FactionStatistics {
   losses: number;
   winRate: number; // -1 for N/A, otherwise [0, 1]
   lastUpdatedAt: number;
+  /** 领土加成数据 (Feature: 008-territory-bonus) */
+  territoryBonus: TerritoryBonus | null;
 }
 
 /**
@@ -258,4 +260,72 @@ export interface Leaderboard {
   factions: FactionStatistics[];
   timestamp: number;
   sortCriteria: LeaderboardSortCriteria;
+}
+
+// ============================================================================
+// Territory Bonus Types (Feature: 008-territory-bonus)
+// ============================================================================
+
+/**
+ * 领土加成配置
+ * 可调参数，便于平衡性调优
+ */
+export interface TerritoryBonusConfig {
+  /** 加成上限 (0.30 = 30%) */
+  maxBonus: number;
+  /** 城市加成基础系数 */
+  cityBaseFactor: number;
+  /** 城市加成缩放系数 */
+  cityScaleFactor: number;
+  /** 面积加成基础系数 */
+  areaBaseFactor: number;
+  /** 面积加成缩放系数 */
+  areaScaleFactor: number;
+  /** 连续领土额外加成系数 */
+  continuityBonus: number;
+  /** 小势力防御加成上限 */
+  smallFactionDefenseBonus: number;
+  /** 小势力阈值（城市数） */
+  smallFactionThreshold: number;
+}
+
+/**
+ * 领土加成数据
+ * 存储计算后的加成值
+ */
+export interface TerritoryBonus {
+  /** 指挥官ID */
+  commanderId: string;
+  /** 城市数量加成 (0-0.30) */
+  cityBonus: number;
+  /** 领土面积加成 (0-0.30) */
+  areaBonus: number;
+  /** 连续领土额外加成 (0-0.06) */
+  continuityBonus: number;
+  /** 小势力防御加成 (0-0.15) */
+  smallFactionDefenseBonus: number;
+  /** 总攻击力加成 */
+  totalAttackBonus: number;
+  /** 总防御力加成 */
+  totalDefenseBonus: number;
+  /** 最大连通分量城市数 */
+  largestContiguousCount: number;
+  /** 连通分量数量 */
+  contiguousRegionCount: number;
+  /** 上次更新时间 */
+  lastUpdatedAt: number;
+}
+
+/**
+ * 连通分量分析结果
+ */
+export interface ContiguityAnalysis {
+  /** 连通分量列表，每个元素是一组领土ID */
+  regions: string[][];
+  /** 最大连通分量大小 */
+  largestSize: number;
+  /** 总领土数 */
+  totalCount: number;
+  /** 最大连通分量占比 */
+  largestRatio: number;
 }

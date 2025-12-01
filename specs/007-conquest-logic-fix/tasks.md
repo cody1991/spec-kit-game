@@ -211,6 +211,7 @@ Task: "T019 更新 BattleEvent 叙事文本"
 ### Suggested MVP Scope
 
 **仅 User Story 1**：确保所有领主有初始领土
+
 - 这是最基础的修复，解决"凭空出现"的问题
 - 可快速验证和部署
 - US2 和 US3 可作为后续迭代

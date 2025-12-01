@@ -84,7 +84,9 @@ export class MapDataCache {
 
       // Check version - invalidate cache if version mismatch
       if (entry.version !== this.currentVersion) {
-        console.log(`🔄 Cache version mismatch (${entry.version} vs ${this.currentVersion}), invalidating...`);
+        console.log(
+          `🔄 Cache version mismatch (${entry.version} vs ${this.currentVersion}), invalidating...`
+        );
         await this.db.delete(this.storeName, key);
         return null;
       }

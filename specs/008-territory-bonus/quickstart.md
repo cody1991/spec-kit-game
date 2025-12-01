@@ -20,13 +20,13 @@ pnpm dev
 
 ### 2. 核心文件位置
 
-| 文件 | 用途 |
-|------|------|
+| 文件                                             | 用途                     |
+| ------------------------------------------------ | ------------------------ |
 | `app/src/core/services/territoryBonusService.ts` | 加成计算核心逻辑（新建） |
-| `app/src/core/types.ts` | 类型定义扩展 |
-| `app/src/core/state/store.ts` | 状态管理扩展 |
-| `app/src/core/services/factionStatsService.ts` | 集成加成计算 |
-| `app/src/ui/panels/FactionStatsPanel.tsx` | UI展示加成 |
+| `app/src/core/types.ts`                          | 类型定义扩展             |
+| `app/src/core/state/store.ts`                    | 状态管理扩展             |
+| `app/src/core/services/factionStatsService.ts`   | 集成加成计算             |
+| `app/src/ui/panels/FactionStatsPanel.tsx`        | UI展示加成               |
 
 ### 3. 实现步骤
 
@@ -53,16 +53,16 @@ export interface ContiguityAnalysis { ... }
 export class TerritoryBonusService {
   // 计算城市数量加成
   calculateCityBonus(cityCount: number): number { ... }
-  
+
   // 计算面积加成
   calculateAreaBonus(areaRatio: number): number { ... }
-  
+
   // 分析连通分量
   analyzeContiguity(territoryIds: string[], countries: Country[]): ContiguityAnalysis { ... }
-  
+
   // 计算小势力防御加成
   calculateSmallFactionBonus(cityCount: number): number { ... }
-  
+
   // 计算总加成
   calculateTotalBonus(commanderId: string): TerritoryBonus { ... }
 }

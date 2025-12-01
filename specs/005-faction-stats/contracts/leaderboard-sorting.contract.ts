@@ -1,10 +1,10 @@
 /**
  * Contract: Leaderboard Sorting Algorithm
- * 
+ *
  * Purpose: 确保排行榜排序逻辑的正确性和一致性
  * Version: 1.0.0
  * Date: 2025-12-01
- * 
+ *
  * Sorting Rules:
  * 1. Primary: countryCount (descending)
  * 2. Secondary: totalArea (descending)
@@ -44,17 +44,19 @@ interface Leaderboard {
 // ============================================================================
 
 function sortLeaderboard(stats: FactionStatistics[]): FactionStatistics[] {
-  return [...stats].sort((a, b) => {
-    // Primary: countryCount descending
-    if (b.countryCount !== a.countryCount) {
-      return b.countryCount - a.countryCount;
-    }
-    // Secondary: totalArea descending
-    return b.totalArea - a.totalArea;
-  }).map((faction, index) => ({
-    ...faction,
-    rank: index + 1,
-  }));
+  return [...stats]
+    .sort((a, b) => {
+      // Primary: countryCount descending
+      if (b.countryCount !== a.countryCount) {
+        return b.countryCount - a.countryCount;
+      }
+      // Secondary: totalArea descending
+      return b.totalArea - a.totalArea;
+    })
+    .map((faction, index) => ({
+      ...faction,
+      rank: index + 1,
+    }));
 }
 
 // ============================================================================
@@ -305,7 +307,7 @@ describe('Contract: Leaderboard Sorting', () => {
 
       const sorted = sortLeaderboard(stats);
       expect(sorted).toHaveLength(2);
-      
+
       // Stable sort: original order preserved
       expect(sorted[0].commanderId).toBe('a');
       expect(sorted[1].commanderId).toBe('b');
@@ -331,7 +333,7 @@ describe('Contract: Leaderboard Sorting', () => {
       const endTime = performance.now();
 
       const duration = endTime - startTime;
-      
+
       expect(sorted).toHaveLength(50);
       expect(duration).toBeLessThan(10); // < 10ms
     });
@@ -364,14 +366,14 @@ describe('Contract: Leaderboard Sorting', () => {
         },
       ];
 
-      const originalOrder = stats.map(s => s.commanderId);
+      const originalOrder = stats.map((s) => s.commanderId);
       const sorted = sortLeaderboard(stats);
 
       // Original array should be unchanged
-      expect(stats.map(s => s.commanderId)).toEqual(originalOrder);
-      
+      expect(stats.map((s) => s.commanderId)).toEqual(originalOrder);
+
       // Sorted array should be different
-      expect(sorted.map(s => s.commanderId)).not.toEqual(originalOrder);
+      expect(sorted.map((s) => s.commanderId)).not.toEqual(originalOrder);
     });
   });
 });

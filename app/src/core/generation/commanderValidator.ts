@@ -94,9 +94,7 @@ export function validateCommanders(
  * // 所有返回的领主都保证有 controlledTerritories.length >= 1
  * ```
  */
-export function filterValidCommanders(
-  commanders: HistoricalCommander[]
-): HistoricalCommander[] {
+export function filterValidCommanders(commanders: HistoricalCommander[]): HistoricalCommander[] {
   const result = validateCommanders(commanders);
   return result.validCommanders;
 }

@@ -88,11 +88,11 @@ describe('BattleSystem 国家粒度攻占逻辑', () => {
       { ...createTerritory('840', 'United States', 'commander-b', 60), adjacentIds: [] },
       { ...createTerritory('124', 'Canada', 'commander-b', 60), adjacentIds: [] },
     ]);
-    
+
     // 重新设置：attacker 控制一个领土，与 defender 的领土相邻
     const attackerTerritory = createTerritory('156', 'China', 'commander-a', 80);
     attackerTerritory.adjacentIds = ['840']; // 与 United States 相邻
-    
+
     store.setCommanders([
       { ...attacker, controlledTerritories: ['156'] },
       { ...defender, controlledTerritories: ['840', '124'] },

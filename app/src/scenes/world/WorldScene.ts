@@ -40,12 +40,15 @@ export class WorldScene extends Phaser.Scene {
     try {
       // Load map data with caching
       const basePath = import.meta.env.BASE_URL || '/';
-      this.countries = await this.mapDataLoader.loadMapData(`${basePath}maps/world-countries.json`, {
-        enableCache: true,
-        cacheDuration: 7,
-        useWorker: false, // Disable for now, can enable later
-        timeout: 10000,
-      });
+      this.countries = await this.mapDataLoader.loadMapData(
+        `${basePath}maps/world-countries.json`,
+        {
+          enableCache: true,
+          cacheDuration: 7,
+          useWorker: false, // Disable for now, can enable later
+          timeout: 10000,
+        }
+      );
 
       // Store in Phaser registry for renderer access
       this.registry.set('countries', this.countries);
@@ -75,7 +78,10 @@ export class WorldScene extends Phaser.Scene {
         );
 
         this.registry.set('countries', this.countries);
-        logger.log('MAP_LOADING', `✅ Loaded simplified map with ${this.countries.length} countries`);
+        logger.log(
+          'MAP_LOADING',
+          `✅ Loaded simplified map with ${this.countries.length} countries`
+        );
 
         // 初始化游戏世界（如果需要）
         this.initializeGameWorldIfNeeded();
@@ -121,7 +127,10 @@ export class WorldScene extends Phaser.Scene {
       elapsedTime += checkInterval;
 
       if (this.countries.length > 0) {
-        logger.log('MAP_LOADING', `✅ Map data ready (waited ${elapsedTime}ms), initializing renderer...`);
+        logger.log(
+          'MAP_LOADING',
+          `✅ Map data ready (waited ${elapsedTime}ms), initializing renderer...`
+        );
         this.initializeMapRenderer();
         this.initializeCameraController();
         this.verifyTerritoryStatesComplete();
@@ -154,7 +163,7 @@ export class WorldScene extends Phaser.Scene {
 
   /**
    * 检查游戏是否需要初始化世界数据
-   * 
+   *
    * 当地图数据加载完成后调用。如果游戏已通过StartScreen启动但缺少国家数据，
    * 此方法将使用真实国家数据重新初始化游戏世界。
    */
@@ -163,33 +172,35 @@ export class WorldScene extends Phaser.Scene {
     const { gameStarted, seed, commanders, territories } = store;
 
     // 检查是否需要初始化：游戏已启动但指挥官/领土为空或使用旧区域系统
-    const needsInit = gameStarted && 
-                      this.countries.length > 0 &&
-                      (commanders.length === 0 || territories.length === 0 || 
-                       this.isUsingOldRegionSystem(territories));
+    const needsInit =
+      gameStarted &&
+      this.countries.length > 0 &&
+      (commanders.length === 0 ||
+        territories.length === 0 ||
+        this.isUsingOldRegionSystem(territories));
 
     if (needsInit) {
       logger.log('GAME_SESSION', '🔄 Reinitializing game world with country data...');
-      
+
       // 使用真实国家数据重新启动会话
       startSession(seed, this.countries);
-      
+
       logger.log('GAME_SESSION', '✅ Game world reinitialized with country-based territories');
     }
   }
 
   /**
    * 检测是否仍在使用旧的区域系统
-   * 
+   *
    * 通过检查territory ID是否为旧的区域ID（如'western-europe'）来判断
    */
   private isUsingOldRegionSystem(territories: Territory[]): boolean {
     if (territories.length === 0) return false;
-    
+
     // 旧系统使用如'western-europe'这样的ID，新系统使用ISO数字码如'840'
     const sampleId = territories[0].id;
     const isOldSystem = sampleId.includes('-') || isNaN(Number(sampleId));
-    
+
     return isOldSystem;
   }
 
@@ -242,13 +253,13 @@ export class WorldScene extends Phaser.Scene {
 
     // 复用已存在的 Map 或创建新的
     const territoryStates = new Map<string, TerritoryState>();
-    
+
     // 使用 for 循环代替 forEach 以提高性能
     for (let i = 0; i < territories.length; i++) {
       const territory = territories[i];
       if (territory.ownerId) {
-        const country = this.countries.find(c => c.id === territory.id);
-        
+        const country = this.countries.find((c) => c.id === territory.id);
+
         territoryStates.set(territory.id, {
           countryId: territory.id,
           countryName: country?.name || territory.name,
@@ -272,7 +283,10 @@ export class WorldScene extends Phaser.Scene {
     performance.measure('mapping-duration', 'mapping-start', 'mapping-end');
     const duration = performance.getEntriesByName('mapping-duration')[0]?.duration || 0;
 
-    logger.log('MAP_LOADING', `🗺️  Synced ${territoryStates.size} countries with ${commanders.length} commanders in ${duration.toFixed(2)}ms`);
+    logger.log(
+      'MAP_LOADING',
+      `🗺️  Synced ${territoryStates.size} countries with ${commanders.length} commanders in ${duration.toFixed(2)}ms`
+    );
   }
 
   /**
@@ -309,7 +323,10 @@ export class WorldScene extends Phaser.Scene {
     });
 
     if (missingStates.length > 0) {
-      logger.warn('WARNINGS', `⚠️  [WorldScene] Created default states for ${missingStates.length} territories`);
+      logger.warn(
+        'WARNINGS',
+        `⚠️  [WorldScene] Created default states for ${missingStates.length} territories`
+      );
     } else {
       logger.log('MAP_LOADING', '✅ [WorldScene] All territory states initialized');
     }
@@ -318,8 +335,8 @@ export class WorldScene extends Phaser.Scene {
   /**
    * Setup subscription to territoryStates changes
    * Triggers map updates when territory ownership changes
-   * 
-   * @performance 
+   *
+   * @performance
    * - 使用浅比较优化，只在实际变化时触发更新
    * - 节流订阅回调，延迟处理而不是丢弃更新
    */
@@ -330,7 +347,10 @@ export class WorldScene extends Phaser.Scene {
     let throttleTimer: ReturnType<typeof setTimeout> | null = null;
     const SUBSCRIPTION_THROTTLE_MS = 100; // 最多每100ms处理一次
 
-    logger.log('SUBSCRIPTION', `🔔 [WorldScene] Setting up subscription with ${previousSize} initial states`);
+    logger.log(
+      'SUBSCRIPTION',
+      `🔔 [WorldScene] Setting up subscription with ${previousSize} initial states`
+    );
 
     const processUpdate = () => {
       pendingUpdate = false;
@@ -346,7 +366,11 @@ export class WorldScene extends Phaser.Scene {
       const dirtyTerritories = newState.dirtyFlags.territories;
 
       // 快速检查：如果没有脏领土且大小相同，跳过
-      if (dirtyTerritories.size === 0 && newSize === previousSize && !newState.dirtyFlags.fullRedraw) {
+      if (
+        dirtyTerritories.size === 0 &&
+        newSize === previousSize &&
+        !newState.dirtyFlags.fullRedraw
+      ) {
         return;
       }
 
@@ -354,8 +378,11 @@ export class WorldScene extends Phaser.Scene {
 
       // 标记有待处理的更新
       if (dirtyTerritories.size > 0 || newState.dirtyFlags.fullRedraw) {
-        logger.log('SUBSCRIPTION', `🔔 [WorldScene] ${dirtyTerritories.size} dirty territories detected`);
-        
+        logger.log(
+          'SUBSCRIPTION',
+          `🔔 [WorldScene] ${dirtyTerritories.size} dirty territories detected`
+        );
+
         // 如果没有待处理的定时器，立即设置一个
         if (!throttleTimer) {
           if (!pendingUpdate) {
@@ -385,10 +412,7 @@ export class WorldScene extends Phaser.Scene {
    * Handle territory ownership change
    * Updates map rendering with new color
    */
-  private handleTerritoryOwnershipChange(
-    territoryId: string,
-    newState: TerritoryState
-  ): void {
+  private handleTerritoryOwnershipChange(territoryId: string, newState: TerritoryState): void {
     if (!this.mapRenderer) return;
 
     const state = useGameStore.getState();
@@ -396,9 +420,15 @@ export class WorldScene extends Phaser.Scene {
 
     if (colorMapping) {
       this.mapRenderer.updateCountry(territoryId, newState, colorMapping);
-      logger.log('TERRITORY_OWNERSHIP', `🎨 [WorldScene] Map updated: ${territoryId} → ${newState.ownerId}`);
+      logger.log(
+        'TERRITORY_OWNERSHIP',
+        `🎨 [WorldScene] Map updated: ${territoryId} → ${newState.ownerId}`
+      );
     } else if (newState.ownerId) {
-      logger.warn('WARNINGS', `⚠️  [WorldScene] Missing color mapping for commander: ${newState.ownerId}`);
+      logger.warn(
+        'WARNINGS',
+        `⚠️  [WorldScene] Missing color mapping for commander: ${newState.ownerId}`
+      );
       // Use default gray color
       this.mapRenderer.updateCountry(territoryId, newState, {
         commanderId: newState.ownerId,
@@ -419,14 +449,21 @@ export class WorldScene extends Phaser.Scene {
 
   /**
    * 渲染世界地图
-   * 
-   * @performance 
+   *
+   * @performance
    * - 使用脏标记进行增量渲染
    * - 渲染节流避免过于频繁的重绘
    */
   private renderWorld(): void {
     const state = useGameStore.getState();
-    const { territories, commanders, territoryStates, colorMappings, dirtyFlags, performanceConfig } = state;
+    const {
+      territories,
+      commanders,
+      territoryStates,
+      colorMappings,
+      dirtyFlags,
+      performanceConfig,
+    } = state;
 
     // 检查是否需要渲染（节流）
     const now = performance.now();
@@ -440,9 +477,10 @@ export class WorldScene extends Phaser.Scene {
       this.performanceMonitor.startMeasure('mapRender');
 
       // 如果启用增量渲染且不需要全量重绘，只渲染脏区域
-      const shouldIncrementalRender = performanceConfig.enableIncrementalRender && 
-                                       !dirtyFlags.fullRedraw && 
-                                       dirtyFlags.territories.size > 0;
+      const shouldIncrementalRender =
+        performanceConfig.enableIncrementalRender &&
+        !dirtyFlags.fullRedraw &&
+        dirtyFlags.territories.size > 0;
 
       const stats = this.mapRenderer.render(
         this.countries,
@@ -658,7 +696,7 @@ export class WorldScene extends Phaser.Scene {
 
     // Check performance and adjust settings
     const fps = this.performanceMonitor.getAverageFps();
-    
+
     // 自动降级：低FPS时禁用动画
     if (performanceConfig.autoDegrade && fps < performanceConfig.lowFpsThreshold) {
       if (this.mapRenderer) {
@@ -666,7 +704,7 @@ export class WorldScene extends Phaser.Scene {
       }
       // 增加渲染节流间隔
       this.renderThrottleMs = 33; // ~30fps
-      
+
       // 更新配置
       if (state.performanceConfig.enableAnimations) {
         state.setPerformanceConfig({ enableAnimations: false });
@@ -712,7 +750,7 @@ class CameraController {
         this.isDragging = true;
         this.lastPointerX = pointer.x;
         this.lastPointerY = pointer.y;
-        
+
         // 改变鼠标样式
         this.scene.game.canvas.style.cursor = 'grabbing';
       }
@@ -722,11 +760,11 @@ class CameraController {
       if (this.isDragging) {
         const deltaX = pointer.x - this.lastPointerX;
         const deltaY = pointer.y - this.lastPointerY;
-        
+
         // 直接移动相机，使用更平滑的拖拽
         camera.scrollX -= deltaX / camera.zoom;
         camera.scrollY -= deltaY / camera.zoom;
-        
+
         this.lastPointerX = pointer.x;
         this.lastPointerY = pointer.y;
       } else {
@@ -745,30 +783,27 @@ class CameraController {
     // 滚轮缩放 - 扩大缩放范围，允许更小的缩放以查看完整地图
     this.scene.input.on(
       'wheel',
-      (
-        pointer: Phaser.Input.Pointer,
-        _gameObjects: unknown[],
-        _deltaX: number,
-        deltaY: number
-      ) => {
+      (pointer: Phaser.Input.Pointer, _gameObjects: unknown[], _deltaX: number, deltaY: number) => {
         // 计算缩放因子
         const zoomFactor = deltaY > 0 ? 0.9 : 1.1;
         // 扩大缩放范围: 0.3 (完整世界地图) 到 3.0 (区域细节)
         const newZoom = Phaser.Math.Clamp(camera.zoom * zoomFactor, 0.3, 3.0);
-        
+
         // 以鼠标位置为中心进行缩放
         const worldPoint = camera.getWorldPoint(pointer.x, pointer.y);
         camera.setZoom(newZoom);
-        
+
         // 调整相机位置，使缩放中心保持在鼠标位置
         const newWorldPoint = camera.getWorldPoint(pointer.x, pointer.y);
         camera.scrollX += worldPoint.x - newWorldPoint.x;
         camera.scrollY += worldPoint.y - newWorldPoint.y;
-        
+
         console.log(`🔍 Zoom: ${newZoom.toFixed(2)}x`);
       }
     );
 
-    console.log('🎮 Camera controls initialized (drag: left/right click, zoom: mouse wheel 0.3x-3.0x)');
+    console.log(
+      '🎮 Camera controls initialized (drag: left/right click, zoom: mouse wheel 0.3x-3.0x)'
+    );
   }
 }

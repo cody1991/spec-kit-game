@@ -4,18 +4,18 @@
 
 ### BattleEvent（增强）
 
-| Field         | Type                                                                     | Description                             | Validation / Notes                                        |
-| ------------- | ------------------------------------------------------------------------ | --------------------------------------- | --------------------------------------------------------- |
-| `id`          | string                                                                   | 唯一事件标识符                          | **格式强化**：`battle-${timestamp}-${counter}`，counter为全局递增序列号 |
-| `timestamp`   | ISO 8601 string                                                          | 事件发生时间                            | **验证增强**：必须可被 `new Date()` 解析且不返回Invalid Date |
-| `type`        | enum(`attack`,`alliance`,`betrayal`,`cataclysm`,`victory`,`elimination`) | 事件类别                                | 不变                                                      |
-| `attackerId`  | string                                                                   | 攻击方指挥官ID                          | 不变                                                      |
-| `defenderId`  | string                                                                   | 防守方指挥官ID                          | 不变                                                      |
-| `territoryId` | string                                                                   | 涉及的领土ID                            | 不变                                                      |
-| `result`      | enum(`success`,`fail`,`pending`)                                         | 战斗结果                                | 不变                                                      |
-| `delta`       | object                                                                   | 数值变化（军力损失、占领变化）          | 不变                                                      |
-| `narrative`   | string                                                                   | 自然语言描述                            | 不变                                                      |
-| `seed`        | string                                                                   | 随机数种子片段                          | 不变                                                      |
+| Field         | Type                                                                     | Description                    | Validation / Notes                                                      |
+| ------------- | ------------------------------------------------------------------------ | ------------------------------ | ----------------------------------------------------------------------- |
+| `id`          | string                                                                   | 唯一事件标识符                 | **格式强化**：`battle-${timestamp}-${counter}`，counter为全局递增序列号 |
+| `timestamp`   | ISO 8601 string                                                          | 事件发生时间                   | **验证增强**：必须可被 `new Date()` 解析且不返回Invalid Date            |
+| `type`        | enum(`attack`,`alliance`,`betrayal`,`cataclysm`,`victory`,`elimination`) | 事件类别                       | 不变                                                                    |
+| `attackerId`  | string                                                                   | 攻击方指挥官ID                 | 不变                                                                    |
+| `defenderId`  | string                                                                   | 防守方指挥官ID                 | 不变                                                                    |
+| `territoryId` | string                                                                   | 涉及的领土ID                   | 不变                                                                    |
+| `result`      | enum(`success`,`fail`,`pending`)                                         | 战斗结果                       | 不变                                                                    |
+| `delta`       | object                                                                   | 数值变化（军力损失、占领变化） | 不变                                                                    |
+| `narrative`   | string                                                                   | 自然语言描述                   | 不变                                                                    |
+| `seed`        | string                                                                   | 随机数种子片段                 | 不变                                                                    |
 
 **增强说明**：
 
@@ -33,19 +33,19 @@
 
 ### TerritoryState（增强）
 
-| Field               | Type             | Description                           | Validation / Notes                                       |
-| ------------------- | ---------------- | ------------------------------------- | -------------------------------------------------------- |
-| `countryId`         | string           | 对应的国家/领土ID                     | 不变                                                     |
-| `countryName`       | string           | 国家名称（缓存）                      | 不变                                                     |
-| `ownerId`           | string \| null   | 当前占领者指挥官ID                    | **同步保障**：必须与 `Territory.ownerId` 同步更新         |
-| `troops`            | number           | 驻军数量                              | 不变                                                     |
-| `resources`         | number           | 资源储备                              | 不变                                                     |
-| `defense`           | number           | 防御值                                | 不变                                                     |
-| `updatedAt`         | number           | 最后更新时间戳（毫秒）                | **修复增强**：每次 ownerId 变化时必须更新                 |
-| `conqueredAt`       | number \| null   | 被当前占领者占领的时间                | **修复增强**：ownerId变化时设置为 `Date.now()`           |
-| `previousOwnerId`   | string \| null   | 前一个占领者ID                        | 用于颜色过渡动画                                         |
-| `transitionProgress`| number \| null   | 颜色过渡进度（0-1）                   | 不变                                                     |
-| `isHighlighted`     | boolean          | 是否高亮显示                          | 不变                                                     |
+| Field                | Type           | Description            | Validation / Notes                                |
+| -------------------- | -------------- | ---------------------- | ------------------------------------------------- |
+| `countryId`          | string         | 对应的国家/领土ID      | 不变                                              |
+| `countryName`        | string         | 国家名称（缓存）       | 不变                                              |
+| `ownerId`            | string \| null | 当前占领者指挥官ID     | **同步保障**：必须与 `Territory.ownerId` 同步更新 |
+| `troops`             | number         | 驻军数量               | 不变                                              |
+| `resources`          | number         | 资源储备               | 不变                                              |
+| `defense`            | number         | 防御值                 | 不变                                              |
+| `updatedAt`          | number         | 最后更新时间戳（毫秒） | **修复增强**：每次 ownerId 变化时必须更新         |
+| `conqueredAt`        | number \| null | 被当前占领者占领的时间 | **修复增强**：ownerId变化时设置为 `Date.now()`    |
+| `previousOwnerId`    | string \| null | 前一个占领者ID         | 用于颜色过渡动画                                  |
+| `transitionProgress` | number \| null | 颜色过渡进度（0-1）    | 不变                                              |
+| `isHighlighted`      | boolean        | 是否高亮显示           | 不变                                              |
 
 **增强说明**：
 
@@ -166,14 +166,14 @@ function validateBattleEvent(event: BattleEvent): boolean {
     console.error(`Invalid BattleEvent ID format: ${event.id}`);
     return false;
   }
-  
+
   // Timestamp有效性检查
   const date = new Date(event.timestamp);
   if (isNaN(date.getTime())) {
     console.error(`Invalid BattleEvent timestamp: ${event.timestamp}`);
     return false;
   }
-  
+
   return true;
 }
 ```
@@ -186,22 +186,22 @@ function verifyTerritorySync(
   territoryStates: Map<string, TerritoryState>
 ): string[] {
   const mismatches: string[] = [];
-  
-  territories.forEach(territory => {
+
+  territories.forEach((territory) => {
     const state = territoryStates.get(territory.id);
     if (!state) {
       mismatches.push(`Missing state for territory: ${territory.id}`);
       return;
     }
-    
+
     if (state.ownerId !== territory.ownerId) {
       mismatches.push(
         `Owner mismatch for ${territory.id}: ` +
-        `Territory=${territory.ownerId}, State=${state.ownerId}`
+          `Territory=${territory.ownerId}, State=${state.ownerId}`
       );
     }
   });
-  
+
   return mismatches;
 }
 ```
@@ -210,14 +210,14 @@ function verifyTerritorySync(
 
 ## 性能影响
 
-| 操作                       | 现有复杂度 | 修复后复杂度 | 影响评估           |
-| -------------------------- | ---------- | ------------ | ------------------ |
-| 战报ID生成                 | O(1)       | O(1)         | 无影响             |
-| 战报排序                   | O(n log n) | O(n log n)   | 无影响             |
-| 战报去重                   | -          | O(n)         | +1ms (n≤200)       |
-| 领土更新（territories）    | O(n)       | O(n)         | 无影响             |
-| 领土更新（territoryStates）| O(1)       | O(1)         | 无影响             |
-| 地图渲染触发               | O(m)轮询   | O(1)订阅     | 优化约5-10ms/frame |
+| 操作                        | 现有复杂度 | 修复后复杂度 | 影响评估           |
+| --------------------------- | ---------- | ------------ | ------------------ |
+| 战报ID生成                  | O(1)       | O(1)         | 无影响             |
+| 战报排序                    | O(n log n) | O(n log n)   | 无影响             |
+| 战报去重                    | -          | O(n)         | +1ms (n≤200)       |
+| 领土更新（territories）     | O(n)       | O(n)         | 无影响             |
+| 领土更新（territoryStates） | O(1)       | O(1)         | 无影响             |
+| 地图渲染触发                | O(m)轮询   | O(1)订阅     | 优化约5-10ms/frame |
 
 **总体评估**：修复后性能略有提升（订阅机制替代轮询），无负面影响。
 

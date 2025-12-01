@@ -4,7 +4,7 @@ import { globalEventBus } from '../../events/eventTypes';
 
 /**
  * 联盟系统
- * 
+ *
  * @performance
  * - 减少随机数生成次数
  * - 提前退出条件检查
@@ -32,7 +32,7 @@ export class AllianceSystem implements System {
 
     const idx1 = Math.floor(Math.random() * activeCommanders.length);
     let idx2 = Math.floor(Math.random() * activeCommanders.length);
-    
+
     // 确保选择不同的指挥官
     if (idx1 === idx2) {
       idx2 = (idx2 + 1) % activeCommanders.length;

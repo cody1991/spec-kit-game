@@ -2,11 +2,11 @@ import { useGameStore } from '@core/state/store';
 import './BattleTimeline.css';
 
 // 单个事件项组件
-function EventItem({ 
-  event, 
-  getCommanderName
-}: { 
-  event: any; 
+function EventItem({
+  event,
+  getCommanderName,
+}: {
+  event: any;
   getCommanderName: (id?: string) => string;
 }) {
   return (
@@ -31,13 +31,13 @@ export function BattleTimeline() {
   const commanders = useGameStore((state) => state.commanders);
   const isPaused = useGameStore((state) => state.isPaused);
   const setPaused = useGameStore((state) => state.setPaused);
-  
+
   // 构建指挥官名称映射 - 每次渲染都重新构建（commanders 变化不频繁）
   const commanderNameMap = new Map<string, string>();
   for (const c of commanders) {
     commanderNameMap.set(c.id, c.name);
   }
-  
+
   const getCommanderName = (id?: string) => {
     if (!id) return '未知';
     return commanderNameMap.get(id) || id;
@@ -66,11 +66,7 @@ export function BattleTimeline() {
           <div className="empty-state">暂无战报</div>
         ) : (
           recentEvents.map((event) => (
-            <EventItem 
-              key={event.id}
-              event={event} 
-              getCommanderName={getCommanderName}
-            />
+            <EventItem key={event.id} event={event} getCommanderName={getCommanderName} />
           ))
         )}
       </div>

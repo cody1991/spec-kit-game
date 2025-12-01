@@ -1,0 +1,126 @@
+/**
+ * 领土加成展示组件样式
+ * Feature: 008-territory-bonus
+ */
+
+.territory-bonus-display {
+  background: linear-gradient(135deg, rgba(30, 40, 60, 0.95), rgba(20, 30, 50, 0.95));
+  border: 1px solid rgba(100, 150, 200, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.territory-bonus-empty {
+  opacity: 0.6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bonus-header {
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(100, 150, 200, 0.2);
+}
+
+.bonus-title {
+  font-weight: 600;
+  color: #e0e8f0;
+  font-size: 14px;
+}
+
+/* 总加成摘要 */
+.bonus-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.bonus-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  flex: 1;
+}
+
+.bonus-attack {
+  background: rgba(220, 80, 80, 0.15);
+  border: 1px solid rgba(220, 80, 80, 0.3);
+}
+
+.bonus-defense {
+  background: rgba(80, 160, 220, 0.15);
+  border: 1px solid rgba(80, 160, 220, 0.3);
+}
+
+.bonus-icon {
+  font-size: 16px;
+}
+
+.bonus-label {
+  color: #a0b0c0;
+  font-size: 12px;
+}
+
+.bonus-value {
+  color: #60d060;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* 详细加成明细 */
+.bonus-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.bonus-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.detail-label {
+  color: #8090a0;
+  font-size: 12px;
+}
+
+.detail-value {
+  color: #80c080;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.bonus-continuity .detail-value {
+  color: #80c0ff;
+}
+
+.bonus-small-faction .detail-value {
+  color: #ffc080;
+}
+
+/* 连通性信息 */
+.bonus-contiguity-info {
+  padding-top: 6px;
+  border-top: 1px solid rgba(100, 150, 200, 0.15);
+}
+
+.contiguity-label {
+  color: #708090;
+  font-size: 11px;
+}
+
+.contiguity-hint {
+  color: #506070;
+  margin-left: 4px;
+}

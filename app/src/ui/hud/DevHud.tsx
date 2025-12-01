@@ -55,14 +55,18 @@ export function DevHud() {
   }
 
   const activeCommanders = commanders.filter((c) => c.status === 'active').length;
-  
+
   // FPS 状态颜色
-  const fpsColor = performanceMetrics.fps >= 30 ? '#4ade80' : 
-                   performanceMetrics.fps >= 15 ? '#facc15' : '#ef4444';
-  
+  const fpsColor =
+    performanceMetrics.fps >= 30 ? '#4ade80' : performanceMetrics.fps >= 15 ? '#facc15' : '#ef4444';
+
   // Tick 耗时状态颜色
-  const tickColor = performanceMetrics.tickMs < 100 ? '#4ade80' :
-                    performanceMetrics.tickMs < 200 ? '#facc15' : '#ef4444';
+  const tickColor =
+    performanceMetrics.tickMs < 100
+      ? '#4ade80'
+      : performanceMetrics.tickMs < 200
+        ? '#facc15'
+        : '#ef4444';
 
   return (
     <div className="dev-hud">
@@ -74,7 +78,7 @@ export function DevHud() {
       <div className="hud-content">
         <div className="hud-section">
           <div className="hud-section-title">性能指标</div>
-          
+
           <div className="hud-row">
             <span className="hud-label">FPS:</span>
             <span className="hud-value" style={{ color: fpsColor }}>
@@ -102,7 +106,7 @@ export function DevHud() {
 
         <div className="hud-section">
           <div className="hud-section-title">游戏状态</div>
-          
+
           <div className="hud-row">
             <span className="hud-label">Tick:</span>
             <span className="hud-value">{tick}</span>
@@ -121,10 +125,10 @@ export function DevHud() {
 
         <div className="hud-section">
           <div className="hud-section-title">性能模式</div>
-          
+
           <div className="hud-row hud-toggle-row">
             <span className="hud-label">动画效果:</span>
-            <button 
+            <button
               className={`hud-toggle ${performanceConfig.enableAnimations ? 'active' : ''}`}
               onClick={toggleAnimations}
             >
@@ -134,7 +138,7 @@ export function DevHud() {
 
           <div className="hud-row hud-toggle-row">
             <span className="hud-label">自动降级:</span>
-            <button 
+            <button
               className={`hud-toggle ${performanceConfig.autoDegrade ? 'active' : ''}`}
               onClick={toggleAutoDegrade}
             >

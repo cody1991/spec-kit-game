@@ -7,6 +7,7 @@
 ## 原因
 
 **双ID系统不兼容**：
+
 - 战斗系统使用 `region-xxx` ID (例如: `region-china`)
 - 地图渲染使用 ISO 国家代码 (例如: `156` = 中国)
 - 两套ID之间没有自动同步机制
@@ -25,7 +26,7 @@
 state.territories.forEach((territory) => {
   if (territory.id.startsWith('region-')) {
     const countryIds = regionCountryMap.get(territory.id);
-    
+
     countryIds?.forEach((countryId) => {
       // 更新 country state
       state.updateTerritoryState(countryId, newState);

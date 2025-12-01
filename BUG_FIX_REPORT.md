@@ -1,6 +1,7 @@
 # Bug 修复报告
 
 ## 修复时间
+
 2025-12-01
 
 ## 问题描述
@@ -17,6 +18,7 @@
 **原因**：`MapDataLoader.ts` 在加载地图数据时没有过滤南极洲。南极洲作为世界上面积最大的大陆之一，在游戏中不应该被渲染和参与游戏逻辑。
 
 **影响**：
+
 - 南极洲占据大量视觉空间
 - 可能被指挥官占领，导致游戏逻辑混乱
 - 影响游戏性能
@@ -26,6 +28,7 @@
 **原因**：`initializeFactionStats()` 依赖 `state.countries` 字段来计算每个势力的领土面积，但在 `startSession()` 中没有调用 `store.setCountries(countries)` 将国家数据存入store。
 
 **影响链**：
+
 ```
 startSession() → 未设置countries
                 ↓
@@ -46,14 +49,19 @@ initializeFactionStats() → countries字段为空
 
 ```typescript
 // 🔧 过滤掉南极洲（Antarctica）
-if (country.id === 'ATA' || country.id === '-99' || 
-    country.name === 'Antarctica' || country.nameEn === 'Antarctica') {
+if (
+  country.id === 'ATA' ||
+  country.id === '-99' ||
+  country.name === 'Antarctica' ||
+  country.nameEn === 'Antarctica'
+) {
   console.log(`🚫 Filtered out Antarctica (id: ${country.id})`);
   return;
 }
 ```
 
 **验证**：
+
 - ✅ 南极洲不再出现在地图上
 - ✅ 指挥官不会被分配到南极洲
 - ✅ 地图渲染性能提升
@@ -76,6 +84,7 @@ store.setTerritoryStates(territoryStates);
 ```
 
 **验证**：
+
 - ✅ `factionStats` Map正确初始化
 - ✅ 每个势力的统计数据包含正确的国家数量和面积
 - ✅ 排行榜显示完整数据
@@ -125,7 +134,7 @@ this.unsubscribeEventLog = useGameStore.subscribe((state) => {
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void
+): (...args: Parameters<T>) => void;
 ```
 
 ## 修改文件清单
@@ -140,15 +149,19 @@ export function debounce<T extends (...args: any[]) => any>(
 ### 验证步骤
 
 1. **构建项目**：
+
    ```bash
    pnpm build
    ```
+
    结果：✅ 构建成功，无TypeScript错误
 
 2. **启动开发服务器**：
+
    ```bash
    npm run dev
    ```
+
    结果：✅ 服务器启动在 http://localhost:5174
 
 3. **功能测试**：

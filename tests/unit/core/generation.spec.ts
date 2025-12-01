@@ -118,19 +118,19 @@ const mockCountries: Country[] = [
 
 describe('createInitialWorld', () => {
   it('应该生成指定数量的指挥官', () => {
-    const { commanders } = createInitialWorld({ 
-      seed: 12345, 
+    const { commanders } = createInitialWorld({
+      seed: 12345,
       commanderCount: 8,
-      countries: mockCountries 
+      countries: mockCountries,
     });
     expect(commanders).toHaveLength(8);
   });
 
   it('应该为每个指挥官分配初始领土', () => {
-    const { commanders } = createInitialWorld({ 
-      seed: 12345, 
+    const { commanders } = createInitialWorld({
+      seed: 12345,
       commanderCount: 10,
-      countries: mockCountries 
+      countries: mockCountries,
     });
     commanders.forEach((commander) => {
       expect(commander.controlledTerritories.length).toBeGreaterThan(0);
@@ -139,30 +139,30 @@ describe('createInitialWorld', () => {
 
   it('相同种子应该生成相同的指挥官组合', () => {
     const seed = 54321;
-    const result1 = createInitialWorld({ 
-      seed, 
+    const result1 = createInitialWorld({
+      seed,
       commanderCount: 10,
-      countries: mockCountries 
+      countries: mockCountries,
     });
-    const result2 = createInitialWorld({ 
-      seed, 
+    const result2 = createInitialWorld({
+      seed,
       commanderCount: 10,
-      countries: mockCountries 
+      countries: mockCountries,
     });
 
     expect(result1.commanders.map((c) => c.name)).toEqual(result2.commanders.map((c) => c.name));
   });
 
   it('不同种子应该生成不同的指挥官组合', () => {
-    const result1 = createInitialWorld({ 
-      seed: 111, 
+    const result1 = createInitialWorld({
+      seed: 111,
       commanderCount: 10,
-      countries: mockCountries 
+      countries: mockCountries,
     });
-    const result2 = createInitialWorld({ 
-      seed: 222, 
+    const result2 = createInitialWorld({
+      seed: 222,
       commanderCount: 10,
-      countries: mockCountries 
+      countries: mockCountries,
     });
 
     const names1 = result1.commanders.map((c) => c.name);
@@ -174,10 +174,10 @@ describe('createInitialWorld', () => {
   });
 
   it('所有指挥官应该有有效的属性', () => {
-    const { commanders } = createInitialWorld({ 
-      seed: 99999, 
+    const { commanders } = createInitialWorld({
+      seed: 99999,
       commanderCount: 10,
-      countries: mockCountries 
+      countries: mockCountries,
     });
 
     commanders.forEach((commander) => {
@@ -201,10 +201,10 @@ describe('createInitialWorld', () => {
   });
 
   it('应该创建领土并覆盖多个地区（现在是国家）', () => {
-    const { territories } = createInitialWorld({ 
-      seed: 12345, 
+    const { territories } = createInitialWorld({
+      seed: 12345,
       commanderCount: 10,
-      countries: mockCountries 
+      countries: mockCountries,
     });
 
     // 应该基于国家数据创建领土
@@ -212,19 +212,19 @@ describe('createInitialWorld', () => {
 
     // 检查领土ID是国家ID（数字字符串）
     territories.forEach((t) => {
-      expect(mockCountries.some(c => c.id === t.id)).toBe(true);
+      expect(mockCountries.some((c) => c.id === t.id)).toBe(true);
     });
 
     // 检查领土有相邻关系
     const hasAdjacency = territories.some((t) => t.adjacentIds.length > 0);
     expect(hasAdjacency).toBe(true);
   });
-  
+
   it('领土ID应该是国家ID而非区域ID', () => {
-    const { territories } = createInitialWorld({ 
-      seed: 12345, 
+    const { territories } = createInitialWorld({
+      seed: 12345,
       commanderCount: 5,
-      countries: mockCountries 
+      countries: mockCountries,
     });
 
     // 所有territory ID应该是数字字符串（ISO3数字码）
@@ -233,18 +233,18 @@ describe('createInitialWorld', () => {
       expect(t.id.includes('-')).toBe(false); // 不包含连字符（旧区域ID特征）
     });
   });
-  
+
   it('指挥官的controlledTerritories应该包含国家ID', () => {
-    const { commanders } = createInitialWorld({ 
-      seed: 12345, 
+    const { commanders } = createInitialWorld({
+      seed: 12345,
       commanderCount: 5,
-      countries: mockCountries 
+      countries: mockCountries,
     });
 
     commanders.forEach((commander) => {
       commander.controlledTerritories.forEach((territoryId) => {
         expect(territoryId).toMatch(/^\d+$/); // 应该是数字字符串
-        expect(mockCountries.some(c => c.id === territoryId)).toBe(true); // 应该存在于国家列表中
+        expect(mockCountries.some((c) => c.id === territoryId)).toBe(true); // 应该存在于国家列表中
       });
     });
   });

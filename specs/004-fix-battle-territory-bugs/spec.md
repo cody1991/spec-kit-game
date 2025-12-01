@@ -82,25 +82,25 @@
 
 ## Quality Guardrails _(per Constitution)_
 
-- **Code Quality**: 
+- **Code Quality**:
   - 修复必须遵循现有的TypeScript规范和ESLint配置
   - 所有时间戳处理使用统一的Date对象和ISO字符串转换
   - Map数据结构的更新必须使用不可变模式（创建新Map而非直接修改）
   - 添加必要的类型守卫，确保timestamp和ownerId字段存在且有效
 
-- **Testing Evidence**: 
+- **Testing Evidence**:
   - 为战报排序逻辑添加单元测试（使用Vitest），覆盖正序、乱序、时间戳相同等场景
   - 为领土更新流程添加集成测试，验证store → territoryStates → MapRenderer的完整链路
   - 在现有的E2E测试中添加断言，验证战报面板的排序和地图颜色更新
   - 测试覆盖率应达到修改代码的90%以上
 
-- **User Experience**: 
+- **User Experience**:
   - 战报排序应该是即时的，不应该有可见的延迟或跳动
   - 地图颜色更新应在1秒内完成，使用平滑的过渡动画（如已实现transitionProgress机制）
   - 如果检测到数据异常（如重复ID），应记录控制台警告但不中断用户体验
   - 修复后应提升"战报理解度"和"领土变化可感知性"两项用户体验指标
 
-- **Performance & Observability**: 
+- **Performance & Observability**:
   - 战报排序操作应在5ms内完成（即使有200条记录）
   - 领土更新不应阻塞主渲染循环，保持60 FPS
   - 添加关键日志：战报添加时的ID和timestamp、领土ownerId变化时的前后对比

@@ -15,10 +15,11 @@
 **位置**：`app/src/scenes/world/rendering/MapRenderer.ts:149`
 
 **修复代码**：
+
 ```typescript
 // TEMPORARY: Disable viewport culling for debugging
 // TODO: Fix culling after coordinate system is verified
-const shouldRender = true;  // ✅ 已禁用裁剪
+const shouldRender = true; // ✅ 已禁用裁剪
 ```
 
 ### 原因2：中立国家没有填充 ✅ 已修复
@@ -28,6 +29,7 @@ const shouldRender = true;  // ✅ 已禁用裁剪
 **位置**：`app/src/scenes/world/rendering/MapRenderer.ts:220-228`
 
 **修复代码**：
+
 ```typescript
 if (state?.ownerId && colorMapping) {
   // 有owner的国家：使用指挥官颜色
@@ -39,6 +41,7 @@ if (state?.ownerId && colorMapping) {
 ```
 
 **新增方法**（`MapRenderer.ts:369-396`）：
+
 ```typescript
 private fillNeutralCountry(
   graphics: Phaser.GameObjects.Graphics,
@@ -47,7 +50,7 @@ private fillNeutralCountry(
   // 中立国家使用深灰色，alpha稍低
   const neutralColor = 0x3a3a3a; // 深灰色 (RGB: 58, 58, 58)
   const neutralAlpha = 0.6;
-  
+
   graphics.fillStyle(neutralColor, neutralAlpha);
   // ... 渲染逻辑
 }
@@ -57,14 +60,15 @@ private fillNeutralCountry(
 
 修复后的地图应该显示：
 
-| 国家类型 | 显示效果 | 颜色 |
-|---------|---------|------|
-| 被占领国家 | ✅ 彩色填充 | 指挥官颜色 |
-| 中立国家 | ✅ 深灰色填充 | #3a3a3a (alpha=0.6) |
-| 国家边框 | ✅ 灰色线条 | #666666 (width=2px) |
-| 南极洲 | 🚫 已过滤 | 不显示 |
+| 国家类型   | 显示效果      | 颜色                |
+| ---------- | ------------- | ------------------- |
+| 被占领国家 | ✅ 彩色填充   | 指挥官颜色          |
+| 中立国家   | ✅ 深灰色填充 | #3a3a3a (alpha=0.6) |
+| 国家边框   | ✅ 灰色线条   | #666666 (width=2px) |
+| 南极洲     | 🚫 已过滤     | 不显示              |
 
 **地图数据**：
+
 - 总国家数：~195个（已过滤南极洲）
 - 被占领：~47个（根据指挥官配置）
 - 中立国家：~148个
@@ -76,14 +80,17 @@ private fillNeutralCountry(
 清除缓存并强制刷新：
 
 **Chrome/Edge**：
+
 - Windows: `Ctrl + Shift + R`
 - Mac: `Cmd + Shift + R`
 
 **Firefox**：
+
 - Windows: `Ctrl + F5`
 - Mac: `Cmd + Shift + R`
 
 **Safari**：
+
 - Mac: `Cmd + Option + R`
 
 ### 步骤2：检查控制台日志
@@ -96,6 +103,7 @@ private fillNeutralCountry(
 ```
 
 **关键指标**：
+
 - ✅ `Rendered` 应该等于总国家数（195左右）
 - ✅ `culled` 应该为 0（已禁用裁剪）
 - ✅ `with owner` 应该约为 47
@@ -112,6 +120,7 @@ private fillNeutralCountry(
 - ✅ 无明显的"空白区域"
 
 **特别关注区域**：
+
 - 非洲：应该能看到所有非洲国家的轮廓
 - 欧洲：法国、德国、意大利等应该可见
 - 东南亚：泰国、越南、印尼等应该可见
@@ -149,11 +158,12 @@ const scene = game.scene.getScene('WorldScene');
 console.log({
   countries: scene.countries?.length,
   rendered: scene.mapRenderer?.getStats().countriesRendered,
-  territoryStates: scene.registry.get('territoryStates')?.size
+  territoryStates: scene.registry.get('territoryStates')?.size,
 });
 ```
 
 **预期输出**：
+
 ```javascript
 {
   countries: 195,
@@ -168,12 +178,12 @@ console.log({
 
 ### 修复文件
 
-| 文件 | 修改内容 | 行号 |
-|-----|---------|------|
-| `MapRenderer.ts` | 禁用视口裁剪 | 149 |
-| `MapRenderer.ts` | 添加中立国家填充逻辑 | 220-228 |
-| `MapRenderer.ts` | 新增 `fillNeutralCountry` 方法 | 369-396 |
-| `MapDataLoader.ts` | 过滤南极洲 | 84-97 |
+| 文件               | 修改内容                       | 行号    |
+| ------------------ | ------------------------------ | ------- |
+| `MapRenderer.ts`   | 禁用视口裁剪                   | 149     |
+| `MapRenderer.ts`   | 添加中立国家填充逻辑           | 220-228 |
+| `MapRenderer.ts`   | 新增 `fillNeutralCountry` 方法 | 369-396 |
+| `MapDataLoader.ts` | 过滤南极洲                     | 84-97   |
 
 ### 性能影响
 
@@ -201,11 +211,13 @@ console.log({
 ## 🎯 总结
 
 ✅ **问题已修复**：
+
 - 视口裁剪已禁用
 - 中立国家有灰色填充
 - 所有国家都会渲染
 
 ❓ **如果还是看不到**：
+
 - 执行硬刷新（Cmd+Shift+R）
 - 运行诊断脚本
 - 检查控制台日志

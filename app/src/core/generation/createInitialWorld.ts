@@ -11,7 +11,7 @@ export interface InitialWorldOptions {
 
 /**
  * 创建初始世界
- * 
+ *
  * 现在基于真实国家数据，将区域映射仅用于指挥官起始位置分配。
  * Territory.id 直接使用 Country.id（ISO数字码），彻底移除区域ID依赖。
  */
@@ -22,7 +22,9 @@ export function createInitialWorld(options: InitialWorldOptions) {
     throw new Error('createInitialWorld requires countries data');
   }
 
-  console.log(`🌍 Creating initial world with ${countries.length} countries, ${commanderCount} commanders`);
+  console.log(
+    `🌍 Creating initial world with ${countries.length} countries, ${commanderCount} commanders`
+  );
 
   // 从国家数据创建Territory（轻量级游戏逻辑层）
   const territories: Territory[] = countries.map((country) => ({
@@ -49,13 +51,9 @@ export function createInitialWorld(options: InitialWorldOptions) {
 
     // 根据指挥官的originRegion，从区域映射中获取国家ID列表
     const regionCountryIds = getCountryIdsByRegion(template.originRegion);
-    
+
     // 从这些国家中随机选择一个作为起始领土
-    const startTerritory = getRandomCountryFromRegion(
-      territories,
-      regionCountryIds,
-      seed + index
-    );
+    const startTerritory = getRandomCountryFromRegion(territories, regionCountryIds, seed + index);
 
     if (startTerritory) {
       startTerritory.ownerId = commanderId;
@@ -101,9 +99,10 @@ export function createInitialWorld(options: InitialWorldOptions) {
   }
 
   console.log(`✅ Created ${validCommanders.length} commanders with country-based territories`);
-  console.log(`   Sample commander territories:`, validCommanders.slice(0, 3).map(c => 
-    `${c.name}: ${c.controlledTerritories.join(', ')}`
-  ));
+  console.log(
+    `   Sample commander territories:`,
+    validCommanders.slice(0, 3).map((c) => `${c.name}: ${c.controlledTerritories.join(', ')}`)
+  );
 
   return {
     commanders: validCommanders,
@@ -120,15 +119,13 @@ function getRandomCountryFromRegion(
   seed: number
 ): Territory | undefined {
   // 过滤出该区域内未被占领的领土
-  const availableTerritories = territories.filter(
-    (t) => countryIds.includes(t.id) && !t.ownerId
-  );
+  const availableTerritories = territories.filter((t) => countryIds.includes(t.id) && !t.ownerId);
 
   if (availableTerritories.length === 0) {
     // 如果区域内所有国家都被占领，从所有未占领国家中选择
     const allAvailable = territories.filter((t) => !t.ownerId);
     if (allAvailable.length === 0) return undefined;
-    
+
     const rng = seedRandom(seed);
     const index = Math.floor(rng() * allAvailable.length);
     return allAvailable[index];
@@ -146,25 +143,34 @@ function inferTerrain(country: Country): Territory['terrain'] {
   // 简化版：根据纬度和地理位置推断
   const lat = country.centroid.lat;
   const lon = country.centroid.lon;
-  
+
   // 沙漠：北非、中东、中亚
-  if ((lat > 15 && lat < 40 && lon > -20 && lon < 60) || // 北非、中东
-      (lat > 35 && lat < 50 && lon > 50 && lon < 80)) {  // 中亚
+  if (
+    (lat > 15 && lat < 40 && lon > -20 && lon < 60) || // 北非、中东
+    (lat > 35 && lat < 50 && lon > 50 && lon < 80)
+  ) {
+    // 中亚
     return 'desert';
   }
-  
+
   // 山地：喜马拉雅、安第斯、落基山脉区域
-  if ((lat > 25 && lat < 40 && lon > 70 && lon < 100) ||  // 喜马拉雅
-      (lat > -50 && lat < -10 && lon > -80 && lon < -60)) { // 安第斯
+  if (
+    (lat > 25 && lat < 40 && lon > 70 && lon < 100) || // 喜马拉雅
+    (lat > -50 && lat < -10 && lon > -80 && lon < -60)
+  ) {
+    // 安第斯
     return 'mountain';
   }
-  
+
   // 森林：赤道附近、北方针叶林
-  if ((lat > -10 && lat < 10) ||  // 热带雨林
-      (lat > 50 && lat < 70)) {    // 北方针叶林
+  if (
+    (lat > -10 && lat < 10) || // 热带雨林
+    (lat > 50 && lat < 70)
+  ) {
+    // 北方针叶林
     return 'forest';
   }
-  
+
   // 默认：平原
   return 'plains';
 }

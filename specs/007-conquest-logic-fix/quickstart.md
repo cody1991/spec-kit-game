@@ -6,6 +6,7 @@
 ## 概述
 
 本功能修复领主占领逻辑的两个问题：
+
 1. 确保每个活跃领主在游戏开始时必须拥有至少一个国家
 2. 领主攻击目标 85% 概率选择相邻国家，15% 概率允许远程攻击
 
@@ -44,14 +45,14 @@ pnpm dev
 
 ## 修改文件清单
 
-| 文件 | 修改类型 | 说明 |
-|------|----------|------|
-| `app/src/core/generation/createInitialWorld.ts` | 修改 | 添加初始化验证和过滤 |
-| `app/src/core/simulation/systems/battleSystem.ts` | 修改 | 添加概率化目标选择 |
-| `app/src/config/conquest.config.ts` | 新增 | 占领逻辑配置 |
-| `tests/unit/createInitialWorld.spec.ts` | 新增/修改 | 初始化测试 |
-| `tests/unit/battleSystem.spec.ts` | 新增/修改 | 目标选择测试 |
-| `tests/integration/conquest-logic.spec.ts` | 新增 | 集成测试 |
+| 文件                                              | 修改类型  | 说明                 |
+| ------------------------------------------------- | --------- | -------------------- |
+| `app/src/core/generation/createInitialWorld.ts`   | 修改      | 添加初始化验证和过滤 |
+| `app/src/core/simulation/systems/battleSystem.ts` | 修改      | 添加概率化目标选择   |
+| `app/src/config/conquest.config.ts`               | 新增      | 占领逻辑配置         |
+| `tests/unit/createInitialWorld.spec.ts`           | 新增/修改 | 初始化测试           |
+| `tests/unit/battleSystem.spec.ts`                 | 新增/修改 | 目标选择测试         |
+| `tests/integration/conquest-logic.spec.ts`        | 新增      | 集成测试             |
 
 ## 验证方法
 
@@ -87,7 +88,7 @@ pnpm test tests/unit/battleSystem.spec.ts -t "target selection probability"
 ```typescript
 // app/src/config/conquest.config.ts
 export const CONQUEST_CONFIG: ConquestConfig = {
-  adjacentTargetProbability: 0.85,  // 修改此值
+  adjacentTargetProbability: 0.85, // 修改此值
   allowRemoteAttack: true,
 };
 ```

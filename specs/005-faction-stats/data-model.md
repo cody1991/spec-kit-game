@@ -12,18 +12,18 @@
 
 **属性**:
 
-| 属性名          | 类型     | 必需 | 描述                                               | 验证规则                     |
-| --------------- | -------- | ---- | -------------------------------------------------- | ---------------------------- |
-| commanderId     | string   | ✅    | 指挥官/势力唯一标识                                 | 非空，对应 Commander.id      |
-| commanderName   | string   | ✅    | 指挥官名称（冗余字段，优化显示性能）               | 非空                         |
-| status          | string   | ✅    | 势力状态：'active' \| 'eliminated'                 | 枚举值                       |
-| countryCount    | number   | ✅    | 占领的国家数量                                     | >= 0                         |
-| totalArea       | number   | ✅    | 国土总面积（平方公里）                             | >= 0                         |
-| wins            | number   | ✅    | 战胜次数（进攻成功导致领土变更）                   | >= 0                         |
-| losses          | number   | ✅    | 战败次数（防守失败导致失去领土）                   | >= 0                         |
-| winRate         | number   | ✅    | 胜率（0-1之间的浮点数，-1表示N/A）                 | -1 \| [0, 1]                 |
-| rank            | number   | ❌    | 当前排名（动态计算，不持久化）                     | >= 1                         |
-| lastUpdatedAt   | number   | ✅    | 最后更新时间戳（毫秒）                             | > 0                          |
+| 属性名        | 类型   | 必需 | 描述                                 | 验证规则                |
+| ------------- | ------ | ---- | ------------------------------------ | ----------------------- |
+| commanderId   | string | ✅   | 指挥官/势力唯一标识                  | 非空，对应 Commander.id |
+| commanderName | string | ✅   | 指挥官名称（冗余字段，优化显示性能） | 非空                    |
+| status        | string | ✅   | 势力状态：'active' \| 'eliminated'   | 枚举值                  |
+| countryCount  | number | ✅   | 占领的国家数量                       | >= 0                    |
+| totalArea     | number | ✅   | 国土总面积（平方公里）               | >= 0                    |
+| wins          | number | ✅   | 战胜次数（进攻成功导致领土变更）     | >= 0                    |
+| losses        | number | ✅   | 战败次数（防守失败导致失去领土）     | >= 0                    |
+| winRate       | number | ✅   | 胜率（0-1之间的浮点数，-1表示N/A）   | -1 \| [0, 1]            |
+| rank          | number | ❌   | 当前排名（动态计算，不持久化）       | >= 1                    |
+| lastUpdatedAt | number | ✅   | 最后更新时间戳（毫秒）               | > 0                     |
 
 **TypeScript 定义**:
 
@@ -68,20 +68,20 @@ function validateFactionStats(stats: FactionStatistics): boolean {
 
 **属性**:
 
-| 属性名       | 类型                  | 必需 | 描述                         | 验证规则       |
-| ------------ | --------------------- | ---- | ---------------------------- | -------------- |
-| factions     | FactionStatistics[]   | ✅    | 势力统计列表（已排序）       | 非空数组       |
-| timestamp    | number                | ✅    | 快照时间戳（毫秒）           | > 0            |
-| sortCriteria | LeaderboardSortCriteria | ✅    | 排序规则                     | 有效的排序规则 |
+| 属性名       | 类型                    | 必需 | 描述                   | 验证规则       |
+| ------------ | ----------------------- | ---- | ---------------------- | -------------- |
+| factions     | FactionStatistics[]     | ✅   | 势力统计列表（已排序） | 非空数组       |
+| timestamp    | number                  | ✅   | 快照时间戳（毫秒）     | > 0            |
+| sortCriteria | LeaderboardSortCriteria | ✅   | 排序规则               | 有效的排序规则 |
 
 **TypeScript 定义**:
 
 ```typescript
 type LeaderboardSortCriteria = {
-  primary: 'countryCount';      // 主排序：国家数量
-  primaryOrder: 'desc';          // 主排序：降序
-  secondary: 'totalArea';        // 次排序：国土面积
-  secondaryOrder: 'desc';        // 次排序：降序
+  primary: 'countryCount'; // 主排序：国家数量
+  primaryOrder: 'desc'; // 主排序：降序
+  secondary: 'totalArea'; // 次排序：国土面积
+  secondaryOrder: 'desc'; // 次排序：降序
 };
 
 interface Leaderboard {
@@ -95,17 +95,19 @@ interface Leaderboard {
 
 ```typescript
 function sortLeaderboard(stats: FactionStatistics[]): FactionStatistics[] {
-  return stats.sort((a, b) => {
-    // 主排序：国家数量降序
-    if (b.countryCount !== a.countryCount) {
-      return b.countryCount - a.countryCount;
-    }
-    // 次排序：国土面积降序
-    return b.totalArea - a.totalArea;
-  }).map((faction, index) => ({
-    ...faction,
-    rank: index + 1,
-  }));
+  return stats
+    .sort((a, b) => {
+      // 主排序：国家数量降序
+      if (b.countryCount !== a.countryCount) {
+        return b.countryCount - a.countryCount;
+      }
+      // 次排序：国土面积降序
+      return b.totalArea - a.totalArea;
+    })
+    .map((faction, index) => ({
+      ...faction,
+      rank: index + 1,
+    }));
 }
 ```
 
@@ -115,12 +117,12 @@ function sortLeaderboard(stats: FactionStatistics[]): FactionStatistics[] {
 
 **属性**:
 
-| 属性名      | 类型   | 必需 | 描述                          | 验证规则             |
-| ----------- | ------ | ---- | ----------------------------- | -------------------- |
-| attackerId  | string | ✅    | 进攻方指挥官ID                 | 非空                 |
-| defenderId  | string | ✅    | 防守方指挥官ID                 | 非空                 |
-| result      | string | ✅    | 战斗结果：'success' \| 'fail' | 枚举值               |
-| timestamp   | string | ✅    | 战斗时间戳（ISO 8601）         | 有效ISO日期格式      |
+| 属性名     | 类型   | 必需 | 描述                          | 验证规则        |
+| ---------- | ------ | ---- | ----------------------------- | --------------- |
+| attackerId | string | ✅   | 进攻方指挥官ID                | 非空            |
+| defenderId | string | ✅   | 防守方指挥官ID                | 非空            |
+| result     | string | ✅   | 战斗结果：'success' \| 'fail' | 枚举值          |
+| timestamp  | string | ✅   | 战斗时间戳（ISO 8601）        | 有效ISO日期格式 |
 
 **TypeScript 定义**:
 
@@ -139,19 +141,19 @@ interface BattleStatUpdate {
 function handleBattleStatUpdate(event: BattleStatUpdate): void {
   const attackerStats = factionStatsMap.get(event.attackerId);
   const defenderStats = factionStatsMap.get(event.defenderId);
-  
+
   if (!attackerStats || !defenderStats) return;
-  
+
   if (event.result === 'success') {
     attackerStats.wins += 1;
     defenderStats.losses += 1;
   }
   // 进攻失败不计入任何统计
-  
+
   // 重新计算胜率
   attackerStats.winRate = calculateWinRate(attackerStats.wins, attackerStats.losses);
   defenderStats.winRate = calculateWinRate(defenderStats.wins, defenderStats.losses);
-  
+
   // 更新时间戳
   const now = Date.now();
   attackerStats.lastUpdatedAt = now;
@@ -170,12 +172,12 @@ function calculateWinRate(wins: number, losses: number): number {
 
 **属性**:
 
-| 属性名          | 类型   | 必需 | 描述                     | 验证规则  |
-| --------------- | ------ | ---- | ------------------------ | --------- |
-| commanderId     | string | ✅    | 势力ID                    | 非空      |
-| countryId       | string | ✅    | 国家ID                    | 非空      |
-| action          | string | ✅    | 操作：'gain' \| 'lose'   | 枚举值    |
-| countryArea     | number | ✅    | 国家面积（平方公里）     | >= 0      |
+| 属性名      | 类型   | 必需 | 描述                   | 验证规则 |
+| ----------- | ------ | ---- | ---------------------- | -------- |
+| commanderId | string | ✅   | 势力ID                 | 非空     |
+| countryId   | string | ✅   | 国家ID                 | 非空     |
+| action      | string | ✅   | 操作：'gain' \| 'lose' | 枚举值   |
+| countryArea | number | ✅   | 国家面积（平方公里）   | >= 0     |
 
 **TypeScript 定义**:
 
@@ -194,7 +196,7 @@ interface TerritoryStatUpdate {
 function handleTerritoryStatUpdate(event: TerritoryStatUpdate): void {
   const stats = factionStatsMap.get(event.commanderId);
   if (!stats) return;
-  
+
   if (event.action === 'gain') {
     stats.countryCount += 1;
     stats.totalArea += event.countryArea;
@@ -202,14 +204,14 @@ function handleTerritoryStatUpdate(event: TerritoryStatUpdate): void {
     stats.countryCount -= 1;
     stats.totalArea -= event.countryArea;
   }
-  
+
   // 确保非负
   stats.countryCount = Math.max(0, stats.countryCount);
   stats.totalArea = Math.max(0, stats.totalArea);
-  
+
   // 更新时间戳
   stats.lastUpdatedAt = Date.now();
-  
+
   // 检查是否被淘汰
   if (stats.countryCount === 0 && stats.status === 'active') {
     stats.status = 'eliminated';
@@ -389,20 +391,20 @@ function assertInvariants(stats: FactionStatistics): void {
   console.assert(stats.totalArea >= 0, 'totalArea must be non-negative');
   console.assert(stats.wins >= 0, 'wins must be non-negative');
   console.assert(stats.losses >= 0, 'losses must be non-negative');
-  
+
   // 2. 胜率范围
   console.assert(
     stats.winRate === -1 || (stats.winRate >= 0 && stats.winRate <= 1),
     'winRate must be -1 or in range [0, 1]'
   );
-  
+
   // 3. 胜率与计数一致性
   const expectedWinRate = calculateWinRate(stats.wins, stats.losses);
   if (expectedWinRate !== -1) {
     const diff = Math.abs(stats.winRate - expectedWinRate);
     console.assert(diff < 0.001, 'winRate calculation mismatch');
   }
-  
+
   // 4. 淘汰状态一致性
   if (stats.status === 'eliminated') {
     console.assert(stats.countryCount === 0, 'eliminated faction must have 0 countries');
@@ -420,13 +422,13 @@ function assertInvariants(stats: FactionStatistics): void {
 
 ### 计算复杂度
 
-| 操作                 | 时间复杂度 | 说明                               |
-| -------------------- | ---------- | ---------------------------------- |
-| 初始化统计           | O(n)       | n为势力数                          |
-| 更新单个势力战斗统计 | O(1)       | Map查找+计数器更新                 |
-| 更新单个势力领土统计 | O(1)       | Map查找+面积累加                   |
-| 排序排行榜           | O(n log n) | 标准排序，n为势力数                |
-| 渲染排行榜           | O(n)       | 渲染n个列表项                      |
+| 操作                 | 时间复杂度 | 说明                |
+| -------------------- | ---------- | ------------------- |
+| 初始化统计           | O(n)       | n为势力数           |
+| 更新单个势力战斗统计 | O(1)       | Map查找+计数器更新  |
+| 更新单个势力领土统计 | O(1)       | Map查找+面积累加    |
+| 排序排行榜           | O(n log n) | 标准排序，n为势力数 |
+| 渲染排行榜           | O(n)       | 渲染n个列表项       |
 
 ### 优化策略
 
@@ -446,19 +448,19 @@ function initializeFactionStats(
   countries: Country[]
 ): Map<string, FactionStatistics> {
   const statsMap = new Map<string, FactionStatistics>();
-  
-  commanders.forEach(commander => {
+
+  commanders.forEach((commander) => {
     // 计算领土统计
     const ownedCountries = commander.controlledTerritories
-      .map(territoryId => {
-        const territory = territories.find(t => t.id === territoryId);
-        return countries.find(c => c.id === territory?.id);
+      .map((territoryId) => {
+        const territory = territories.find((t) => t.id === territoryId);
+        return countries.find((c) => c.id === territory?.id);
       })
-      .filter(c => c !== undefined);
-    
+      .filter((c) => c !== undefined);
+
     const countryCount = ownedCountries.length;
     const totalArea = ownedCountries.reduce((sum, c) => sum + c.area, 0);
-    
+
     // 初始化战斗统计为0（无历史数据）
     statsMap.set(commander.id, {
       commanderId: commander.id,
@@ -472,7 +474,7 @@ function initializeFactionStats(
       lastUpdatedAt: Date.now(),
     });
   });
-  
+
   return statsMap;
 }
 ```

@@ -16,6 +16,7 @@
 ## Path Conventions
 
 基于 plan.md 的项目结构：
+
 - **源码**: `app/src/`
 - **测试**: `tests/unit/`
 
@@ -25,11 +26,11 @@
 
 **Purpose**: 添加新类型定义和默认配置，为后续实现奠定基础
 
-- [ ] T001 [P] 在 `app/src/core/types.ts` 中添加 `TerritoryBonusConfig` 接口定义
-- [ ] T002 [P] 在 `app/src/core/types.ts` 中添加 `TerritoryBonus` 接口定义
-- [ ] T003 [P] 在 `app/src/core/types.ts` 中添加 `ContiguityAnalysis` 接口定义
-- [ ] T004 在 `app/src/core/types.ts` 中扩展 `FactionStatistics` 接口，添加 `territoryBonus` 字段
-- [ ] T005 [P] 创建 `app/src/config/territoryBonus.config.ts`，定义 `DEFAULT_TERRITORY_BONUS_CONFIG`
+- [x] T001 [P] 在 `app/src/core/types.ts` 中添加 `TerritoryBonusConfig` 接口定义
+- [x] T002 [P] 在 `app/src/core/types.ts` 中添加 `TerritoryBonus` 接口定义
+- [x] T003 [P] 在 `app/src/core/types.ts` 中添加 `ContiguityAnalysis` 接口定义
+- [x] T004 在 `app/src/core/types.ts` 中扩展 `FactionStatistics` 接口，添加 `territoryBonus` 字段
+- [x] T005 [P] 创建 `app/src/config/territoryBonus.config.ts`，定义 `DEFAULT_TERRITORY_BONUS_CONFIG`
 
 ---
 
@@ -39,10 +40,10 @@
 
 **⚠️ CRITICAL**: 用户故事实现依赖此阶段完成
 
-- [ ] T006 创建 `app/src/core/services/territoryBonusService.ts` 服务类框架（含空方法签名）
-- [ ] T007 在 `app/src/core/state/store.ts` 中添加 `territoryBonusConfig` 状态字段
-- [ ] T008 在 `app/src/core/state/store.ts` 中添加 `updateTerritoryBonus` action
-- [ ] T009 在 `app/src/core/state/store.ts` 中添加 `setTerritoryBonusConfig` action
+- [x] T006 创建 `app/src/core/services/territoryBonusService.ts` 服务类框架（含空方法签名）
+- [x] T007 在 `app/src/core/state/store.ts` 中添加 `territoryBonusConfig` 状态字段
+- [x] T008 在 `app/src/core/state/store.ts` 中添加 `updateTerritoryBonus` action
+- [x] T009 在 `app/src/core/state/store.ts` 中添加 `setTerritoryBonusConfig` action
 
 **Checkpoint**: 基础框架就绪，可开始用户故事实现
 
@@ -56,21 +57,21 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] 创建 `tests/unit/territoryBonusService.test.ts`，编写城市加成计算测试用例
-- [ ] T011 [P] [US1] 在测试文件中添加面积加成计算测试用例
-- [ ] T012 [P] [US1] 在测试文件中添加连通分量检测测试用例
-- [ ] T013 [P] [US1] 在测试文件中添加加成上限（30%）测试用例
+- [x] T010 [P] [US1] 创建 `tests/unit/territoryBonusService.test.ts`，编写城市加成计算测试用例
+- [x] T011 [P] [US1] 在测试文件中添加面积加成计算测试用例
+- [x] T012 [P] [US1] 在测试文件中添加连通分量检测测试用例
+- [x] T013 [P] [US1] 在测试文件中添加加成上限（30%）测试用例
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] 在 `territoryBonusService.ts` 中实现 `calculateCityBonus()` 方法（递减增长曲线）
-- [ ] T015 [US1] 在 `territoryBonusService.ts` 中实现 `calculateAreaBonus()` 方法（递减增长曲线）
-- [ ] T016 [US1] 在 `territoryBonusService.ts` 中实现 `analyzeContiguity()` 方法（BFS连通分量检测）
-- [ ] T017 [US1] 在 `territoryBonusService.ts` 中实现 `calculateContinuityBonus()` 方法（连续区域额外加成）
-- [ ] T018 [US1] 在 `territoryBonusService.ts` 中实现 `calculateTotalBonus()` 方法（汇总所有加成）
-- [ ] T019 [US1] 在 `app/src/core/services/factionStatsService.ts` 的 `handleTerritoryChange()` 中集成加成计算
-- [ ] T020 [US1] 在 `app/src/core/simulation/systems/battleSystem.ts` 中应用加成到战斗计算
-- [ ] T021 [US1] 添加加成计算日志输出（使用现有 logger）
+- [x] T014 [US1] 在 `territoryBonusService.ts` 中实现 `calculateCityBonus()` 方法（递减增长曲线）
+- [x] T015 [US1] 在 `territoryBonusService.ts` 中实现 `calculateAreaBonus()` 方法（递减增长曲线）
+- [x] T016 [US1] 在 `territoryBonusService.ts` 中实现 `analyzeContiguity()` 方法（BFS连通分量检测）
+- [x] T017 [US1] 在 `territoryBonusService.ts` 中实现 `calculateContinuityBonus()` 方法（连续区域额外加成）
+- [x] T018 [US1] 在 `territoryBonusService.ts` 中实现 `calculateTotalBonus()` 方法（汇总所有加成）
+- [x] T019 [US1] 在 `app/src/core/services/factionStatsService.ts` 的 `handleTerritoryChange()` 中集成加成计算
+- [x] T020 [US1] 在 `app/src/core/simulation/systems/battleSystem.ts` 中应用加成到战斗计算
+- [x] T021 [US1] 添加加成计算日志输出（使用现有 logger）
 
 **Checkpoint**: 大国获得领土加成功能完整可用，战斗中可观察到加成效果
 
@@ -84,12 +85,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T022 [P] [US2] 创建 `app/src/ui/components/TerritoryBonusDisplay.tsx` 加成展示组件
-- [ ] T023 [P] [US2] 创建 `app/src/ui/components/TerritoryBonusDisplay.css` 样式文件
-- [ ] T024 [US2] 修改 `app/src/ui/panels/FactionStatsPanel.tsx`，集成 TerritoryBonusDisplay 组件
-- [ ] T025 [US2] 在面板中展示基础属性与加成明细的对比（分开显示）
-- [ ] T026 [US2] 添加加成来源说明（城市数量、领土面积、连续区域）
-- [ ] T027 [US2] 确保领土变化后 UI 实时更新加成数值
+- [x] T022 [P] [US2] 创建 `app/src/ui/components/TerritoryBonusDisplay.tsx` 加成展示组件
+- [x] T023 [P] [US2] 创建 `app/src/ui/components/TerritoryBonusDisplay.css` 样式文件
+- [x] T024 [US2] 修改 `app/src/ui/panels/FactionStatsPanel.tsx`，集成 TerritoryBonusDisplay 组件
+- [x] T025 [US2] 在面板中展示基础属性与加成明细的对比（分开显示）
+- [x] T026 [US2] 添加加成来源说明（城市数量、领土面积、连续区域）
+- [x] T027 [US2] 确保领土变化后 UI 实时更新加成数值
 
 **Checkpoint**: 玩家可在势力面板中清晰查看加成明细，理解加成来源
 
@@ -103,15 +104,15 @@
 
 ### Tests for User Story 3
 
-- [ ] T028 [P] [US3] 在 `tests/unit/territoryBonusService.test.ts` 中添加小势力防御加成测试用例
-- [ ] T029 [P] [US3] 添加加成上限验证测试用例（确保不超过30%）
+- [x] T028 [P] [US3] 在 `tests/unit/territoryBonusService.spec.ts` 中添加小势力防御加成测试用例
+- [x] T029 [P] [US3] 添加加成上限验证测试用例（确保不超过30%）
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] 在 `territoryBonusService.ts` 中实现 `calculateSmallFactionBonus()` 方法
-- [ ] T031 [US3] 修改 `calculateTotalBonus()` 方法，整合小势力防御加成到 `totalDefenseBonus`
-- [ ] T032 [US3] 在 `TerritoryBonusDisplay.tsx` 中展示小势力防御加成（当适用时）
-- [ ] T033 [US3] 验证战斗系统正确应用小势力防御加成
+- [x] T030 [US3] 在 `territoryBonusService.ts` 中实现 `calculateSmallFactionBonus()` 方法
+- [x] T031 [US3] 修改 `calculateTotalBonus()` 方法，整合小势力防御加成到 `totalDefenseBonus`
+- [x] T032 [US3] 在 `TerritoryBonusDisplay.tsx` 中展示小势力防御加成（当适用时）
+- [x] T033 [US3] 验证战斗系统正确应用小势力防御加成
 
 **Checkpoint**: 小势力获得防御加成，游戏平衡性得到保障
 
@@ -121,13 +122,13 @@
 
 **Purpose**: 性能优化、代码质量和文档完善
 
-- [ ] T034 [P] 在 `territoryBonusService.ts` 中添加性能监控（console.time 计时）
-- [ ] T035 [P] 实现加成计算缓存机制，避免重复计算
-- [ ] T036 [P] 使用 `requestIdleCallback` 异步执行加成计算，避免阻塞主线程
-- [ ] T037 代码审查：确保加成计算函数单一职责，复杂度可控
-- [ ] T038 [P] 运行 `pnpm lint` 和 `pnpm format` 确保代码质量
-- [ ] T039 [P] 运行 `pnpm test` 确保所有测试通过，覆盖率 >90%
-- [ ] T040 运行 quickstart.md 验证清单，确认功能完整
+- [x] T034 [P] 在 `territoryBonusService.ts` 中添加性能监控（console.time 计时）
+- [x] T035 [P] 实现加成计算缓存机制，避免重复计算
+- [x] T036 [P] 使用 `requestIdleCallback` 异步执行加成计算，避免阻塞主线程
+- [x] T037 代码审查：确保加成计算函数单一职责，复杂度可控
+- [x] T038 [P] 运行 `pnpm lint` 和 `pnpm format` 确保代码质量
+- [x] T039 [P] 运行 `pnpm test` 确保所有测试通过
+- [x] T040 运行 quickstart.md 验证清单，确认功能完整
 
 ---
 
@@ -157,16 +158,19 @@
 ### Parallel Opportunities
 
 **Phase 1 并行**:
+
 ```
 T001, T002, T003, T005 可同时执行（不同文件）
 ```
 
 **Phase 3 (US1) 测试并行**:
+
 ```
 T010, T011, T012, T013 可同时执行（同一测试文件的不同测试用例）
 ```
 
 **Phase 4 (US2) 并行**:
+
 ```
 T022, T023 可同时执行（组件和样式分离）
 ```

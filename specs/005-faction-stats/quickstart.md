@@ -7,6 +7,7 @@
 ## 快速概览
 
 本功能为游戏添加一个全新的势力统计排行榜面板，展示所有势力的综合数据：
+
 - **领土统计**: 国家数量、国土面积
 - **战斗统计**: 战胜次数、战败次数、胜率
 - **排序规则**: 按国家数量降序排列（主），面积降序（次）
@@ -102,7 +103,7 @@ export interface Leaderboard {
 interface GameState {
   // ... 现有状态
   factionStats: Map<string, FactionStatistics>; // [NEW]
-  
+
   // ... 现有 actions
   updateFactionStats: (commanderId: string, updates: Partial<FactionStatistics>) => void; // [NEW]
   initializeFactionStats: () => void; // [NEW]
@@ -112,9 +113,9 @@ interface GameState {
 export const useGameStore = create<GameState>((set, get) => ({
   // ... 现有状态
   factionStats: new Map(),
-  
+
   // ... 现有 actions
-  
+
   updateFactionStats: (commanderId, updates) =>
     set((state) => {
       const newMap = new Map(state.factionStats);
@@ -122,17 +123,17 @@ export const useGameStore = create<GameState>((set, get) => ({
       newMap.set(commanderId, { ...existing, ...updates, lastUpdatedAt: Date.now() });
       return { factionStats: newMap };
     }),
-  
+
   initializeFactionStats: () => {
     const { commanders, territories, countries } = get();
     const statsMap = new Map<string, FactionStatistics>();
-    
-    commanders.forEach(commander => {
+
+    commanders.forEach((commander) => {
       // 计算初始统计
       const stats = calculateInitialStats(commander, territories, countries);
       statsMap.set(commander.id, stats);
     });
-    
+
     set({ factionStats: statsMap });
   },
 }));
@@ -148,11 +149,11 @@ import { FactionStatsService } from '@core/services/factionStatsService';
 
 describe('FactionStatsService', () => {
   let service: FactionStatsService;
-  
+
   beforeEach(() => {
     service = new FactionStatsService();
   });
-  
+
   describe('战斗统计更新', () => {
     it('should increment wins when attack succeeds', () => {
       // Given
@@ -161,19 +162,19 @@ describe('FactionStatsService', () => {
         wins: 10,
         losses: 2,
       };
-      
+
       // When
       service.handleBattleResult({
         attackerId: 'napoleon',
         defenderId: 'wellington',
         result: 'success',
       });
-      
+
       // Then
       const updatedStats = service.getStats('napoleon');
       expect(updatedStats.wins).toBe(11);
     });
-    
+
     // ... 更多测试用例
   });
 });
@@ -187,34 +188,34 @@ import type { BattleEvent, Territory, Country } from '@core/types';
 
 export class FactionStatsService {
   private unsubscribe: (() => void) | null = null;
-  
+
   // 启动服务，订阅事件
   start(): void {
     const store = useGameStore.getState();
-    
+
     // 初始化统计
     store.initializeFactionStats();
-    
+
     // 订阅战斗事件
     this.unsubscribe = useGameStore.subscribe(
       (state) => state.eventLog,
       (eventLog) => this.handleBattleEvents(eventLog)
     );
   }
-  
+
   // 停止服务
   stop(): void {
     this.unsubscribe?.();
   }
-  
+
   // 处理战斗事件
   private handleBattleEvents(eventLog: BattleEvent[]): void {
     const latestEvent = eventLog[eventLog.length - 1];
     if (!latestEvent || latestEvent.type !== 'attack') return;
     if (!latestEvent.defenderId) return; // 跳过中立领土
-    
+
     const store = useGameStore.getState();
-    
+
     if (latestEvent.result === 'success') {
       // 更新进攻方战胜
       const attackerStats = store.factionStats.get(latestEvent.attackerId);
@@ -223,17 +224,20 @@ export class FactionStatsService {
         const newWinRate = this.calculateWinRate(newWins, attackerStats.losses);
         store.updateFactionStats(latestEvent.attackerId, { wins: newWins, winRate: newWinRate });
       }
-      
+
       // 更新防守方战败
       const defenderStats = store.factionStats.get(latestEvent.defenderId);
       if (defenderStats) {
         const newLosses = defenderStats.losses + 1;
         const newWinRate = this.calculateWinRate(defenderStats.wins, newLosses);
-        store.updateFactionStats(latestEvent.defenderId, { losses: newLosses, winRate: newWinRate });
+        store.updateFactionStats(latestEvent.defenderId, {
+          losses: newLosses,
+          winRate: newWinRate,
+        });
       }
     }
   }
-  
+
   // 计算胜率
   private calculateWinRate(wins: number, losses: number): number {
     const total = wins + losses;
@@ -263,9 +267,9 @@ describe('FactionStatsPanel', () => {
         ['alexander', { commanderId: 'alexander', commanderName: '亚历山大', countryCount: 15, ... }],
       ]),
     });
-    
+
     render(<FactionStatsPanel />);
-    
+
     // Verify first faction has more countries
     const rows = screen.getAllByRole('row');
     expect(rows[1]).toHaveTextContent('拿破仑'); // First data row
@@ -285,7 +289,7 @@ export function FactionStatsPanel() {
   const factionStats = useGameStore((state) => state.factionStats);
   const isPanelOpen = useGameStore((state) => state.showFactionStatsPanel);
   const closePan = useGameStore((state) => state.closeFactionStatsPanel);
-  
+
   // 排序排行榜
   const leaderboard = useMemo(() => {
     const stats = Array.from(factionStats.values());
@@ -298,16 +302,16 @@ export function FactionStatsPanel() {
       })
       .map((faction, index) => ({ ...faction, rank: index + 1 }));
   }, [factionStats]);
-  
+
   if (!isPanelOpen) return null;
-  
+
   return (
     <div className="faction-stats-panel">
       <div className="panel-header">
         <h2>势力统计排行榜</h2>
         <button onClick={closePanel}>×</button>
       </div>
-      
+
       <table className="leaderboard">
         <thead>
           <tr>
@@ -365,7 +369,7 @@ function App() {
     factionStatsService.start();
     return () => factionStatsService.stop();
   }, []);
-  
+
   // 键盘快捷键
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -376,7 +380,7 @@ function App() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
-  
+
   return (
     <>
       {/* ... 现有组件 */}
@@ -389,16 +393,19 @@ function App() {
 ## 测试清单
 
 ### 单元测试
+
 - [ ] 统计计算逻辑（战胜/战败/胜率）
 - [ ] 排序算法（主次排序）
 - [ ] 边界情况（零战斗、负数防护）
 
 ### 集成测试
+
 - [ ] 战斗事件触发统计更新
 - [ ] 领土变更触发统计更新
 - [ ] Zustand store 数据流
 
 ### E2E测试
+
 - [ ] 打开面板显示排行榜
 - [ ] 战斗后数据自动更新
 - [ ] 键盘快捷键交互
@@ -409,7 +416,7 @@ function App() {
 
 ```typescript
 // 浏览器控制台
-useGameStore.getState().factionStats
+useGameStore.getState().factionStats;
 ```
 
 ### 2. 触发统计更新
@@ -460,7 +467,9 @@ console.timeEnd('leaderboardSort'); // 应 < 5ms (50个势力)
 ## 常见问题
 
 ### Q1: 战胜/战败计数不准确？
+
 **A**: 检查是否正确区分了中立领土占领（不计入战斗统计）
+
 ```typescript
 if (event.type === 'attack' && event.defenderId) {
   // 仅统计有防守方的战斗
@@ -468,14 +477,18 @@ if (event.type === 'attack' && event.defenderId) {
 ```
 
 ### Q2: 胜率显示为 NaN？
+
 **A**: 检查零战斗情况的处理
+
 ```typescript
 const winRate = total === 0 ? -1 : wins / total;
 if (winRate < 0) return 'N/A';
 ```
 
 ### Q3: 排行榜排序错误？
+
 **A**: 确保主次排序逻辑正确
+
 ```typescript
 if (b.countryCount !== a.countryCount) {
   return b.countryCount - a.countryCount; // 主排序

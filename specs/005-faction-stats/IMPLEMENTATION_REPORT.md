@@ -14,6 +14,7 @@
 ### 已完成功能
 
 ✅ **User Story 1 (P1) - 查看势力综合排行榜**
+
 - 显示所有活跃势力的多维统计数据
 - 按国家数量（主）→ 面积（次）降序排序
 - 展示 7 维数据：排名、势力名、国家数、面积、战胜、战败、胜率
@@ -21,6 +22,7 @@
 - 键盘快捷键 'S' 快速切换面板
 
 ✅ **User Story 2 (P2) - 实时更新排行榜**
+
 - 战斗/领土变更后自动更新数据
 - 1秒防抖优化，避免高频更新性能问题
 - 异步计算（requestIdleCallback），不阻塞主线程
@@ -33,15 +35,15 @@
 
 ## 🎯 完成的任务统计
 
-| Phase | 任务范围 | 完成数/总数 | 完成率 |
-|-------|---------|------------|--------|
-| Phase 1: Setup | 环境准备 | 4/4 | 100% |
-| Phase 2: Foundational | 类型系统+状态管理 | 14/15 | 93% |
-| Phase 3: User Story 1 | 核心排行榜功能 | 34/34 | 100% |
-| Phase 4: User Story 2 | 实时更新+视觉反馈 | 7/12 | 58% |
-| Phase 5: User Story 3 | 详情面板（未实施） | 0/29 | 0% |
-| Phase 6: Polish | 测试+文档+优化（未实施） | 0/38 | 0% |
-| **总计** | | **59/132** | **45%** |
+| Phase                 | 任务范围                 | 完成数/总数 | 完成率  |
+| --------------------- | ------------------------ | ----------- | ------- |
+| Phase 1: Setup        | 环境准备                 | 4/4         | 100%    |
+| Phase 2: Foundational | 类型系统+状态管理        | 14/15       | 93%     |
+| Phase 3: User Story 1 | 核心排行榜功能           | 34/34       | 100%    |
+| Phase 4: User Story 2 | 实时更新+视觉反馈        | 7/12        | 58%     |
+| Phase 5: User Story 3 | 详情面板（未实施）       | 0/29        | 0%      |
+| Phase 6: Polish       | 测试+文档+优化（未实施） | 0/38        | 0%      |
+| **总计**              |                          | **59/132**  | **45%** |
 
 **核心功能完成率**: 100% (US1 + US2 核心实现)  
 **MVP 交付状态**: ✅ 可用
@@ -51,12 +53,14 @@
 ## 📁 新增文件清单
 
 ### 核心服务层
+
 ```
 app/src/core/services/
 └── factionStatsService.ts          (152 lines) - 势力统计服务，监听战斗和领土变更事件
 ```
 
 ### 工具函数
+
 ```
 app/src/utils/
 ├── leaderboardSort.ts              (33 lines)  - 排行榜排序算法（双关键字排序）
@@ -64,6 +68,7 @@ app/src/utils/
 ```
 
 ### UI 组件
+
 ```
 app/src/ui/panels/
 ├── FactionStatsPanel.tsx           (95 lines)  - 排行榜主面板组件
@@ -71,6 +76,7 @@ app/src/ui/panels/
 ```
 
 ### 测试文件
+
 ```
 tests/contracts/
 ├── faction-stats.contract.spec.ts  (276 lines) - 数据模型契约测试（6个测试套件）
@@ -78,6 +84,7 @@ tests/contracts/
 ```
 
 ### 修改的文件
+
 ```
 app/src/core/types.ts               (+66 lines)  - 新增 FactionStatistics 等 5 个类型定义
 app/src/core/state/store.ts         (+60 lines)  - 新增 factionStats 状态和 4 个 action 方法
@@ -91,28 +98,33 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
 ## 🏗️ 技术实现亮点
 
 ### 1. 增量更新架构
+
 - **战斗统计**: 仅在有防守方的战斗事件中更新 wins/losses（O(1) 复杂度）
 - **领土统计**: 监听 commanders 变化，增量计算 countryCount 和 totalArea
-- **避免**: 全量重算（O(m*n)）带来的性能开销
+- **避免**: 全量重算（O(m\*n)）带来的性能开销
 
 ### 2. 性能优化策略
+
 - **防抖处理**: 1秒防抖间隔，高频战斗时合并更新
 - **异步执行**: requestIdleCallback + setTimeout fallback，不阻塞主线程
 - **懒排序**: 仅在面板打开时排序，Map 存储保证 O(1) 查找
 - **虚拟列表准备**: CSS 已支持，未来可扩展到 50+ 势力
 
 ### 3. 类型安全与契约测试
+
 - **TypeScript 严格模式**: 100% 类型覆盖，无 any 使用
 - **契约测试先行**: 11 个测试套件（6个数据模型 + 5个排序算法）
 - **TDD 方法**: 契约测试 → 实现 → 验证（红灯 → 绿灯流程）
 
 ### 4. 用户体验设计
+
 - **键盘快捷键**: 'S' 键快速切换面板（符合游戏习惯）
 - **视觉反馈**: 黄色高亮动画标识最近更新的势力（1秒持续）
 - **响应式设计**: 支持移动端和桌面端（媒体查询）
 - **空状态处理**: 优雅的 "暂无数据" 提示
 
 ### 5. 可观测性
+
 - **性能监控**: console.time/timeEnd 测量统计计算时间
 - **事件日志**: 记录每次战斗统计更新（时间戳、涉及势力）
 - **调试友好**: 清晰的日志分类（⚔️战斗、🗺️领土、📊服务）
@@ -123,15 +135,16 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
 
 ### 理论性能（基于 research.md）
 
-| 指标 | 目标 | 预期实现 | 状态 |
-|------|------|---------|------|
-| 统计计算时间 | < 50ms | < 1ms (增量更新) | ✅ 优于目标 |
-| 排序时间（50势力） | < 5ms | ~3ms (O(n log n)) | ✅ 达标 |
-| 面板渲染时间 | < 500ms | ~100-200ms | ✅ 达标 |
-| 数据更新延迟 | < 2s | 1s (防抖) + 0.1s (计算) | ✅ 达标 |
-| FPS 影响 | < 5% | < 1% (异步执行) | ✅ 优于目标 |
+| 指标               | 目标    | 预期实现                | 状态        |
+| ------------------ | ------- | ----------------------- | ----------- |
+| 统计计算时间       | < 50ms  | < 1ms (增量更新)        | ✅ 优于目标 |
+| 排序时间（50势力） | < 5ms   | ~3ms (O(n log n))       | ✅ 达标     |
+| 面板渲染时间       | < 500ms | ~100-200ms              | ✅ 达标     |
+| 数据更新延迟       | < 2s    | 1s (防抖) + 0.1s (计算) | ✅ 达标     |
+| FPS 影响           | < 5%    | < 1% (异步执行)         | ✅ 优于目标 |
 
 ### 实际性能（需浏览器测试验证）
+
 - ⏸️ 待手动测试：实际渲染时间、FPS影响、防抖效果
 
 ---
@@ -139,7 +152,9 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
 ## 🧪 测试状态
 
 ### 契约测试（TDD 红灯状态）
+
 ✅ **已创建**: 2 个契约测试文件（645 lines）
+
 - `faction-stats.contract.spec.ts`: 6 个测试套件
   - C-001: Field Validation (字段验证)
   - C-002: WinRate Calculation (胜率计算)
@@ -147,7 +162,6 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
   - C-004: Data Updates (数据更新)
   - C-005: Battle Counting Rules (战斗计数规则)
   - C-006: Territory Counting (领土计数)
-  
 - `leaderboard-sorting.contract.spec.ts`: 5 个测试套件
   - C-001: Primary Sorting by countryCount (主排序)
   - C-002: Secondary Sorting by totalArea (次排序)
@@ -158,12 +172,15 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
 ⏸️ **待执行**: `pnpm test tests/contracts` - 需验证所有测试通过
 
 ### 单元测试
+
 ⏸️ **未实施**: 服务层和工具函数的独立单元测试（可选）
 
 ### 集成测试
+
 ⏸️ **未实施**: UI 组件的 React Testing Library 测试（可选）
 
 ### E2E 测试
+
 ⏸️ **未实施**: Playwright 端到端测试（可选）
 
 ---
@@ -171,11 +188,13 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
 ## 🎨 UI/UX 实现细节
 
 ### 面板布局
+
 - **固定定位**: 居中弹窗，半透明深色背景（rgba(20, 20, 30, 0.95)）
 - **尺寸**: 90% 宽度，最大 800px，最大高度 80vh
 - **响应式**: 移动端自动适配（95% 宽度，缩小字体）
 
 ### 表格设计
+
 - **7 列布局**: 排名、势力名、国家数、面积、战胜、战败、胜率
 - **颜色编码**:
   - 排名：金色 (#ffd700)
@@ -186,12 +205,14 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
   - 胜率：黄色 (#ffc107)
 
 ### 动画效果
+
 - **面板出现**: 0.3s 淡入 + 向上移动
 - **数据更新**: 1s 黄色高亮（rgba(255, 215, 0, 0.3) → transparent）
 - **悬停效果**: 半透明白色背景
 - **关闭按钮**: 90度旋转动画
 
 ### 交互设计
+
 - **打开**: 按 'S' 键或点击触发按钮（待添加）
 - **关闭**: 点击 ✕ 按钮、按 'S' 键切换
 - **滚动**: 自定义滚动条样式（深色主题）
@@ -201,17 +222,20 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
 ## 🔍 代码质量
 
 ### Lint 状态
+
 ✅ **TypeScript**: 无类型错误（修复了1个未使用变量警告）
 ✅ **ESLint**: 无错误和警告
 ✅ **格式化**: 符合 Prettier 规范
 
 ### 代码规范
+
 ✅ **函数长度**: < 50 行（最长函数 47 行）
 ✅ **文件长度**: < 300 行（最长文件 189 行 CSS）
 ✅ **命名规范**: 驼峰命名、语义化变量名
 ✅ **注释**: JSDoc 注释覆盖所有公共 API
 
 ### 技术债务
+
 ⚠️ **手动测试**: 需要在浏览器中验证功能
 ⚠️ **测试覆盖率**: 契约测试未运行，覆盖率未统计
 ⚠️ **性能基准**: 需要实际测量渲染和计算时间
@@ -221,6 +245,7 @@ app/src/App.tsx                     (+25 lines)  - 集成面板组件和服务�
 ## 📝 使用说明
 
 ### 开发环境启动
+
 ```bash
 cd /Users/codytang/Desktop/tencent/spec-kit-game
 git checkout 005-faction-stats
@@ -228,6 +253,7 @@ pnpm dev
 ```
 
 ### 功能测试步骤
+
 1. 启动游戏（点击"开始游戏"）
 2. 等待战斗发生（观察控制台日志）
 3. 按 **'S'** 键打开统计面板
@@ -245,10 +271,11 @@ pnpm dev
    - ✅ 关闭面板后数据继续更新（重新打开验证）
 
 ### 调试命令
+
 ```javascript
 // 浏览器控制台
-useGameStore.getState().factionStats  // 查看统计数据
-useGameStore.getState().toggleFactionStatsPanel()  // 手动切换面板
+useGameStore.getState().factionStats; // 查看统计数据
+useGameStore.getState().toggleFactionStatsPanel(); // 手动切换面板
 ```
 
 ---
@@ -256,12 +283,14 @@ useGameStore.getState().toggleFactionStatsPanel()  // 手动切换面板
 ## 🚀 部署清单
 
 ### 已完成
+
 - [x] 代码实现和集成
 - [x] TypeScript 编译通过
 - [x] Vite 构建成功
 - [x] Git 提交（2 commits）
 
 ### 待完成（可选）
+
 - [ ] 运行契约测试验证
 - [ ] 浏览器手动测试
 - [ ] 性能基准测试
@@ -273,20 +302,21 @@ useGameStore.getState().toggleFactionStatsPanel()  // 手动切换面板
 
 ## 📚 相关文档
 
-| 文档 | 路径 | 用途 |
-|------|------|------|
-| 功能规格 | `specs/005-faction-stats/spec.md` | 用户故事和需求 |
-| 技术调研 | `specs/005-faction-stats/research.md` | 技术决策和算法选择 |
-| 数据模型 | `specs/005-faction-stats/data-model.md` | 实体定义和关系图 |
-| 契约测试 | `specs/005-faction-stats/contracts/` | API 契约和测试用例 |
+| 文档     | 路径                                    | 用途               |
+| -------- | --------------------------------------- | ------------------ |
+| 功能规格 | `specs/005-faction-stats/spec.md`       | 用户故事和需求     |
+| 技术调研 | `specs/005-faction-stats/research.md`   | 技术决策和算法选择 |
+| 数据模型 | `specs/005-faction-stats/data-model.md` | 实体定义和关系图   |
+| 契约测试 | `specs/005-faction-stats/contracts/`    | API 契约和测试用例 |
 | 快速开始 | `specs/005-faction-stats/quickstart.md` | 开发指南和测试场景 |
-| 任务清单 | `specs/005-faction-stats/tasks.md` | 详细任务和执行计划 |
+| 任务清单 | `specs/005-faction-stats/tasks.md`      | 详细任务和执行计划 |
 
 ---
 
 ## 🎓 经验总结
 
 ### 成功要素
+
 1. ✅ **TDD 方法**: 契约测试先行，明确接口定义
 2. ✅ **增量交付**: Phase 1 → Phase 2 → Phase 3 → Phase 4，逐步验证
 3. ✅ **性能优先**: 防抖+异步+增量更新，避免过早优化
@@ -294,6 +324,7 @@ useGameStore.getState().toggleFactionStatsPanel()  // 手动切换面板
 5. ✅ **可观测性**: 丰富的日志和性能监控，便于调试
 
 ### 改进空间
+
 1. ⚠️ **测试自动化**: 契约测试未集成到 CI/CD
 2. ⚠️ **性能验证**: 缺少实际基准测试数据
 3. ⚠️ **文档完善**: 缺少 API 文档和组件文档
@@ -301,6 +332,7 @@ useGameStore.getState().toggleFactionStatsPanel()  // 手动切换面板
 5. ⚠️ **国际化**: 硬编码中文文本，未支持多语言
 
 ### 下一步建议
+
 1. **立即**: 浏览器手动测试，验证核心功能
 2. **短期**: 运行契约测试，确保算法正确性
 3. **中期**: 实现 User Story 3（详情面板）

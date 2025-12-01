@@ -224,3 +224,40 @@
 .panel-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Feature: 008-territory-bonus - 加成列样式 */
+.attack-bonus {
+  color: #ff6b6b;
+  font-weight: 600;
+  text-align: right;
+  width: 90px;
+}
+
+.defense-bonus {
+  color: #4dabf7;
+  font-weight: 600;
+  text-align: right;
+  width: 90px;
+}
+
+/* 展开行样式 */
+.row-expanded {
+  background: rgba(100, 150, 200, 0.15) !important;
+  border-left: 3px solid #4dabf7;
+}
+
+/* 展开的加成详情 */
+.expanded-bonus-details {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(30, 40, 60, 0.8);
+  border-radius: 8px;
+  border: 1px solid rgba(100, 150, 200, 0.3);
+}
+
+.expanded-bonus-details h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #e0e8f0;
+  font-weight: 600;
+}

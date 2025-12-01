@@ -3,6 +3,7 @@
 Auto-generated from all feature plans. Last updated: 2025-11-30
 
 ## Active Technologies
+
 - TypeScript 5.4（严格模式，ESM） + Phaser 3.80（地图渲染）、React 18（UI面板）、Zustand 4（状态管理与订阅） (004-fix-battle-territory-bugs)
 - IndexedDB（eventLog持久化）、Zustand内存存储（territories、territoryStates） (004-fix-battle-territory-bugs)
 - TypeScript 5.4.x + React 18，构建/开发基于 Vite 5（ESM 模式） + React 18、Vite 5、Phaser 3.80（世界地图场景与战斗可视化）、Zustand（状态管理）、d3-geo + topojson-client（地图投影与地理数据）、idb（浏览器 IndexedDB 存储） (002-country-battle-logic)
@@ -37,11 +38,10 @@ npm test && npm run lint
 TypeScript 5.4（ESM，strictNullChecks on）: Follow standard conventions
 
 ## Recent Changes
+
 - 008-territory-bonus: Added TypeScript 5.4.5 + React 18.2, Zustand 4.4.7, Phaser 3.80.1, D3-geo 3.1.0
 - 007-conquest-logic-fix: Added TypeScript 5.x, React 18.x + Phaser 3, Zustand, D3-geo, TopoJSON
 - 007-conquest-logic-fix: Added TypeScript 5.4.5 + React 18.2, Phaser 3.80, Zustand 4.4, d3-geo 3.1
-
-
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

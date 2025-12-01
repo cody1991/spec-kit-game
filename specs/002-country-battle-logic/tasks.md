@@ -44,9 +44,9 @@ description: 'Task list for feature implementation: 国家攻占规则调整'
 
 **Purpose**: 确认当前仓库环境、脚本与基本结构处于可用状态，为后续实现提供稳定基础。
 
-- [X] T001 确认根目录 `package.json` 中的脚本可用，并在仓库根运行 `pnpm install && pnpm test` 作为基线（文件：`package.json`）
-- [X] T002 [P] 验证测试目录结构是否满足计划（`tests/unit/`, `tests/integration/`, `tests/e2e/`），如缺失则创建空占位文件 `tests/unit/README.md` 等以固定结构（目录：`tests/`）
-- [X] T003 [P] 复盘本特性的规格与实现计划，标记关键约束（国家粒度占领、逐个国家攻占、姓名唯一展示）以便后续任务引用（文件：`specs/002-country-battle-logic/spec.md`, `specs/002-country-battle-logic/plan.md`）
+- [x] T001 确认根目录 `package.json` 中的脚本可用，并在仓库根运行 `pnpm install && pnpm test` 作为基线（文件：`package.json`）
+- [x] T002 [P] 验证测试目录结构是否满足计划（`tests/unit/`, `tests/integration/`, `tests/e2e/`），如缺失则创建空占位文件 `tests/unit/README.md` 等以固定结构（目录：`tests/`）
+- [x] T003 [P] 复盘本特性的规格与实现计划，标记关键约束（国家粒度占领、逐个国家攻占、姓名唯一展示）以便后续任务引用（文件：`specs/002-country-battle-logic/spec.md`, `specs/002-country-battle-logic/plan.md`）
 
 ---
 
@@ -56,11 +56,9 @@ description: 'Task list for feature implementation: 国家攻占规则调整'
 
 **⚠️ CRITICAL**: 本阶段完成前，不应开始任何用户故事实现。
 
-- [X] T004 对齐数据模型：根据 `specs/002-country-battle-logic/data-model.md` 更新/核对 `HistoricalCommander`、`Country`、`TerritoryState` 与 `BattleEvent` 接口定义，确保字段与约束一致（文件：`app/src/core/types.ts`）
-- [X] T005 [P] 将 `RegionMapping` 明确限制为"初始化期工具"：在 `app/src/config/regionMapping.config.ts` 中补充注释与必要类型约束，标明运行时占领逻辑禁止直接依赖区域 ID（文件：`app/src/config/regionMapping.config.ts`）
-- [X] T006 [P] 审查并调整区域→国家映射在运行时的使用：
-      - 确保 `app/src/scenes/world/utils/countryMapper.ts` 仅在初始化阶段将历史配置映射到国家列表；
-      - 在 `app/src/core/state/store.ts` 中为 `updateTerritoryOwnership` 引入/保留"初始化路径"与"运行时路径"的清晰分支，保证运行期攻占仅接收 `countryId`（文件：`app/src/scenes/world/utils/countryMapper.ts`, `app/src/core/state/store.ts`）
+- [x] T004 对齐数据模型：根据 `specs/002-country-battle-logic/data-model.md` 更新/核对 `HistoricalCommander`、`Country`、`TerritoryState` 与 `BattleEvent` 接口定义，确保字段与约束一致（文件：`app/src/core/types.ts`）
+- [x] T005 [P] 将 `RegionMapping` 明确限制为"初始化期工具"：在 `app/src/config/regionMapping.config.ts` 中补充注释与必要类型约束，标明运行时占领逻辑禁止直接依赖区域 ID（文件：`app/src/config/regionMapping.config.ts`）
+- [x] T006 [P] 审查并调整区域→国家映射在运行时的使用：- 确保 `app/src/scenes/world/utils/countryMapper.ts` 仅在初始化阶段将历史配置映射到国家列表；- 在 `app/src/core/state/store.ts` 中为 `updateTerritoryOwnership` 引入/保留"初始化路径"与"运行时路径"的清晰分支，保证运行期攻占仅接收 `countryId`（文件：`app/src/scenes/world/utils/countryMapper.ts`, `app/src/core/state/store.ts`）
 
 **Checkpoint**: 数据模型与区域/国家映射约束稳定，后续用户故事可以假设"运行时仅以国家为占领单位"。
 
@@ -76,16 +74,16 @@ description: 'Task list for feature implementation: 国家攻占规则调整'
 
 > 测试优先：先写失败的测试，再实现逻辑。
 
-- [X] T007 [P] [US1] 为 `updateTerritory`/`updateTerritoryOwnership` 编写单元测试，验证传入单个 `countryId` 时仅该国家的 `TerritoryState.ownerId` 发生变化，且不会因区域 ID 触发多国占领（文件：`tests/unit/core/state/store.countryOwnership.spec.ts`）
-- [X] T008 [P] [US1] 为 `app/src/core/simulation/systems/battleSystem.ts` 编写单元测试，验证战斗系统在成功攻占时仅产生单个目标国家的 `BattleEvent`，`territoryId` 始终为 `Country.id` 而非区域 ID（文件：`tests/unit/core/simulation/battleSystem.countryConquest.spec.ts`）
-- [X] T009 [P] [US1] 使用 Playwright 编写端到端测试，覆盖从世界地图中依次选择多个国家进行攻占的流程，断言每次操作仅改变对应国家所有权，对手其他国家保持不变（文件：`tests/e2e/country-conquest.single-country.spec.ts`）
+- [x] T007 [P] [US1] 为 `updateTerritory`/`updateTerritoryOwnership` 编写单元测试，验证传入单个 `countryId` 时仅该国家的 `TerritoryState.ownerId` 发生变化，且不会因区域 ID 触发多国占领（文件：`tests/unit/core/state/store.countryOwnership.spec.ts`）
+- [x] T008 [P] [US1] 为 `app/src/core/simulation/systems/battleSystem.ts` 编写单元测试，验证战斗系统在成功攻占时仅产生单个目标国家的 `BattleEvent`，`territoryId` 始终为 `Country.id` 而非区域 ID（文件：`tests/unit/core/simulation/battleSystem.countryConquest.spec.ts`）
+- [x] T009 [P] [US1] 使用 Playwright 编写端到端测试，覆盖从世界地图中依次选择多个国家进行攻占的流程，断言每次操作仅改变对应国家所有权，对手其他国家保持不变（文件：`tests/e2e/country-conquest.single-country.spec.ts`）
 
 ### Implementation for User Story 1
 
-- [X] T010 [P] [US1] 调整 `app/src/core/state/store.ts` 中 `updateTerritory`/`updateTerritoryOwnership` 实现，将运行期攻占路径限制为只接受 `countryId`，并确保区域映射分支仅用于对局初始化或数据迁移（文件：`app/src/core/state/store.ts`）
-- [X] T011 [P] [US1] 更新 `app/src/core/simulation/systems/battleSystem.ts`，使攻占结算逻辑针对单个国家生成所有权变更事件，并仅对该国家触发状态更新与战报叙述（文件：`app/src/core/simulation/systems/battleSystem.ts`）
-- [X] T012 [P] [US1] 更新 `app/src/scenes/world/WorldScene.ts` 的交互与指令下发逻辑，确保攻占入口总是基于一个选中的 `Country.id` 调用战斗系统与 store，而不存在"对某指挥官全部国家发起攻占"的分支（文件：`app/src/scenes/world/WorldScene.ts`）
-- [X] T013 [US1] 按 `research.md` Topic 4/5 为单国攻占链路增加最小遥测与日志：在 `app/src/services/telemetry/` 下新增或扩展模块记录国家所有权变更（含前后占领者与国家 ID），用于后续调试与性能分析（文件：`app/src/services/telemetry/countryConquestTelemetry.ts` 或同目录现有文件）
+- [x] T010 [P] [US1] 调整 `app/src/core/state/store.ts` 中 `updateTerritory`/`updateTerritoryOwnership` 实现，将运行期攻占路径限制为只接受 `countryId`，并确保区域映射分支仅用于对局初始化或数据迁移（文件：`app/src/core/state/store.ts`）
+- [x] T011 [P] [US1] 更新 `app/src/core/simulation/systems/battleSystem.ts`，使攻占结算逻辑针对单个国家生成所有权变更事件，并仅对该国家触发状态更新与战报叙述（文件：`app/src/core/simulation/systems/battleSystem.ts`）
+- [x] T012 [P] [US1] 更新 `app/src/scenes/world/WorldScene.ts` 的交互与指令下发逻辑，确保攻占入口总是基于一个选中的 `Country.id` 调用战斗系统与 store，而不存在"对某指挥官全部国家发起攻占"的分支（文件：`app/src/scenes/world/WorldScene.ts`）
+- [x] T013 [US1] 按 `research.md` Topic 4/5 为单国攻占链路增加最小遥测与日志：在 `app/src/services/telemetry/` 下新增或扩展模块记录国家所有权变更（含前后占领者与国家 ID），用于后续调试与性能分析（文件：`app/src/services/telemetry/countryConquestTelemetry.ts` 或同目录现有文件）
 
 **Checkpoint**: 完成本阶段后，单国攻占规则可在本地通过 Vitest + Playwright 独立验证，战斗/事件/状态三者在国家粒度上保持一致。
 
@@ -99,14 +97,14 @@ description: 'Task list for feature implementation: 国家攻占规则调整'
 
 ### Tests for User Story 2
 
-- [X] T014 [P] [US2] 为世界场景视图编写单元测试，验证地图上用于着色/高亮的实体集合只包含 `Country.id`，并显式断言不会渲染名称为"东南亚/北美/中美"等区域标签（文件：`tests/unit/scenes/world/worldScene.countryDisplay.spec.ts`）
-- [X] T015 [P] [US2] 编写 UI 集成测试，验证指挥官面板/国家详情面板中展示的势力范围按国家统计且无区域级汇总行，例如"东南亚占领数"等（文件：`tests/integration/ui/commanderCountryOwnership.spec.ts`）
+- [x] T014 [P] [US2] 为世界场景视图编写单元测试，验证地图上用于着色/高亮的实体集合只包含 `Country.id`，并显式断言不会渲染名称为"东南亚/北美/中美"等区域标签（文件：`tests/unit/scenes/world/worldScene.countryDisplay.spec.ts`）
+- [x] T015 [P] [US2] 编写 UI 集成测试，验证指挥官面板/国家详情面板中展示的势力范围按国家统计且无区域级汇总行，例如"东南亚占领数"等（文件：`tests/integration/ui/commanderCountryOwnership.spec.ts`）
 
 ### Implementation for User Story 2
 
-- [X] T016 [P] [US2] 调整 `app/src/scenes/world/WorldScene.ts` 中的地图渲染与交互逻辑，确保所有与占领相关的集合（可选中、可高亮、可显示标记）均以 `Country.id` 为粒度构建，不再依赖区域 ID（文件：`app/src/scenes/world/WorldScene.ts`）
-- [X] T017 [P] [US2] 更新 `app/src/ui/panels/CommanderPanel.tsx` 与 `app/src/ui/panels/CountryDetailPanel.tsx`，移除任何基于"东南亚/北美/中美"等区域名的展示或统计，改为根据 `TerritoryState`/`Country` 汇总每个指挥官的国家占领情况（文件：`app/src/ui/panels/CommanderPanel.tsx`, `app/src/ui/panels/CountryDetailPanel.tsx`）
-- [X] T018 [P] [US2] 调整地图数据加载与缓存管线，使其在生成可视节点和索引结构时只使用 `Country` 列表，而非区域 ID，确保 `MapDataLoader`/`MapDataCache` 路径上不再生成区域级展示单元（文件：`app/src/scenes/world/data/MapDataLoader.ts`, `app/src/scenes/world/data/MapDataCache.ts`）
+- [x] T016 [P] [US2] 调整 `app/src/scenes/world/WorldScene.ts` 中的地图渲染与交互逻辑，确保所有与占领相关的集合（可选中、可高亮、可显示标记）均以 `Country.id` 为粒度构建，不再依赖区域 ID（文件：`app/src/scenes/world/WorldScene.ts`）
+- [x] T017 [P] [US2] 更新 `app/src/ui/panels/CommanderPanel.tsx` 与 `app/src/ui/panels/CountryDetailPanel.tsx`，移除任何基于"东南亚/北美/中美"等区域名的展示或统计，改为根据 `TerritoryState`/`Country` 汇总每个指挥官的国家占领情况（文件：`app/src/ui/panels/CommanderPanel.tsx`, `app/src/ui/panels/CountryDetailPanel.tsx`）
+- [x] T018 [P] [US2] 调整地图数据加载与缓存管线，使其在生成可视节点和索引结构时只使用 `Country` 列表，而非区域 ID，确保 `MapDataLoader`/`MapDataCache` 路径上不再生成区域级展示单元（文件：`app/src/scenes/world/data/MapDataLoader.ts`, `app/src/scenes/world/data/MapDataCache.ts`）
 - [ ] T019 [US2] 在调试 HUD 或诊断面板中增加简单校验视图，例如在 `app/src/ui/hud/DevHud.tsx` 中展示当前场景中仍存在的区域 ID（如有）以辅助人工确认区域概念已从展示层移除（文件：`app/src/ui/hud/DevHud.tsx`）
 
 **Checkpoint**: 完成本阶段后，任意查看世界地图和相关 UI 时，只会看到国家级别的占领信息，区域名仅可能出现在说明文本而非占领节点。
@@ -121,14 +119,14 @@ description: 'Task list for feature implementation: 国家攻占规则调整'
 
 ### Tests for User Story 3
 
-- [X] T020 [P] [US3] 为世界场景标签渲染逻辑编写单元测试，构造多次易主序列，断言任何时间点给定 `countryId` 只会有一个标签对象与之关联（文件：`tests/unit/scenes/world/worldScene.countryLabels.spec.ts`）
+- [x] T020 [P] [US3] 为世界场景标签渲染逻辑编写单元测试，构造多次易主序列，断言任何时间点给定 `countryId` 只会有一个标签对象与之关联（文件：`tests/unit/scenes/world/worldScene.countryLabels.spec.ts`）
 - [ ] T021 [P] [US3] 扩展端到端测试，在 `tests/e2e/country-conquest.labels.spec.ts` 中模拟同一国家在多个指挥官之间反复易主，并在关键步骤截图或断言只显示当前占领者姓名（文件：`tests/e2e/country-conquest.labels.spec.ts`）
 
 ### Implementation for User Story 3
 
-- [X] T022 [P] [US3] 重构 `app/src/scenes/world/WorldScene.ts` 与 `app/src/scenes/world/rendering/MapRenderer.ts` 中的姓名标签创建与销毁逻辑，将标签完全绑定到 `TerritoryState.ownerId` 和 `countryId`，并在所有权变更或国家被重新绘制时清理旧标签以避免堆积（文件：`app/src/scenes/world/WorldScene.ts`, `app/src/scenes/world/rendering/MapRenderer.ts`）
-- [X] T023 [P] [US3] 更新 React 侧面板（如 `app/src/ui/panels/CountryDetailPanel.tsx` 与 `app/src/ui/panels/BattleTimeline.tsx`），区分"当前占领者姓名"和"历史占领者记录"，避免在同一显示区域内重复出现同一个人的名字（文件：`app/src/ui/panels/CountryDetailPanel.tsx`, `app/src/ui/panels/BattleTimeline.tsx`）
-- [X] T024 [US3] 确保在对局重新加载或会话恢复时正确重建 `TerritoryState` 与标签集，在 `app/src/core/session/startSession.ts` 及相关挂钩中清理旧的姓名渲染状态，避免刷新后出现历史姓名残留（文件：`app/src/core/session/startSession.ts`, `app/src/scenes/world/WorldScene.ts`）
+- [x] T022 [P] [US3] 重构 `app/src/scenes/world/WorldScene.ts` 与 `app/src/scenes/world/rendering/MapRenderer.ts` 中的姓名标签创建与销毁逻辑，将标签完全绑定到 `TerritoryState.ownerId` 和 `countryId`，并在所有权变更或国家被重新绘制时清理旧标签以避免堆积（文件：`app/src/scenes/world/WorldScene.ts`, `app/src/scenes/world/rendering/MapRenderer.ts`）
+- [x] T023 [P] [US3] 更新 React 侧面板（如 `app/src/ui/panels/CountryDetailPanel.tsx` 与 `app/src/ui/panels/BattleTimeline.tsx`），区分"当前占领者姓名"和"历史占领者记录"，避免在同一显示区域内重复出现同一个人的名字（文件：`app/src/ui/panels/CountryDetailPanel.tsx`, `app/src/ui/panels/BattleTimeline.tsx`）
+- [x] T024 [US3] 确保在对局重新加载或会话恢复时正确重建 `TerritoryState` 与标签集，在 `app/src/core/session/startSession.ts` 及相关挂钩中清理旧的姓名渲染状态，避免刷新后出现历史姓名残留（文件：`app/src/core/session/startSession.ts`, `app/src/scenes/world/WorldScene.ts`）
 
 **Checkpoint**: 完成本阶段后，多次易主与重载场景中都不应再出现姓名重叠或残留问题。
 
@@ -251,7 +249,7 @@ description: 'Task list for feature implementation: 国家攻占规则调整'
    - 开发者 A 负责 US1（核心攻占规则与事件），
    - 开发者 B 负责 US2（地图与面板展示），
    - 开发者 C 负责 US3（姓名标签与易主体验），
-   同步协调对共享文件（如 `WorldScene.ts`、`store.ts`）的修改顺序与合并策略。
+     同步协调对共享文件（如 `WorldScene.ts`、`store.ts`）的修改顺序与合并策略。
 3. 所有故事完成后，由一名或多人负责执行 Final Phase 中的统一测试、文档与性能/可观测性收尾。
 
 ---

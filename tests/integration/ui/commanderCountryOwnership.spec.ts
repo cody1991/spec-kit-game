@@ -4,9 +4,9 @@ import type { HistoricalCommander, TerritoryState, Country } from '@core/types';
 
 /**
  * UI集成测试：指挥官与国家占领统计
- * 
+ *
  * 目标：验证UI面板按国家统计势力范围，无区域级汇总
- * 
+ *
  * 测试场景：
  * 1. 指挥官面板显示占领的国家数量（不是区域数量）
  * 2. 国家详情面板显示国家级信息（不包含"东南亚占领数"等）
@@ -48,21 +48,171 @@ const mockCommanders: HistoricalCommander[] = [
 ];
 
 const mockCountries: Country[] = [
-  { id: '250', name: '法国', nameEn: 'France', geometry: { type: 'MultiPolygon', coordinates: [] }, centroid: { lat: 46, lon: 2 }, bbox: { minX: -5, minY: 42, maxX: 8, maxY: 51 }, area: 643801, neighbors: ['276'], gridCells: [] },
-  { id: '276', name: '德国', nameEn: 'Germany', geometry: { type: 'MultiPolygon', coordinates: [] }, centroid: { lat: 51, lon: 10 }, bbox: { minX: 6, minY: 47, maxX: 15, maxY: 55 }, area: 357000, neighbors: ['250'], gridCells: [] },
-  { id: '380', name: '意大利', nameEn: 'Italy', geometry: { type: 'MultiPolygon', coordinates: [] }, centroid: { lat: 42, lon: 12 }, bbox: { minX: 6, minY: 36, maxX: 18, maxY: 47 }, area: 301340, neighbors: ['276'], gridCells: [] },
-  { id: '156', name: '中国', nameEn: 'China', geometry: { type: 'MultiPolygon', coordinates: [] }, centroid: { lat: 35, lon: 105 }, bbox: { minX: 73, minY: 18, maxX: 135, maxY: 53 }, area: 9597000, neighbors: ['643'], gridCells: [] },
-  { id: '643', name: '俄罗斯', nameEn: 'Russia', geometry: { type: 'MultiPolygon', coordinates: [] }, centroid: { lat: 60, lon: 100 }, bbox: { minX: 20, minY: 40, maxX: 180, maxY: 80 }, area: 17098000, neighbors: ['156'], gridCells: [] },
-  { id: '496', name: '蒙古', nameEn: 'Mongolia', geometry: { type: 'MultiPolygon', coordinates: [] }, centroid: { lat: 46, lon: 105 }, bbox: { minX: 87, minY: 41, maxX: 120, maxY: 52 }, area: 1564000, neighbors: ['156', '643'], gridCells: [] },
+  {
+    id: '250',
+    name: '法国',
+    nameEn: 'France',
+    geometry: { type: 'MultiPolygon', coordinates: [] },
+    centroid: { lat: 46, lon: 2 },
+    bbox: { minX: -5, minY: 42, maxX: 8, maxY: 51 },
+    area: 643801,
+    neighbors: ['276'],
+    gridCells: [],
+  },
+  {
+    id: '276',
+    name: '德国',
+    nameEn: 'Germany',
+    geometry: { type: 'MultiPolygon', coordinates: [] },
+    centroid: { lat: 51, lon: 10 },
+    bbox: { minX: 6, minY: 47, maxX: 15, maxY: 55 },
+    area: 357000,
+    neighbors: ['250'],
+    gridCells: [],
+  },
+  {
+    id: '380',
+    name: '意大利',
+    nameEn: 'Italy',
+    geometry: { type: 'MultiPolygon', coordinates: [] },
+    centroid: { lat: 42, lon: 12 },
+    bbox: { minX: 6, minY: 36, maxX: 18, maxY: 47 },
+    area: 301340,
+    neighbors: ['276'],
+    gridCells: [],
+  },
+  {
+    id: '156',
+    name: '中国',
+    nameEn: 'China',
+    geometry: { type: 'MultiPolygon', coordinates: [] },
+    centroid: { lat: 35, lon: 105 },
+    bbox: { minX: 73, minY: 18, maxX: 135, maxY: 53 },
+    area: 9597000,
+    neighbors: ['643'],
+    gridCells: [],
+  },
+  {
+    id: '643',
+    name: '俄罗斯',
+    nameEn: 'Russia',
+    geometry: { type: 'MultiPolygon', coordinates: [] },
+    centroid: { lat: 60, lon: 100 },
+    bbox: { minX: 20, minY: 40, maxX: 180, maxY: 80 },
+    area: 17098000,
+    neighbors: ['156'],
+    gridCells: [],
+  },
+  {
+    id: '496',
+    name: '蒙古',
+    nameEn: 'Mongolia',
+    geometry: { type: 'MultiPolygon', coordinates: [] },
+    centroid: { lat: 46, lon: 105 },
+    bbox: { minX: 87, minY: 41, maxX: 120, maxY: 52 },
+    area: 1564000,
+    neighbors: ['156', '643'],
+    gridCells: [],
+  },
 ];
 
 const mockTerritoryStates = new Map<string, TerritoryState>([
-  ['250', { countryId: '250', countryName: '法国', ownerId: 'commander-1', troops: 50, resources: 100, defense: 70, updatedAt: Date.now(), conqueredAt: Date.now(), previousOwnerId: null, transitionProgress: null, isHighlighted: false }],
-  ['276', { countryId: '276', countryName: '德国', ownerId: 'commander-1', troops: 45, resources: 95, defense: 75, updatedAt: Date.now(), conqueredAt: Date.now(), previousOwnerId: null, transitionProgress: null, isHighlighted: false }],
-  ['380', { countryId: '380', countryName: '意大利', ownerId: 'commander-1', troops: 40, resources: 90, defense: 65, updatedAt: Date.now(), conqueredAt: Date.now(), previousOwnerId: null, transitionProgress: null, isHighlighted: false }],
-  ['156', { countryId: '156', countryName: '中国', ownerId: 'commander-2', troops: 60, resources: 120, defense: 80, updatedAt: Date.now(), conqueredAt: Date.now(), previousOwnerId: null, transitionProgress: null, isHighlighted: false }],
-  ['643', { countryId: '643', countryName: '俄罗斯', ownerId: 'commander-2', troops: 55, resources: 110, defense: 78, updatedAt: Date.now(), conqueredAt: Date.now(), previousOwnerId: null, transitionProgress: null, isHighlighted: false }],
-  ['496', { countryId: '496', countryName: '蒙古', ownerId: 'commander-2', troops: 35, resources: 85, defense: 60, updatedAt: Date.now(), conqueredAt: Date.now(), previousOwnerId: null, transitionProgress: null, isHighlighted: false }],
+  [
+    '250',
+    {
+      countryId: '250',
+      countryName: '法国',
+      ownerId: 'commander-1',
+      troops: 50,
+      resources: 100,
+      defense: 70,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    },
+  ],
+  [
+    '276',
+    {
+      countryId: '276',
+      countryName: '德国',
+      ownerId: 'commander-1',
+      troops: 45,
+      resources: 95,
+      defense: 75,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    },
+  ],
+  [
+    '380',
+    {
+      countryId: '380',
+      countryName: '意大利',
+      ownerId: 'commander-1',
+      troops: 40,
+      resources: 90,
+      defense: 65,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    },
+  ],
+  [
+    '156',
+    {
+      countryId: '156',
+      countryName: '中国',
+      ownerId: 'commander-2',
+      troops: 60,
+      resources: 120,
+      defense: 80,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    },
+  ],
+  [
+    '643',
+    {
+      countryId: '643',
+      countryName: '俄罗斯',
+      ownerId: 'commander-2',
+      troops: 55,
+      resources: 110,
+      defense: 78,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    },
+  ],
+  [
+    '496',
+    {
+      countryId: '496',
+      countryName: '蒙古',
+      ownerId: 'commander-2',
+      troops: 35,
+      resources: 85,
+      defense: 60,
+      updatedAt: Date.now(),
+      conqueredAt: Date.now(),
+      previousOwnerId: null,
+      transitionProgress: null,
+      isHighlighted: false,
+    },
+  ],
 ]);
 
 describe('UI集成测试：指挥官国家占领统计', () => {
@@ -136,7 +286,7 @@ describe('UI集成测试：指挥官国家占领统计', () => {
           expect(country.name).not.toContain('洲'); // 不应该是"欧洲"、"亚洲"等大陆名
         });
 
-        console.log(`✓ ${commander.name} 占领列表: ${countryList.map(c => c.name).join(', ')}`);
+        console.log(`✓ ${commander.name} 占领列表: ${countryList.map((c) => c.name).join(', ')}`);
       });
     });
   });
