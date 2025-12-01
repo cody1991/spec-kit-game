@@ -8,6 +8,7 @@ import type {
   TerritoryState,
   CommanderColor,
   MapRenderState,
+  FactionStatistics,
 } from '../types';
 import { resetBattleEventCounter } from '../simulation/systems/battleSystem';
 
@@ -140,6 +141,10 @@ export interface GameState {
   colorMappings: Map<string, CommanderColor>;
   mapRenderState: MapRenderState | null;
 
+  // 势力统计 (Feature: 005-faction-stats)
+  factionStats: Map<string, FactionStatistics>;
+  showFactionStatsPanel: boolean;
+
   // Actions
   startGame: (seed: string) => void;
   setCommanders: (commanders: HistoricalCommander[]) => void;
@@ -164,6 +169,12 @@ export interface GameState {
   setColorMappings: (mappings: Map<string, CommanderColor>) => void;
   setMapRenderState: (state: MapRenderState) => void;
   updateMapRenderState: (updates: Partial<MapRenderState>) => void;
+
+  // Faction Stats Actions (Feature: 005-faction-stats)
+  updateFactionStats: (commanderId: string, updates: Partial<FactionStatistics>) => void;
+  initializeFactionStats: () => void;
+  toggleFactionStatsPanel: () => void;
+  closeFactionStatsPanel: () => void;
 }
 
 export const useGameStore = create<GameState>((set) => ({
@@ -193,6 +204,9 @@ export const useGameStore = create<GameState>((set) => ({
   territoryStates: new Map(),
   colorMappings: new Map(),
   mapRenderState: null,
+
+  factionStats: new Map(),
+  showFactionStatsPanel: false,
 
   // Actions
   startGame: (seed: string) =>
@@ -321,4 +335,57 @@ export const useGameStore = create<GameState>((set) => ({
     set((state) => ({
       mapRenderState: state.mapRenderState ? { ...state.mapRenderState, ...updates } : null,
     })),
+
+  // Faction Stats Actions Implementation
+  updateFactionStats: (commanderId, updates) =>
+    set((state) => {
+      const newMap = new Map(state.factionStats);
+      const existing = newMap.get(commanderId);
+      if (existing) {
+        newMap.set(commanderId, { 
+          ...existing, 
+          ...updates, 
+          lastUpdatedAt: Date.now() 
+        });
+      }
+      return { factionStats: newMap };
+    }),
+
+  initializeFactionStats: () =>
+    set((state) => {
+      const statsMap = new Map<string, FactionStatistics>();
+      
+      state.commanders.forEach((commander) => {
+        // 计算占领的国家数量和总面积
+        const ownedCountries = commander.controlledTerritories
+          .map((territoryId) => {
+            const country = state.countries.find((c) => c.id === territoryId);
+            return country;
+          })
+          .filter((c): c is Country => c !== undefined);
+
+        const countryCount = ownedCountries.length;
+        const totalArea = ownedCountries.reduce((sum, c) => sum + c.area, 0);
+
+        statsMap.set(commander.id, {
+          commanderId: commander.id,
+          commanderName: commander.name,
+          status: commander.status,
+          countryCount,
+          totalArea,
+          wins: 0,
+          losses: 0,
+          winRate: -1, // N/A initially
+          lastUpdatedAt: Date.now(),
+        });
+      });
+
+      return { factionStats: statsMap };
+    }),
+
+  toggleFactionStatsPanel: () =>
+    set((state) => ({ showFactionStatsPanel: !state.showFactionStatsPanel })),
+
+  closeFactionStatsPanel: () =>
+    set({ showFactionStatsPanel: false }),
 }));

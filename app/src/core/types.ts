@@ -168,3 +168,62 @@ export interface MapRenderState {
   averageFps: number;
   enableAnimation: boolean;
 }
+
+// ============================================================================
+// Faction Statistics Types (Feature: 005-faction-stats)
+// ============================================================================
+
+/**
+ * 势力统计数据
+ * 包含领土统计和战斗统计的综合数据
+ */
+export interface FactionStatistics {
+  commanderId: string;
+  commanderName: string;
+  status: 'active' | 'eliminated';
+  countryCount: number;
+  totalArea: number;
+  wins: number;
+  losses: number;
+  winRate: number; // -1 for N/A, otherwise [0, 1]
+  lastUpdatedAt: number;
+}
+
+/**
+ * 战斗统计更新事件（内部使用）
+ */
+export interface BattleStatUpdate {
+  attackerId: string;
+  defenderId: string;
+  result: 'success' | 'fail';
+  timestamp: string;
+}
+
+/**
+ * 领土统计更新事件（内部使用）
+ */
+export interface TerritoryStatUpdate {
+  commanderId: string;
+  countryId: string;
+  action: 'gain' | 'lose';
+  countryArea: number;
+}
+
+/**
+ * 排行榜排序规则
+ */
+export interface LeaderboardSortCriteria {
+  primary: 'countryCount';
+  primaryOrder: 'desc';
+  secondary: 'totalArea';
+  secondaryOrder: 'desc';
+}
+
+/**
+ * 排行榜数据
+ */
+export interface Leaderboard {
+  factions: FactionStatistics[];
+  timestamp: number;
+  sortCriteria: LeaderboardSortCriteria;
+}

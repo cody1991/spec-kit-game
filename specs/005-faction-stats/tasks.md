@@ -23,10 +23,10 @@
 
 **Purpose**: 项目基础设施准备，确保开发和测试环境就绪
 
-- [ ] T001 验证当前分支为 `005-faction-stats` 且工作区干净
-- [ ] T002 安装项目依赖 `cd app && pnpm install`
-- [ ] T003 [P] 运行现有测试套件确保基线通过 `pnpm test`
-- [ ] T004 [P] 验证开发服务器可正常启动 `pnpm dev`
+- [x] T001 验证当前分支为 `005-faction-stats` 且工作区干净
+- [x] T002 安装项目依赖 `cd app && pnpm install`
+- [x] T003 [P] 运行现有测试套件确保基线通过 `pnpm test`
+- [x] T004 [P] 验证开发服务器可正常启动 `pnpm dev`
 
 ---
 
@@ -38,22 +38,22 @@
 
 ### 类型系统基础
 
-- [ ] T005 [P] 在 `app/src/core/types.ts` 中定义 `FactionStatistics` 接口（9个字段：commanderId, commanderName, status, countryCount, totalArea, wins, losses, winRate, lastUpdatedAt）
-- [ ] T006 [P] 在 `app/src/core/types.ts` 中定义内部事件类型 `BattleStatUpdate` 和 `TerritoryStatUpdate`
-- [ ] T007 [P] 在 `app/src/core/types.ts` 中定义 `Leaderboard` 类型和 `LeaderboardSortCriteria` 类型
+- [x] T005 [P] 在 `app/src/core/types.ts` 中定义 `FactionStatistics` 接口（9个字段：commanderId, commanderName, status, countryCount, totalArea, wins, losses, winRate, lastUpdatedAt）
+- [x] T006 [P] 在 `app/src/core/types.ts` 中定义内部事件类型 `BattleStatUpdate` 和 `TerritoryStatUpdate`
+- [x] T007 [P] 在 `app/src/core/types.ts` 中定义 `Leaderboard` 类型和 `LeaderboardSortCriteria` 类型
 
 ### 状态管理基础
 
-- [ ] T008 在 `app/src/core/state/store.ts` 的 `GameState` 接口中添加 `factionStats: Map<string, FactionStatistics>`
-- [ ] T009 在 `app/src/core/state/store.ts` 中添加 `showFactionStatsPanel: boolean` 状态
-- [ ] T010 [P] 在 `app/src/core/state/store.ts` 中实现 `updateFactionStats: (commanderId: string, updates: Partial<FactionStatistics>) => void` 方法
-- [ ] T011 [P] 在 `app/src/core/state/store.ts` 中实现 `initializeFactionStats: () => void` 方法（从现有 commanders/territories/countries 初始化统计数据）
-- [ ] T012 [P] 在 `app/src/core/state/store.ts` 中实现 `toggleFactionStatsPanel: () => void` 和 `closeFactionStatsPanel: () => void` 方法
+- [x] T008 在 `app/src/core/state/store.ts` 的 `GameState` 接口中添加 `factionStats: Map<string, FactionStatistics>`
+- [x] T009 在 `app/src/core/state/store.ts` 中添加 `showFactionStatsPanel: boolean` 状态
+- [x] T010 [P] 在 `app/src/core/state/store.ts` 中实现 `updateFactionStats: (commanderId: string, updates: Partial<FactionStatistics>) => void` 方法
+- [x] T011 [P] 在 `app/src/core/state/store.ts` 中实现 `initializeFactionStats: () => void` 方法（从现有 commanders/territories/countries 初始化统计数据）
+- [x] T012 [P] 在 `app/src/core/state/store.ts` 中实现 `toggleFactionStatsPanel: () => void` 和 `closeFactionStatsPanel: () => void` 方法
 
 ### 契约测试基础设施
 
-- [ ] T013 [P] 复制 `specs/005-faction-stats/contracts/faction-stats.contract.ts` 到 `tests/contracts/faction-stats.contract.spec.ts`（6个测试套件）
-- [ ] T014 [P] 复制 `specs/005-faction-stats/contracts/leaderboard-sorting.contract.ts` 到 `tests/contracts/leaderboard-sorting.contract.spec.ts`（5个测试套件）
+- [x] T013 [P] 复制 `specs/005-faction-stats/contracts/faction-stats.contract.ts` 到 `tests/contracts/faction-stats.contract.spec.ts`（6个测试套件）
+- [x] T014 [P] 复制 `specs/005-faction-stats/contracts/leaderboard-sorting.contract.ts` 到 `tests/contracts/leaderboard-sorting.contract.spec.ts`（5个测试套件）
 - [ ] T015 运行契约测试并确认初始失败 `pnpm test tests/contracts` - 验证 TDD 红灯状态
 
 **Checkpoint**: 类型系统和状态管理基础就绪，契约测试处于失败状态（TDD 红灯） - 用户故事实现可以开始
@@ -73,41 +73,41 @@
 
 ### 核心服务层实现
 
-- [ ] T016 [P] [US1] 创建 `app/src/core/services/factionStatsService.ts` - 实现 `FactionStatsService` 类骨架（start, stop, 私有方法占位符）
-- [ ] T017 [US1] 在 `factionStatsService.ts` 中实现 `calculateWinRate(wins: number, losses: number): number` - 返回 -1 当总数为0，否则返回 wins/total（满足 C-002 契约）
-- [ ] T018 [US1] 在 `factionStatsService.ts` 中实现 `handleBattleResult(event: BattleEvent): void` - 仅处理有 defenderId 的 attack 事件，success时更新进攻方 wins 和防守方 losses（满足 C-005 契约）
-- [ ] T019 [US1] 在 `factionStatsService.ts` 中实现 `handleTerritoryChange()` - 订阅 commanders 的 controlledTerritories 变化，增量更新 countryCount 和 totalArea（满足 C-006 契约）
-- [ ] T020 [US1] 在 `factionStatsService.ts` 中实现 `start()` 方法 - 调用 store.initializeFactionStats() 并订阅 eventLog 和 commanders 变化
-- [ ] T021 [US1] 在 `app/src/core/state/store.ts` 中完善 `initializeFactionStats()` - 遍历所有 commanders，计算初始 countryCount/totalArea，战斗统计初始化为0
+- [x] T016 [P] [US1] 创建 `app/src/core/services/factionStatsService.ts` - 实现 `FactionStatsService` 类骨架（start, stop, 私有方法占位符）
+- [x] T017 [US1] 在 `factionStatsService.ts` 中实现 `calculateWinRate(wins: number, losses: number): number` - 返回 -1 当总数为0，否则返回 wins/total（满足 C-002 契约）
+- [x] T018 [US1] 在 `factionStatsService.ts` 中实现 `handleBattleResult(event: BattleEvent): void` - 仅处理有 defenderId 的 attack 事件，success时更新进攻方 wins 和防守方 losses（满足 C-005 契约）
+- [x] T019 [US1] 在 `factionStatsService.ts` 中实现 `handleTerritoryChange()` - 订阅 commanders 的 controlledTerritories 变化，增量更新 countryCount 和 totalArea（满足 C-006 契约）
+- [x] T020 [US1] 在 `factionStatsService.ts` 中实现 `start()` 方法 - 调用 store.initializeFactionStats() 并订阅 eventLog 和 commanders 变化
+- [x] T021 [US1] 在 `app/src/core/state/store.ts` 中完善 `initializeFactionStats()` - 遍历所有 commanders，计算初始 countryCount/totalArea，战斗统计初始化为0
 
 ### 排序算法实现
 
-- [ ] T022 [US1] 创建 `app/src/utils/leaderboardSort.ts` - 实现 `sortLeaderboard(stats: FactionStatistics[]): FactionStatistics[]` 函数，主排序按 countryCount 降序，次排序按 totalArea 降序，添加 rank 字段（满足 C-001, C-002, C-005 契约）
+- [x] T022 [US1] 创建 `app/src/utils/leaderboardSort.ts` - 实现 `sortLeaderboard(stats: FactionStatistics[]): FactionStatistics[]` 函数，主排序按 countryCount 降序，次排序按 totalArea 降序，添加 rank 字段（满足 C-001, C-002, C-005 契约）
 
 ### UI 组件实现
 
-- [ ] T023 [P] [US1] 创建 `app/src/ui/panels/FactionStatsPanel.tsx` - 实现面板组件骨架（header + 关闭按钮 + 空表格）
-- [ ] T024 [US1] 在 `FactionStatsPanel.tsx` 中使用 `useGameStore` 订阅 `factionStats` 和 `showFactionStatsPanel`
-- [ ] T025 [US1] 在 `FactionStatsPanel.tsx` 中使用 `useMemo` 调用 `sortLeaderboard()` 对 factionStats 排序
-- [ ] T026 [US1] 在 `FactionStatsPanel.tsx` 中渲染表格 - 7列（排名、势力、国家数、面积、战胜、战败、胜率）+ 数据行遍历
-- [ ] T027 [US1] 在 `FactionStatsPanel.tsx` 中实现 `formatArea(area: number): string` - 大于1M显示为 "X.XM"，否则显示为 "XK"
-- [ ] T028 [US1] 在 `FactionStatsPanel.tsx` 中实现 `formatWinRate(winRate: number): string` - winRate < 0 返回 "N/A"，否则返回 "XX.X%"
-- [ ] T029 [P] [US1] 创建 `app/src/ui/panels/FactionStatsPanel.css` - 实现面板样式（固定定位、半透明背景、表格样式、响应式字体）
-- [ ] T030 [US1] 在 `FactionStatsPanel.css` 中添加数据更新动画效果（淡入 + 1秒高亮边框）
+- [x] T023 [P] [US1] 创建 `app/src/ui/panels/FactionStatsPanel.tsx` - 实现面板组件骨架（header + 关闭按钮 + 空表格）
+- [x] T024 [US1] 在 `FactionStatsPanel.tsx` 中使用 `useGameStore` 订阅 `factionStats` 和 `showFactionStatsPanel`
+- [x] T025 [US1] 在 `FactionStatsPanel.tsx` 中使用 `useMemo` 调用 `sortLeaderboard()` 对 factionStats 排序
+- [x] T026 [US1] 在 `FactionStatsPanel.tsx` 中渲染表格 - 7列（排名、势力、国家数、面积、战胜、战败、胜率）+ 数据行遍历
+- [x] T027 [US1] 在 `FactionStatsPanel.tsx` 中实现 `formatArea(area: number): string` - 大于1M显示为 "X.XM"，否则显示为 "XK"
+- [x] T028 [US1] 在 `FactionStatsPanel.tsx` 中实现 `formatWinRate(winRate: number): string` - winRate < 0 返回 "N/A"，否则返回 "XX.X%"
+- [x] T029 [P] [US1] 创建 `app/src/ui/panels/FactionStatsPanel.css` - 实现面板样式（固定定位、半透明背景、表格样式、响应式字体）
+- [x] T030 [US1] 在 `FactionStatsPanel.css` 中添加数据更新动画效果（淡入 + 1秒高亮边框）
 
 ### 应用集成
 
-- [ ] T031 [US1] 在 `app/src/App.tsx` 中导入 `FactionStatsPanel` 和 `factionStatsService`
-- [ ] T032 [US1] 在 `App.tsx` 中使用 `useEffect` 启动和停止 `factionStatsService`（组件挂载时 start，卸载时 stop）
-- [ ] T033 [US1] 在 `App.tsx` 中使用 `useEffect` 添加键盘事件监听 - 按 'S' 或 's' 键调用 `toggleFactionStatsPanel()`
-- [ ] T034 [US1] 在 `App.tsx` JSX 中渲染 `<FactionStatsPanel />`
+- [x] T031 [US1] 在 `app/src/App.tsx` 中导入 `FactionStatsPanel` 和 `factionStatsService`
+- [x] T032 [US1] 在 `App.tsx` 中使用 `useEffect` 启动和停止 `factionStatsService`（组件挂载时 start，卸载时 stop）
+- [x] T033 [US1] 在 `App.tsx` 中使用 `useEffect` 添加键盘事件监听 - 按 'S' 或 's' 键调用 `toggleFactionStatsPanel()`
+- [x] T034 [US1] 在 `App.tsx` JSX 中渲染 `<FactionStatsPanel />`
 
 ### 质量保证 (Constitution - Code Quality)
 
-- [ ] T035 [US1] 运行 ESLint 检查所有新增文件 `pnpm lint` - 修复所有错误和警告
-- [ ] T036 [US1] 运行 TypeScript 类型检查 `pnpm type-check` - 确保无类型错误
-- [ ] T037 [US1] 为 `factionStatsService.ts` 添加 JSDoc 注释（所有公共方法和关键私有方法）
-- [ ] T038 [US1] 为 `leaderboardSort.ts` 添加函数签名注释和算法说明
+- [x] T035 [US1] 运行 ESLint 检查所有新增文件 `pnpm lint` - 修复所有错误和警告
+- [x] T036 [US1] 运行 TypeScript 类型检查 `pnpm type-check` - 确保无类型错误
+- [x] T037 [US1] 为 `factionStatsService.ts` 添加 JSDoc 注释（所有公共方法和关键私有方法）
+- [x] T038 [US1] 为 `leaderboardSort.ts` 添加函数签名注释和算法说明
 
 ### 契约测试验证 (Constitution - Testing Evidence)
 

@@ -1,0 +1,226 @@
+/* 势力统计排行榜面板样式 */
+
+.faction-stats-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  background: rgba(20, 20, 30, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* 表格样式 */
+.leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+}
+
+.leaderboard thead tr {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.leaderboard th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leaderboard tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+
+.leaderboard tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-row {
+  cursor: default;
+}
+
+.leaderboard td {
+  padding: 14px 16px;
+  font-size: 15px;
+}
+
+/* 列样式 */
+.rank {
+  font-weight: 700;
+  color: #ffd700;
+  text-align: center;
+  width: 60px;
+}
+
+.faction-name {
+  font-weight: 600;
+  color: #fff;
+  min-width: 120px;
+}
+
+.country-count {
+  font-weight: 700;
+  color: #4caf50;
+  text-align: right;
+  width: 80px;
+}
+
+.area {
+  color: #2196f3;
+  text-align: right;
+  width: 80px;
+}
+
+.wins {
+  color: #66bb6a;
+  text-align: right;
+  width: 70px;
+}
+
+.losses {
+  color: #ef5350;
+  text-align: right;
+  width: 70px;
+}
+
+.win-rate {
+  font-weight: 600;
+  color: #ffc107;
+  text-align: right;
+  width: 80px;
+}
+
+/* 空数据提示 */
+.empty-message {
+  text-align: center;
+  padding: 40px 20px !important;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+}
+
+/* 数据更新动画 */
+@keyframes rowUpdate {
+  0% {
+    background: rgba(255, 215, 0, 0.3);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.row-updated {
+  animation: rowUpdate 1s ease-out;
+  border-left: 3px solid #ffd700;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .faction-stats-panel {
+    width: 95%;
+    max-width: none;
+  }
+
+  .panel-header h2 {
+    font-size: 20px;
+  }
+
+  .leaderboard th,
+  .leaderboard td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .rank {
+    width: 40px;
+  }
+
+  .faction-name {
+    min-width: 80px;
+  }
+}
+
+/* 滚动条样式 */
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
