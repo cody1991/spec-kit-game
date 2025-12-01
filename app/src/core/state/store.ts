@@ -353,19 +353,30 @@ export const useGameStore = create<GameState>((set) => ({
 
   initializeFactionStats: () =>
     set((state) => {
+      console.log('🔧 [initializeFactionStats] Starting...');
+      console.log(`   state.commanders.length: ${state.commanders.length}`);
+      console.log(`   state.countries.length: ${state.countries.length}`);
+      
       const statsMap = new Map<string, FactionStatistics>();
       
       state.commanders.forEach((commander) => {
+        console.log(`   Processing commander: ${commander.name}, territories: ${commander.controlledTerritories.length}`);
+        
         // 计算占领的国家数量和总面积
         const ownedCountries = commander.controlledTerritories
           .map((territoryId) => {
             const country = state.countries.find((c) => c.id === territoryId);
+            if (!country) {
+              console.warn(`     ⚠️ Country not found for territoryId: ${territoryId}`);
+            }
             return country;
           })
           .filter((c): c is Country => c !== undefined);
 
         const countryCount = ownedCountries.length;
         const totalArea = ownedCountries.reduce((sum, c) => sum + c.area, 0);
+
+        console.log(`     → countryCount: ${countryCount}, totalArea: ${(totalArea / 1000000).toFixed(2)}M km²`);
 
         statsMap.set(commander.id, {
           commanderId: commander.id,
@@ -380,6 +391,7 @@ export const useGameStore = create<GameState>((set) => ({
         });
       });
 
+      console.log(`🔧 [initializeFactionStats] Created ${statsMap.size} faction stats`);
       return { factionStats: statsMap };
     }),
 

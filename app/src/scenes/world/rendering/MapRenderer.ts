@@ -219,12 +219,15 @@ export class MapRenderer {
     graphics.clear();
     console.log(`🎨 [renderCountry] Rendering ${country.name} (${country.id}), has owner: ${!!state?.ownerId}, colorMapping: ${!!colorMapping}`);
 
-    // Draw filled polygon if owner exists
+    // Draw filled polygon
     if (state?.ownerId && colorMapping) {
-      console.log(`  → Filling country ${country.id} with color ${colorMapping.primary.toString(16)}`);
+      // 有owner的国家：使用指挥官颜色
+      console.log(`  → Filling country ${country.id} with commander color ${colorMapping.primary.toString(16)}`);
       this.fillCountry(graphics, country, colorMapping);
     } else {
-      console.log(`  → Skipping fill for ${country.id} (no owner or no colorMapping)`);
+      // 中立国家：使用灰色填充，让它们可见
+      console.log(`  → Filling neutral country ${country.id} with gray color`);
+      this.fillNeutralCountry(graphics, country);
     }
 
     // Draw border
@@ -343,6 +346,39 @@ export class MapRenderer {
 
         ring.forEach(([lon, lat], index) => {
           // Transform geographic coordinates to screen coordinates
+          const point = this.transformer.geoToScreen(lon, lat);
+
+          if (index === 0) {
+            graphics.moveTo(point.x, point.y);
+          } else {
+            graphics.lineTo(point.x, point.y);
+          }
+        });
+
+        graphics.closePath();
+        graphics.fillPath();
+      });
+    });
+  }
+
+  /**
+   * Fill neutral country with gray color
+   */
+  private fillNeutralCountry(
+    graphics: Phaser.GameObjects.Graphics,
+    country: Country
+  ): void {
+    // 中立国家使用深灰色，alpha稍低
+    const neutralColor = 0x3a3a3a; // 深灰色
+    const neutralAlpha = 0.6;
+    
+    graphics.fillStyle(neutralColor, neutralAlpha);
+
+    country.geometry.coordinates.forEach((polygon) => {
+      polygon.forEach((ring) => {
+        graphics.beginPath();
+
+        ring.forEach(([lon, lat], index) => {
           const point = this.transformer.geoToScreen(lon, lat);
 
           if (index === 0) {

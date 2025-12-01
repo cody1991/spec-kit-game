@@ -24,14 +24,28 @@ export class FactionStatsService {
   start(): void {
     const store = useGameStore.getState();
     
-    // 初始化所有势力的统计数据
-    store.initializeFactionStats();
+    // 🔧 延迟初始化，等待countries数据
+    const tryInitialize = () => {
+      const currentStore = useGameStore.getState();
+      
+      if (currentStore.countries.length === 0) {
+        console.warn('⚠️ FactionStatsService: countries not loaded yet, retrying in 100ms...');
+        setTimeout(tryInitialize, 100);
+        return;
+      }
+      
+      // 初始化所有势力的统计数据
+      currentStore.initializeFactionStats();
+      
+      // 调试：检查初始化后的数据
+      console.log('📊 FactionStatsService started');
+      console.log(`   Commanders count: ${currentStore.commanders.length}`);
+      console.log(`   Countries count: ${currentStore.countries.length}`);
+      console.log(`   Faction stats size: ${currentStore.factionStats.size}`);
+      console.log('   Sample faction stats:', Array.from(currentStore.factionStats.values()).slice(0, 3));
+    };
     
-    // 调试：检查初始化后的数据
-    console.log('📊 FactionStatsService started');
-    console.log(`   Commanders count: ${store.commanders.length}`);
-    console.log(`   Faction stats size: ${store.factionStats.size}`);
-    console.log('   Sample faction stats:', Array.from(store.factionStats.values()).slice(0, 3));
+    tryInitialize();
 
     // 记录之前的eventLog长度，用于检测新事件
     let previousEventLogLength = 0;

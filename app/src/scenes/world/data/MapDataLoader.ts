@@ -81,10 +81,18 @@ export class MapDataLoader {
         try {
           const country = this.featureToCountry(feature);
           
-          // 🔧 过滤掉南极洲（Antarctica）
-          if (country.id === 'ATA' || country.id === '-99' || 
-              country.name === 'Antarctica' || country.nameEn === 'Antarctica') {
-            console.log(`🚫 Filtered out Antarctica (id: ${country.id})`);
+          // 🔧 过滤掉南极洲（Antarctica）- 多种判断条件
+          const isAntarctica = 
+            country.id === 'ATA' || 
+            country.id === '-99' || 
+            country.id === '010' ||  // ISO 3166-1 numeric code
+            country.name === 'Antarctica' || 
+            country.nameEn === 'Antarctica' ||
+            country.name.toLowerCase().includes('antarctica') ||
+            country.nameEn.toLowerCase().includes('antarctica');
+          
+          if (isAntarctica) {
+            console.log(`🚫 Filtered out Antarctica (id: ${country.id}, name: ${country.name})`);
             return;
           }
           
