@@ -73,8 +73,8 @@ export class BattleSystem implements System {
         return;
       }
 
-      // 随机选择一个目标 (30% chance per tick - 增加战斗频率)
-      if (Math.random() < 0.3) {
+      // 随机选择一个目标 (80% chance per tick - 极快战斗)
+      if (Math.random() < 0.8) {
         const target = targetTerritories[Math.floor(Math.random() * targetTerritories.length)];
         
         // 如果是中立领土（无主），直接占领

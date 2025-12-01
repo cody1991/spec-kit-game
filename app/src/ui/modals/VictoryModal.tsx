@@ -9,6 +9,7 @@ export function VictoryModal() {
   const eventLog = useGameStore((state) => state.eventLog);
   const elapsedMs = useGameStore((state) => state.elapsedMs);
   const seed = useGameStore((state) => state.seed);
+  const closeVictoryModal = useGameStore((state) => state.closeVictoryModal);
 
   if (!showVictoryModal || !victorCommanderId) return null;
 
@@ -44,8 +45,11 @@ export function VictoryModal() {
   };
 
   return (
-    <div className="victory-modal-overlay">
-      <div className="victory-modal">
+    <div className="victory-modal-overlay" onClick={closeVictoryModal}>
+      <div className="victory-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="close-btn" onClick={closeVictoryModal} aria-label="关闭">
+          ✕
+        </button>
         <div className="victory-header">
           <h2>🎉 胜利！</h2>
         </div>
@@ -90,6 +94,9 @@ export function VictoryModal() {
         </div>
 
         <div className="victory-actions">
+          <button className="action-btn secondary" onClick={closeVictoryModal}>
+            ↩️ 继续观察
+          </button>
           <button className="action-btn secondary" onClick={handleCopyReport}>
             📋 复制战报
           </button>

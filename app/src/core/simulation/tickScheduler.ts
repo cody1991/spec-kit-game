@@ -11,7 +11,7 @@ export interface System {
 
 export class TickScheduler {
   private systems: System[] = [];
-  private tickInterval: number = 2000; // 2 seconds per tick
+  private tickInterval: number = 500; // 0.5 seconds per tick (4x faster)
   private lastTickTime: number = 0;
   private isRunning: boolean = false;
   private rafId: number | null = null;

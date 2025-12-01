@@ -150,6 +150,7 @@ export interface GameState {
   selectCommander: (id: string | null) => void;
   selectTerritory: (id: string | null) => void;
   setVictory: (commanderId: string) => void;
+  closeVictoryModal: () => void;
   incrementTick: () => void;
   setPaused: (paused: boolean) => void;
   addTelemetry: (signal: TelemetrySignal) => void;
@@ -250,6 +251,9 @@ export const useGameStore = create<GameState>((set) => ({
 
   setVictory: (commanderId) =>
     set({ showVictoryModal: true, victorCommanderId: commanderId, isPaused: true }),
+
+  closeVictoryModal: () =>
+    set({ showVictoryModal: false }),
 
   incrementTick: () =>
     set((state) => ({
