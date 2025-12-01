@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   root: './',
   publicDir: 'public',
+  base: process.env.GITHUB_PAGES ? '/spec-kit-game/' : '/',
   build: {
     outDir: '../dist',
     emptyOutDir: true,
