@@ -1,6 +1,7 @@
 import type { HistoricalCommander, Territory, Country } from '../types';
 import { getRandomCommanders } from '@data/commandersData';
 import { getCountryIdsByRegion } from '@/config/regionMapping.config';
+import { filterValidCommanders } from './commanderValidator';
 
 export interface InitialWorldOptions {
   seed: number;
@@ -91,13 +92,21 @@ export function createInitialWorld(options: InitialWorldOptions) {
     return commander;
   });
 
-  console.log(`✅ Created ${commanders.length} commanders with country-based territories`);
-  console.log(`   Sample commander territories:`, commanders.slice(0, 3).map(c => 
+  // 🔧 Feature 007: 过滤无领土的领主，确保所有活跃领主都有初始国家
+  const validCommanders = filterValidCommanders(commanders);
+  const excludedCount = commanders.length - validCommanders.length;
+
+  if (excludedCount > 0) {
+    console.warn(`⚠️ Excluded ${excludedCount} commanders without territories`);
+  }
+
+  console.log(`✅ Created ${validCommanders.length} commanders with country-based territories`);
+  console.log(`   Sample commander territories:`, validCommanders.slice(0, 3).map(c => 
     `${c.name}: ${c.controlledTerritories.join(', ')}`
   ));
 
   return {
-    commanders,
+    commanders: validCommanders,
     territories,
   };
 }

@@ -4,6 +4,8 @@ import type { BattleEvent, HistoricalCommander, Territory } from '../../types';
 import { globalEventBus } from '../../events/eventTypes';
 import { createCountryConquestTelemetry } from '@/services/telemetry/countryConquestTelemetry';
 import { logger } from '@/config/debug.config';
+import { selectTarget } from './targetSelector';
+import { getConquestConfig } from '@/config/conquest.config';
 
 /**
  * Global battle event counter for generating unique IDs
@@ -98,45 +100,44 @@ export class BattleSystem implements System {
     const MAX_BATTLES_PER_TICK = 20;
     let battlesThisTick = 0;
 
+    // 🔧 Feature 007: 使用概率化目标选择（85% 相邻，15% 远程）
+    const conquestConfig = getConquestConfig();
+    const allTerritoryIds = territories.map((t) => t.id);
+
     // 每个指挥官有机会发起进攻
     for (let i = 0; i < activeCommanders.length && battlesThisTick < MAX_BATTLES_PER_TICK; i++) {
       const attacker = activeCommanders[i];
       if (attacker.controlledTerritories.length === 0) continue;
 
-      // 找到相邻敌对领土（使用 Set 避免重复）
-      const targetSet = new Set<string>();
-      
-      for (let j = 0; j < attacker.controlledTerritories.length; j++) {
-        const territoryId = attacker.controlledTerritories[j];
-        const territory = this.territoryMap.get(territoryId);
-        if (!territory) continue;
-        
-        for (let k = 0; k < territory.adjacentIds.length; k++) {
-          const adjId = territory.adjacentIds[k];
-          const adjTerritory = this.territoryMap.get(adjId);
-          if (adjTerritory && adjTerritory.ownerId !== attacker.id) {
-            targetSet.add(adjId);
-          }
-        }
-      }
-
-      if (targetSet.size === 0) continue;
-
       // 随机选择一个目标 (95% chance per tick - 更积极的扩张)
       if (Math.random() < 0.95) {
-        const targetIds = Array.from(targetSet);
-        const targetId = targetIds[Math.floor(Math.random() * targetIds.length)];
-        const target = this.territoryMap.get(targetId);
+        // 🔧 Feature 007: 使用新的目标选择器
+        const selectionResult = selectTarget(
+          attacker,
+          this.territoryMap,
+          allTerritoryIds,
+          conquestConfig
+        );
+
+        if (!selectionResult) continue;
+
+        const target = this.territoryMap.get(selectionResult.targetId);
         if (!target) continue;
+
+        // 记录目标选择类型（用于调试和验证）
+        logger.log(
+          'BATTLE_SYSTEM',
+          `⚔️ [BattleSystem] ${attacker.name} 发起${selectionResult.selectionType === 'adjacent' ? '相邻' : '远程'}攻击: ${target.name}`
+        );
         
         if (!target.ownerId) {
-          this.queueOccupyNeutralTerritory(attacker, target);
+          this.queueOccupyNeutralTerritory(attacker, target, selectionResult.selectionType);
         } else {
           const defender = this.commanderMap.get(target.ownerId);
           if (defender && defender.status === 'active') {
-            this.queueBattle(attacker, defender, target);
+            this.queueBattle(attacker, defender, target, selectionResult.selectionType);
           } else {
-            this.queueOccupyNeutralTerritory(attacker, target);
+            this.queueOccupyNeutralTerritory(attacker, target, selectionResult.selectionType);
           }
         }
         battlesThisTick++;
@@ -149,8 +150,13 @@ export class BattleSystem implements System {
 
   /**
    * 队列：占领中立领土
+   * @param attackType - 攻击类型（相邻/远程）
    */
-  private queueOccupyNeutralTerritory(attacker: HistoricalCommander, territory: Territory): void {
+  private queueOccupyNeutralTerritory(
+    attacker: HistoricalCommander,
+    territory: Territory,
+    attackType: 'adjacent' | 'remote' = 'adjacent'
+  ): void {
     // 更新领土
     this.batch.territories.set(territory.id, {
       ownerId: attacker.id,
@@ -167,6 +173,7 @@ export class BattleSystem implements System {
     });
 
     // 添加事件
+    const narrativePrefix = attackType === 'remote' ? '远程' : '';
     this.batch.events.push({
       id: generateBattleEventId(),
       timestamp: new Date().toISOString(),
@@ -175,18 +182,20 @@ export class BattleSystem implements System {
       territoryId: territory.id,
       result: 'success',
       delta: {},
-      narrative: `${attacker.name} 占领了无主的 ${territory.name}!`,
+      narrative: `${attacker.name} ${narrativePrefix}占领了无主的 ${territory.name}!`,
       seed: Math.random().toString(36),
     });
   }
 
   /**
    * 队列：战斗
+   * @param attackType - 攻击类型（相邻/远程）
    */
   private queueBattle(
     attacker: HistoricalCommander,
     defender: HistoricalCommander,
-    territory: Territory
+    territory: Territory,
+    attackType: 'adjacent' | 'remote' = 'adjacent'
   ): void {
     const attackPower =
       attacker.baseAttributes.attack * (attacker.morale / 100) * (attacker.currentPower / 100);
@@ -200,6 +209,7 @@ export class BattleSystem implements System {
     const attackerPowerLoss = Math.floor(Math.random() * 10) + 5;
     const defenderPowerLoss = Math.floor(Math.random() * 15) + 10;
 
+    const narrativePrefix = attackType === 'remote' ? '远程' : '';
     const event: BattleEvent = {
       id: generateBattleEventId(),
       timestamp: new Date().toISOString(),
@@ -210,7 +220,7 @@ export class BattleSystem implements System {
       result: attackerWins ? 'success' : 'fail',
       delta: { attackerPowerLoss, defenderPowerLoss },
       narrative: attackerWins
-        ? `${attacker.name} 成功占领了 ${territory.name}!`
+        ? `${attacker.name} ${narrativePrefix}成功占领了 ${territory.name}!`
         : `${defender.name} 成功守住了 ${territory.name}!`,
       seed: Math.random().toString(36),
     };

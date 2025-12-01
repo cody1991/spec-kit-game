@@ -278,6 +278,21 @@ export const useGameStore = create<GameState>((set) => ({
 
   updateCommander: (id, updates) =>
     set((state) => {
+      // 🔧 Feature 007: 防止已淘汰领主恢复为活跃状态
+      const commander = state.commanders.find((c) => c.id === id);
+      if (commander && commander.status === 'eliminated' && updates.status === 'active') {
+        logger.log(
+          'COMMANDER_PROTECTION',
+          `⚠️ [store] 阻止已淘汰领主 ${commander.name} (${id}) 恢复为活跃状态`
+        );
+        // 移除 status 更新，保留其他更新
+        const { status: _ignoredStatus, ...safeUpdates } = updates;
+        if (Object.keys(safeUpdates).length === 0) {
+          return {}; // 没有其他更新，直接返回
+        }
+        updates = safeUpdates;
+      }
+
       // Mark commander as dirty
       const newDirtyFlags = { ...state.dirtyFlags };
       newDirtyFlags.commanders.add(id);
