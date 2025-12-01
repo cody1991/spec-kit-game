@@ -8,9 +8,8 @@
  * - enableEliminationVictory: 是否启用消灭胜利
  *
  * 设计目标：
- * - 占领 85% 领土即可宣布胜利，无需消灭所有对手
+ * - 必须统一所有国家（100% 领土）才能胜利
  * - 保留消灭胜利作为备选条件
- * - 加速游戏结束，提升玩家体验
  */
 
 export interface VictoryConfig {
@@ -25,7 +24,7 @@ export interface VictoryConfig {
 }
 
 export const DEFAULT_VICTORY_CONFIG: VictoryConfig = {
-  territoryVictoryThreshold: 0.85,
+  territoryVictoryThreshold: 1.0, // 必须 100% 统一所有国家
   enableTerritoryVictory: true,
   enableEliminationVictory: true,
 };

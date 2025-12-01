@@ -102,6 +102,11 @@ export class MapRenderer {
     commanders: Array<{ id: string; name: string }> = [],
     dirtyTerritories?: Set<string>
   ): RenderStats {
+    // Guard: ensure scene is fully initialized
+    if (!this.scene || !this.scene.add || !this.transformer) {
+      return this.stats;
+    }
+
     const startTime = performance.now();
 
     this.stats.countriesRendered = 0;
@@ -155,13 +160,24 @@ export class MapRenderer {
     state: TerritoryState | undefined,
     colorMapping: CommanderColor | null
   ): void {
+    // Guard: ensure scene is fully initialized
+    if (!this.scene || !this.scene.add) {
+      return;
+    }
+
     // Get or create graphics object
     let graphics = this.countryGraphics.get(country.id);
 
     if (!graphics) {
-      graphics = this.config.useObjectPool
-        ? this.graphicsPool.acquire()
-        : this.scene.add.graphics();
+      if (this.config.useObjectPool) {
+        const acquired = this.graphicsPool.acquire();
+        if (!acquired) {
+          return; // Scene not ready
+        }
+        graphics = acquired;
+      } else {
+        graphics = this.scene.add.graphics();
+      }
 
       this.countryGraphics.set(country.id, graphics);
     }
@@ -197,6 +213,11 @@ export class MapRenderer {
     state: TerritoryState | undefined,
     commanders: Array<{ id: string; name: string }>
   ): void {
+    // Guard: ensure scene is initialized
+    if (!this.scene || !this.transformer) {
+      return;
+    }
+
     // Only show labels for countries with owners
     if (!state?.ownerId) {
       // Remove label if exists
@@ -243,10 +264,12 @@ export class MapRenderer {
     label.setVisible(true);
 
     // Adjust font size based on zoom level
-    const camera = this.scene.cameras.main;
-    const zoom = camera.zoom;
-    const fontSize = Math.max(8, Math.min(18, 12 * zoom));
-    label.setFontSize(fontSize);
+    const camera = this.scene?.cameras?.main;
+    if (camera) {
+      const zoom = camera.zoom;
+      const fontSize = Math.max(8, Math.min(18, 12 * zoom));
+      label.setFontSize(fontSize);
+    }
   }
 
   /**

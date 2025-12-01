@@ -28,6 +28,37 @@ export function DevHud() {
   const [show, setShow] = useState(false);
   const [memoryUsage, setMemoryUsage] = useState(0);
 
+  // 计算活跃指挥官数量（移到顶层）
+  const activeCommanders = useMemo(
+    () => commanders.filter((c) => c.status === 'active').length,
+    [commanders]
+  );
+
+  // Feature: 009-unification-balance - 游戏阶段（移到顶层）
+  const gamePhase = useMemo(
+    () => getGamePhase(activeCommanders, isEndgameMode),
+    [activeCommanders, isEndgameMode]
+  );
+
+  // 计算领先势力信息（移到顶层）
+  const leadingFaction = useMemo(() => {
+    const active = commanders.filter((c) => c.status === 'active');
+    if (active.length === 0) return null;
+    
+    const sorted = [...active].sort(
+      (a, b) => b.controlledTerritories.length - a.controlledTerritories.length
+    );
+    const leader = sorted[0];
+    const totalTerritories = territories.length || 1;
+    const ratio = (leader.controlledTerritories.length / totalTerritories) * 100;
+    
+    return {
+      name: leader.name,
+      territories: leader.controlledTerritories.length,
+      ratio: ratio.toFixed(1),
+    };
+  }, [commanders, territories]);
+
   // 定期更新内存使用
   useEffect(() => {
     const updateMemory = () => {
@@ -69,33 +100,6 @@ export function DevHud() {
       </div>
     );
   }
-
-  const activeCommanders = commanders.filter((c) => c.status === 'active').length;
-
-  // Feature: 009-unification-balance - 游戏阶段
-  const gamePhase = useMemo(
-    () => getGamePhase(activeCommanders, isEndgameMode),
-    [activeCommanders, isEndgameMode]
-  );
-
-  // 计算领先势力信息
-  const leadingFaction = useMemo(() => {
-    const active = commanders.filter((c) => c.status === 'active');
-    if (active.length === 0) return null;
-    
-    const sorted = [...active].sort(
-      (a, b) => b.controlledTerritories.length - a.controlledTerritories.length
-    );
-    const leader = sorted[0];
-    const totalTerritories = territories.length || 1;
-    const ratio = (leader.controlledTerritories.length / totalTerritories) * 100;
-    
-    return {
-      name: leader.name,
-      territories: leader.controlledTerritories.length,
-      ratio: ratio.toFixed(1),
-    };
-  }, [commanders, territories]);
 
   // FPS 状态颜色
   const fpsColor =

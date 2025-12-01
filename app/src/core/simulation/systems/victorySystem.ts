@@ -9,7 +9,7 @@ import { logger } from '@/config/debug.config';
  * Feature: 009-unification-balance - 新增领土胜利条件
  *
  * 胜利条件：
- * 1. 领土胜利：占领 85% 以上领土
+ * 1. 领土胜利：统一所有国家（100% 领土）
  * 2. 消灭胜利：消灭所有对手（仅剩 1 个活跃势力）
  */
 export class VictorySystem implements System {
@@ -22,7 +22,7 @@ export class VictorySystem implements System {
 
     const activeCommanders = commanders.filter((c) => c.status === 'active');
 
-    // 胜利条件 1：领土胜利（占领 85% 以上领土）
+    // 胜利条件 1：领土胜利（统一所有国家）
     if (config.enableTerritoryVictory) {
       const totalTerritories = territories.length;
       

@@ -18,8 +18,14 @@ export class GraphicsPool {
 
   /**
    * Acquire a Graphics object from the pool
+   * Returns null if scene is not initialized or has been destroyed
    */
-  acquire(): Phaser.GameObjects.Graphics {
+  acquire(): Phaser.GameObjects.Graphics | null {
+    // Guard: ensure scene is fully initialized
+    if (!this.scene || !this.scene.add) {
+      return null;
+    }
+
     let graphics: Phaser.GameObjects.Graphics;
 
     if (this.pool.length > 0) {
@@ -73,6 +79,11 @@ export class GraphicsPool {
    * Pre-warm the pool by creating objects in advance
    */
   prewarm(count: number): void {
+    // Guard: ensure scene is fully initialized
+    if (!this.scene || !this.scene.add) {
+      return;
+    }
+
     const numToCreate = Math.min(count, this.maxSize) - this.pool.length;
 
     for (let i = 0; i < numToCreate; i++) {
