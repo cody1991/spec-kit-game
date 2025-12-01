@@ -10,7 +10,9 @@ import { logger } from '@/config/debug.config';
  *
  * 胜利条件：
  * 1. 领土胜利：统一所有国家（100% 领土）
- * 2. 消灭胜利：消灭所有对手（仅剩 1 个活跃势力）
+ * 2. 消灭胜利：消灭所有对手 且 占领所有领土
+ * 
+ * 注意：必须占领所有领土才能胜利，包括中立国家
  */
 export class VictorySystem implements System {
   name = 'VictorySystem';
@@ -21,35 +23,27 @@ export class VictorySystem implements System {
     const config = DEFAULT_VICTORY_CONFIG;
 
     const activeCommanders = commanders.filter((c) => c.status === 'active');
+    const totalTerritories = territories.length;
 
-    // 胜利条件 1：领土胜利（统一所有国家）
-    if (config.enableTerritoryVictory) {
-      const totalTerritories = territories.length;
+    // 检查是否有指挥官占领了所有领土
+    for (const commander of activeCommanders) {
+      const controlledCount = commander.controlledTerritories.length;
+      const controlRatio = totalTerritories > 0 ? controlledCount / totalTerritories : 0;
       
-      for (const commander of activeCommanders) {
-        const controlledCount = commander.controlledTerritories.length;
-        const controlRatio = totalTerritories > 0 ? controlledCount / totalTerritories : 0;
-        
-        if (controlRatio >= config.territoryVictoryThreshold) {
-          logger.log(
-            'VICTORY_SYSTEM',
-            `🏆 [VictorySystem] ${commander.name} 达成领土胜利: ${(controlRatio * 100).toFixed(1)}% (${controlledCount}/${totalTerritories})`
-          );
-          this.declareVictory(commander.id, 'territory');
-          return;
-        }
+      // 胜利条件：占领 100% 领土（包括所有中立国家）
+      if (controlRatio >= config.territoryVictoryThreshold) {
+        const victoryType = activeCommanders.length === 1 ? 'elimination' : 'territory';
+        logger.log(
+          'VICTORY_SYSTEM',
+          `🏆 [VictorySystem] ${commander.name} 达成${victoryType === 'elimination' ? '消灭' : '领土'}胜利: ${(controlRatio * 100).toFixed(1)}% (${controlledCount}/${totalTerritories})`
+        );
+        this.declareVictory(commander.id, victoryType);
+        return;
       }
     }
 
-    // 胜利条件 2：消灭胜利（仅剩 1 个活跃势力）
-    if (config.enableEliminationVictory && activeCommanders.length === 1) {
-      logger.log(
-        'VICTORY_SYSTEM',
-        `🏆 [VictorySystem] ${activeCommanders[0].name} 达成消灭胜利: 消灭所有对手`
-      );
-      this.declareVictory(activeCommanders[0].id, 'elimination');
-      return;
-    }
+    // 注意：即使只剩1个活跃势力，如果还有中立领土未占领，也不算胜利
+    // 这确保了必须真正统一所有国家才能获胜
   }
 
   private declareVictory(commanderId: string, victoryType: 'territory' | 'elimination'): void {
@@ -58,9 +52,7 @@ export class VictorySystem implements System {
 
     if (!commander) return;
 
-    const narrative = victoryType === 'territory'
-      ? `${commander.name} 占领了绝大多数领土，统一了世界！`
-      : `${commander.name} 消灭所有对手，统一了世界！`;
+    const narrative = `${commander.name} 占领了所有领土，统一了世界！`;
 
     state.addBattleEvent({
       id: `victory-${Date.now()}`,
