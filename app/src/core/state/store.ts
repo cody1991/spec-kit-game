@@ -361,8 +361,10 @@ export const useGameStore = create<GameState>((set) => ({
       
       for (const { id, updates: territoryUpdates } of updates) {
         const existingState = newStates.get(id);
-        if (existingState) {
-          if (territoryUpdates.ownerId !== undefined) {
+        
+        if (territoryUpdates.ownerId !== undefined) {
+          if (existingState) {
+            // 更新已存在的领土状态
             newStates.set(id, {
               ...existingState,
               previousOwnerId: existingState.ownerId,
@@ -373,14 +375,33 @@ export const useGameStore = create<GameState>((set) => ({
               updatedAt: Date.now(),
               transitionProgress: 0,
             });
-          } else if (territoryUpdates.garrison !== undefined || territoryUpdates.stability !== undefined) {
+          } else {
+            // 🔧 修复：为不存在的领土创建新状态
+            // 这种情况发生在中立领土首次被占领时
+            const territory = state.territories.find((t) => t.id === id);
             newStates.set(id, {
-              ...existingState,
-              troops: territoryUpdates.garrison ?? existingState.troops,
-              defense: territoryUpdates.stability ?? existingState.defense,
+              countryId: id,
+              countryName: territory?.name || id,
+              ownerId: territoryUpdates.ownerId,
+              troops: territoryUpdates.garrison ?? 0,
+              resources: 0,
+              defense: territoryUpdates.stability ?? 50,
               updatedAt: Date.now(),
+              conqueredAt: Date.now(),
+              previousOwnerId: null,
+              transitionProgress: 0,
+              isHighlighted: false,
             });
+            logger.log('TERRITORY_OWNERSHIP', `🆕 [batchUpdate] Created new state for neutral territory: ${id} → ${territoryUpdates.ownerId}`);
           }
+        } else if (existingState && (territoryUpdates.garrison !== undefined || territoryUpdates.stability !== undefined)) {
+          // 只更新驻军/稳定性（仅当状态已存在时）
+          newStates.set(id, {
+            ...existingState,
+            troops: territoryUpdates.garrison ?? existingState.troops,
+            defense: territoryUpdates.stability ?? existingState.defense,
+            updatedAt: Date.now(),
+          });
         }
         
         // Mark as dirty

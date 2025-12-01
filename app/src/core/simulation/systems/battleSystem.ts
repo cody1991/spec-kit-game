@@ -94,8 +94,8 @@ export class BattleSystem implements System {
       }
     }
 
-    // 限制每 tick 最多处理的战斗数量
-    const MAX_BATTLES_PER_TICK = 5;
+    // 限制每 tick 最多处理的战斗数量（增加到 20，因为有 50 个指挥官）
+    const MAX_BATTLES_PER_TICK = 20;
     let battlesThisTick = 0;
 
     // 每个指挥官有机会发起进攻
@@ -122,8 +122,8 @@ export class BattleSystem implements System {
 
       if (targetSet.size === 0) continue;
 
-      // 随机选择一个目标 (80% chance per tick)
-      if (Math.random() < 0.8) {
+      // 随机选择一个目标 (95% chance per tick - 更积极的扩张)
+      if (Math.random() < 0.95) {
         const targetIds = Array.from(targetSet);
         const targetId = targetIds[Math.floor(Math.random() * targetIds.length)];
         const target = this.territoryMap.get(targetId);
