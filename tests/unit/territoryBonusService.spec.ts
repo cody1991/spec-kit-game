@@ -22,13 +22,14 @@ vi.mock('../../app/src/config/debug.config', () => ({
 describe('TerritoryBonusService', () => {
   let service: TerritoryBonusService;
   const defaultConfig: TerritoryBonusConfig = {
-    maxBonus: 0.3,
-    cityBaseFactor: 0.04,
-    cityScaleFactor: 0.15,
-    areaBaseFactor: 0.035,
-    areaScaleFactor: 0.3,
-    continuityBonus: 0.25,
-    smallFactionDefenseBonus: 0.15,
+    maxAttackBonus: 0.5,
+    maxDefenseBonus: 0.4,
+    cityBaseFactor: 0.004, // 每个城市 +0.4%
+    cityScaleFactor: 0,
+    areaBaseFactor: 0.5,
+    areaScaleFactor: 0,
+    continuityBonus: 0.1,
+    smallFactionDefenseBonus: 0.1,
     smallFactionThreshold: 5,
   };
 
@@ -54,35 +55,28 @@ describe('TerritoryBonusService', () => {
       expect(bonus).toBeLessThan(0.1); // Should be small for 1 city
     });
 
-    it('should increase with more cities (diminishing returns)', () => {
+    it('should increase with more cities (linear growth)', () => {
       const bonus1 = service.calculateCityBonus(1);
-      const bonus3 = service.calculateCityBonus(3);
-      const bonus5 = service.calculateCityBonus(5);
       const bonus10 = service.calculateCityBonus(10);
+      const bonus50 = service.calculateCityBonus(50);
+      const bonus100 = service.calculateCityBonus(100);
 
-      // Should increase
-      expect(bonus3).toBeGreaterThan(bonus1);
-      expect(bonus5).toBeGreaterThan(bonus3);
-      expect(bonus10).toBeGreaterThan(bonus5);
-
-      // Diminishing returns: increments should decrease
-      const increment1to3 = bonus3 - bonus1;
-      const increment3to5 = bonus5 - bonus3;
-      const increment5to10 = bonus10 - bonus5;
-
-      expect(increment3to5).toBeLessThan(increment1to3 * 1.5); // Allow some tolerance
+      // Should increase linearly
+      expect(bonus10).toBeCloseTo(bonus1 * 10, 5);
+      expect(bonus50).toBeCloseTo(bonus1 * 50, 5);
+      // 100 cities should hit the cap
+      expect(bonus100).toBeLessThanOrEqual(defaultConfig.maxAttackBonus);
     });
 
-    it('should not exceed maxBonus', () => {
+    it('should not exceed maxAttackBonus', () => {
       const bonus = service.calculateCityBonus(100);
-      expect(bonus).toBeLessThanOrEqual(defaultConfig.maxBonus);
+      expect(bonus).toBeLessThanOrEqual(defaultConfig.maxAttackBonus);
     });
 
-    it('should approach but not exceed maxBonus for very large city counts', () => {
-      const bonus = service.calculateCityBonus(1000);
-      // 新配置下增长更渐进，1000城市约20%，不会达到上限
-      expect(bonus).toBeLessThanOrEqual(defaultConfig.maxBonus);
-      expect(bonus).toBeGreaterThan(0.15); // 但应该有明显加成
+    it('should approach but not exceed maxAttackBonus for very large city counts', () => {
+      const bonus = service.calculateCityBonus(200);
+      // 200 cities * 0.004 = 0.8, but capped at 0.5
+      expect(bonus).toBe(defaultConfig.maxAttackBonus);
     });
   });
 
@@ -103,18 +97,19 @@ describe('TerritoryBonusService', () => {
       expect(bonus).toBeGreaterThan(0);
     });
 
-    it('should increase with larger area (diminishing returns)', () => {
+    it('should increase with larger area (linear growth)', () => {
       const bonus5 = service.calculateAreaBonus(0.05);
       const bonus10 = service.calculateAreaBonus(0.1);
-      const bonus15 = service.calculateAreaBonus(0.15);
+      const bonus20 = service.calculateAreaBonus(0.2);
 
-      expect(bonus10).toBeGreaterThan(bonus5);
-      expect(bonus15).toBeGreaterThanOrEqual(bonus10); // May hit cap
+      // Linear: 10% should be double 5%
+      expect(bonus10).toBeCloseTo(bonus5 * 2, 5);
+      expect(bonus20).toBeCloseTo(bonus5 * 4, 5);
     });
 
-    it('should not exceed maxBonus', () => {
+    it('should not exceed maxAttackBonus', () => {
       const bonus = service.calculateAreaBonus(1.0); // 100% of map
-      expect(bonus).toBeLessThanOrEqual(defaultConfig.maxBonus);
+      expect(bonus).toBeLessThanOrEqual(defaultConfig.maxAttackBonus);
     });
   });
 
@@ -235,19 +230,19 @@ describe('TerritoryBonusService', () => {
   // =========================================================================
   // T013: 加成上限测试
   // =========================================================================
-  describe('Bonus Cap (30%)', () => {
-    it('city bonus should not exceed 30%', () => {
-      const bonus = service.calculateCityBonus(1000);
-      expect(bonus).toBeLessThanOrEqual(0.3);
+  describe('Bonus Cap (50% attack, 40% defense)', () => {
+    it('city bonus should not exceed 50%', () => {
+      const bonus = service.calculateCityBonus(200);
+      expect(bonus).toBe(0.5);
     });
 
-    it('area bonus should not exceed 30%', () => {
+    it('area bonus should not exceed 50%', () => {
       const bonus = service.calculateAreaBonus(1.0);
-      expect(bonus).toBeLessThanOrEqual(0.3);
+      expect(bonus).toBe(0.5);
     });
 
     it('continuity bonus should be capped', () => {
-      const baseBonus = 0.25;
+      const baseBonus = 0.3;
       const contiguityAnalysis = {
         regions: [['A', 'B', 'C', 'D', 'E']],
         largestSize: 5,
@@ -255,7 +250,7 @@ describe('TerritoryBonusService', () => {
         largestRatio: 1.0,
       };
       const bonus = service.calculateContinuityBonus(baseBonus, contiguityAnalysis);
-      expect(bonus).toBeLessThanOrEqual(0.3 * 0.2); // Max 20% of maxBonus
+      expect(bonus).toBeLessThanOrEqual(0.5 * 0.2); // Max 20% of maxAttackBonus
     });
   });
 
@@ -296,15 +291,20 @@ describe('TerritoryBonusService', () => {
   // T029: 加成上限验证测试
   // =========================================================================
   describe('Total Bonus Validation', () => {
-    it('config should have correct maxBonus value', () => {
+    it('config should have correct maxAttackBonus value', () => {
       const config = service.getConfig();
-      expect(config.maxBonus).toBe(0.3);
+      expect(config.maxAttackBonus).toBe(0.5);
+    });
+
+    it('config should have correct maxDefenseBonus value', () => {
+      const config = service.getConfig();
+      expect(config.maxDefenseBonus).toBe(0.4);
     });
 
     it('setConfig should update configuration', () => {
-      service.setConfig({ maxBonus: 0.25 });
+      service.setConfig({ maxAttackBonus: 0.6 });
       const config = service.getConfig();
-      expect(config.maxBonus).toBe(0.25);
+      expect(config.maxAttackBonus).toBe(0.6);
     });
   });
 

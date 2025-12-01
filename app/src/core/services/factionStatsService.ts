@@ -35,15 +35,14 @@ export class FactionStatsService {
       // 初始化所有势力的统计数据
       currentStore.initializeFactionStats();
 
+      // 🔧 初始化后立即计算所有势力的领土加成
+      this.initializeAllTerritoryBonuses();
+
       // 调试：检查初始化后的数据
       console.log('📊 FactionStatsService started');
       console.log(`   Commanders count: ${currentStore.commanders.length}`);
       console.log(`   Countries count: ${currentStore.countries.length}`);
       console.log(`   Faction stats size: ${currentStore.factionStats.size}`);
-      console.log(
-        '   Sample faction stats:',
-        Array.from(currentStore.factionStats.values()).slice(0, 3)
-      );
     };
 
     tryInitialize();
@@ -133,11 +132,8 @@ export class FactionStatsService {
    * @param event 战斗事件
    */
   private updateBattleStats(event: BattleEvent): void {
-    console.time('⚔️ Battle stats update');
-
     // 仅处理有防守方的attack事件（排除中立领土占领）
     if (event.type !== 'attack' || !event.defenderId) {
-      console.timeEnd('⚔️ Battle stats update');
       return;
     }
 
@@ -146,7 +142,6 @@ export class FactionStatsService {
     const defenderStats = store.factionStats.get(event.defenderId);
 
     if (!attackerStats || !defenderStats) {
-      console.timeEnd('⚔️ Battle stats update');
       return;
     }
 
@@ -166,8 +161,9 @@ export class FactionStatsService {
       });
 
       console.log(
-        `⚔️ Battle stats updated: ${attackerStats.commanderName} wins+1, ${defenderStats.commanderName} losses+1`,
-        `(${new Date().toISOString()})`
+        `⚔️ [WIN] ${attackerStats.commanderName} → ${defenderStats.commanderName} | ` +
+        `Attacker: ${newAttackerWins}W/${attackerStats.losses}L, ` +
+        `Defender: ${defenderStats.wins}W/${newDefenderLosses}L`
       );
     } else if (event.result === 'fail') {
       // 进攻失败：进攻方战败+1，防守方战胜+1
@@ -185,12 +181,26 @@ export class FactionStatsService {
       });
 
       console.log(
-        `⚔️ Battle stats updated: ${attackerStats.commanderName} losses+1, ${defenderStats.commanderName} wins+1`,
-        `(${new Date().toISOString()})`
+        `⚔️ [LOSE] ${attackerStats.commanderName} ← ${defenderStats.commanderName} | ` +
+        `Attacker: ${attackerStats.wins}W/${newAttackerLosses}L, ` +
+        `Defender: ${newDefenderWins}W/${defenderStats.losses}L`
       );
     }
+  }
 
-    console.timeEnd('⚔️ Battle stats update');
+  /**
+   * 初始化所有势力的领土加成
+   * 在游戏开始时调用，确保所有势力都有加成数据
+   */
+  private initializeAllTerritoryBonuses(): void {
+    const store = useGameStore.getState();
+
+    store.commanders.forEach((commander) => {
+      const territoryBonus = territoryBonusService.calculateTotalBonus(commander.id);
+      store.updateFactionStats(commander.id, { territoryBonus });
+    });
+
+    console.log(`🏰 Initialized territory bonuses for ${store.commanders.length} commanders`);
   }
 
   /**

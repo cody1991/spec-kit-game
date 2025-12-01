@@ -50,34 +50,35 @@ export class TerritoryBonusService {
 
   /**
    * 计算城市数量加成
-   * 使用对数函数实现递减增长
+   * 使用线性函数：每个城市贡献固定加成
    * @param cityCount 城市数量
-   * @returns 加成值 (0 - maxBonus)
+   * @returns 加成值 (0 - maxAttackBonus)
    */
   calculateCityBonus(cityCount: number): number {
     if (cityCount <= 0) return 0;
 
-    const { maxBonus, cityBaseFactor, cityScaleFactor } = this.config;
-    const bonus = cityBaseFactor * Math.log(1 + cityCount * cityScaleFactor);
+    const { maxAttackBonus, cityBaseFactor } = this.config;
+    // 线性增长：cityBaseFactor 表示每个城市的加成
+    const bonus = cityCount * cityBaseFactor;
 
-    return Math.min(maxBonus, Math.max(0, bonus));
+    return Math.min(maxAttackBonus, Math.max(0, bonus));
   }
 
   /**
    * 计算领土面积加成
-   * 使用对数函数实现递减增长
+   * 使用线性函数：面积占比直接转换为加成
    * @param areaRatio 面积占比 (0-1)
-   * @returns 加成值 (0 - maxBonus)
+   * @returns 加成值 (0 - maxAttackBonus)
    */
   calculateAreaBonus(areaRatio: number): number {
     if (areaRatio <= 0) return 0;
 
-    const { maxBonus, areaBaseFactor, areaScaleFactor } = this.config;
-    // 将面积占比放大以获得更明显的加成效果
-    const scaledRatio = areaRatio * 100; // 转换为百分比
-    const bonus = areaBaseFactor * Math.log(1 + scaledRatio * areaScaleFactor);
+    const { maxAttackBonus, areaBaseFactor } = this.config;
+    // 线性增长：areaBaseFactor 是面积加成的系数
+    // 例如 areaBaseFactor=0.5 且占比10%，则加成=5%
+    const bonus = areaRatio * areaBaseFactor;
 
-    return Math.min(maxBonus, Math.max(0, bonus));
+    return Math.min(maxAttackBonus, Math.max(0, bonus));
   }
 
   /**
@@ -161,7 +162,7 @@ export class TerritoryBonusService {
    * @returns 连续领土额外加成值
    */
   calculateContinuityBonus(baseBonus: number, contiguityAnalysis: ContiguityAnalysis): number {
-    const { continuityBonus, maxBonus } = this.config;
+    const { continuityBonus, maxAttackBonus } = this.config;
     const { largestRatio } = contiguityAnalysis;
 
     // 仅当最大连通分量占比超过50%时才有额外加成
@@ -170,7 +171,7 @@ export class TerritoryBonusService {
     // 额外加成 = 基础加成 * 连续加成系数 * (占比 - 0.5)
     const bonus = baseBonus * continuityBonus * (largestRatio - 0.5) * 2;
 
-    return Math.min(maxBonus * 0.2, Math.max(0, bonus)); // 连续加成上限为总上限的20%
+    return Math.min(maxAttackBonus * 0.2, Math.max(0, bonus)); // 连续加成上限为总上限的20%
   }
 
   /**
@@ -287,14 +288,14 @@ export class TerritoryBonusService {
     // 小势力防御加成
     const smallFactionDefenseBonus = this.calculateSmallFactionBonus(cityCount);
 
-    // 计算总加成
+    // 计算总加成（攻击和防御使用不同上限）
     const totalAttackBonus = Math.min(
-      this.config.maxBonus,
+      this.config.maxAttackBonus,
       cityBonus + areaBonus + continuityBonus
     );
     const totalDefenseBonus = Math.min(
-      this.config.maxBonus + this.config.smallFactionDefenseBonus,
-      totalAttackBonus + smallFactionDefenseBonus
+      this.config.maxDefenseBonus + this.config.smallFactionDefenseBonus,
+      cityBonus + areaBonus + continuityBonus + smallFactionDefenseBonus
     );
 
     const bonus: TerritoryBonus = {

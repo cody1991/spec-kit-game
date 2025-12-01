@@ -271,8 +271,10 @@ export interface Leaderboard {
  * 可调参数，便于平衡性调优
  */
 export interface TerritoryBonusConfig {
-  /** 加成上限 (0.30 = 30%) */
-  maxBonus: number;
+  /** 攻击加成上限 (0.50 = 50%) */
+  maxAttackBonus: number;
+  /** 防御加成上限 (0.40 = 40%) */
+  maxDefenseBonus: number;
   /** 城市加成基础系数 */
   cityBaseFactor: number;
   /** 城市加成缩放系数 */
