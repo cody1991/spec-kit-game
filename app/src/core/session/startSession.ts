@@ -34,7 +34,7 @@ export function startSession(seed?: string, countries?: Country[]): void {
   // 创建初始世界（现在基于真实国家数据）
   const { commanders, territories } = createInitialWorld({
     seed: numericSeed,
-    commanderCount: 30, // 增加到 30 个指挥官，史诗级战斗！
+    commanderCount: 50, // 使用全部 50 个指挥官！
     countries,
   });
 
