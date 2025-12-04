@@ -31,6 +31,7 @@ export function BattleTimeline() {
   const commanders = useGameStore((state) => state.commanders);
   const isPaused = useGameStore((state) => state.isPaused);
   const setPaused = useGameStore((state) => state.setPaused);
+  const toggleFactionStatsPanel = useGameStore((state) => state.toggleFactionStatsPanel);
 
   // 构建指挥官名称映射 - 每次渲染都重新构建（commanders 变化不频繁）
   const commanderNameMap = new Map<string, string>();
@@ -55,9 +56,14 @@ export function BattleTimeline() {
     <div className="battle-timeline">
       <div className="timeline-header">
         <h3>战报（历史记录）</h3>
-        <button className="pause-btn" onClick={() => setPaused(!isPaused)}>
-          {isPaused ? '▶️ 继续' : '⏸️ 暂停'}
-        </button>
+        <div>
+          <button className="pause-btn" onClick={() => setPaused(!isPaused)}>
+            {isPaused ? '▶️ 继续' : '⏸️ 暂停'}
+          </button>
+          <button className="stats-btn" onClick={toggleFactionStatsPanel}>
+            📊 统计
+          </button>
+        </div>
       </div>
 
       {/* 使用 eventLog.length 作为 key 强制整个列表重新渲染 */}
